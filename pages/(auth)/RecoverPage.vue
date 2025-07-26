@@ -19,7 +19,7 @@
             <hr style="color: #cbd5e1; margin: 10px;">
 
             <div class="flex flex-col items-center justify-center !p-4">
-                <h3 class="text-2xl !p-1 font-['Roboto']">Recuperação de senha</h3>
+                <h3 class="text-2xl !p-1 font-['Poppins']">Recuperação de senha</h3>
                 <p class="text-sm text-gray-700 font-['Roboto']">Insira seu e-mail logo abaixo</p>
             </div>
 
@@ -47,7 +47,7 @@
                 block
                 @click="loading = !loading"
                 >
-                Entrar
+                Recuperar
                 </v-btn>
             </div>
         </div>

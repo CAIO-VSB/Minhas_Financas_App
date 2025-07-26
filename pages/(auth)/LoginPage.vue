@@ -1,18 +1,47 @@
 <script setup lang="ts">
-
-   definePageMeta({
+    definePageMeta({
     layout: "layout-auth"
    })
 
+   import Toasts from '~/components/Toasts.vue'
+
    const loading = ref(false)
    const showPassword = ref(false)
+   const email = ref("")
+   const password = ref("")
+   const error = ref(false)
+   const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+   const listMessage = {
+    emptyField: "Campo obrigatório vazio",
+    userNotFound: "Email ou senhas incorretos. Tente novamente"
+   }
+
+   const teste = ref(false)
+
+   const validateData = () => {
+
+    if (!email.value.trim()) {
+        error.value = true
+        teste.value = true
+        return false
+    }
+
+    if (!password.value.trim()) {
+        error.value = true
+        teste.value = true
+        return false
+    }
+
+    return true
+
+   }
 
 </script>
 
 <template>
     <v-form class="login-form">
         <div class="login__form-container !p-4">
-            <div class="flex items-center justify-center !p-3 gap-2">
+            <div class="flex items-center justify-center !p-3 gap-3">
                 <img src="/assets/money.png" alt="">
                 <h2 class="text-2xl login__title">Minhas finanças</h2>
             </div>
@@ -20,23 +49,28 @@
             <hr style="color: #cbd5e1; margin: 10px;">
 
             <div class="flex flex-col items-center justify-center !p-4">
-                <h3 class="text-2xl !p-1 font-['Roboto']">Bem-vindo de volta!</h3>
-                <p class="text-sm text-gray-700 font-['Roboto']">Acesse sua conta para continuar</p>
+                <h3 class="text-2xl !p-1 font-['Poppins'] !font-medium">Bem-vindo de volta!</h3>
+                <p class="text-sm text-gray-700 font-['Poppins']">Acesse sua conta para continuar</p>
             </div>
 
             <div>
                 <div>
                     <v-text-field label="E-mail"
+                    title="E-mail"
+                    v-model="email"
                     type="email"
                     name="email"
                     focused
                     clearable
                     prepend-inner-icon="mdi mdi-email-alert"
                     variant="filled"
+                    :error="error"
                     ></v-text-field>
                 </div>
                 <div>
                     <v-text-field label="Senha"
+                    title="Senha"
+                    v-model="password"
                     :type="showPassword ? 'text' : 'password'"
                     prepend-inner-icon="mdi mdi-lock-alert"
                     :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
@@ -44,6 +78,7 @@
                     class="cursor-pointer"
                     clearable
                     variant="filled"
+                    :error="error"
                     >
                 </v-text-field>
                 </div>
@@ -58,24 +93,24 @@
                 variant="flat"
                 color="indigo-darken-3"
                 block
-                @click="loading = !loading"
+                @click="validateData"
                 >
                 Entrar
                 </v-btn>
             </div>
 
             <div class="flex justify-center items-center !p-2 text-sm login__recover-password">
-                <p class="font-['Roboto']"><nuxt-link to="/">Esqueceu sua senha?</nuxt-link></p>
+                <p class="font-['Poppins']"><nuxt-link title="Clique aqui para recuperar sua senha" to="/RecoverPage">Esqueceu sua senha?</nuxt-link></p>
             </div>
 
             <div class="flex justify-center items-center !p-2 text-sm login__more-login">
                 <div class="bg-[#cbd5e1] flex-1 h-px"></div>
-                <p class="!p-3 font-['Roboto']">Outras formas de login</p>
+                <p class="!p-3 font-['Poppins']">Outras formas de login</p>
                 <div class="bg-[#cbd5e1] flex-1 h-px"></div>
             </div>
 
             <div class="flex justify-center items-center !p-3"> 
-                <v-btn class="flex justify-center items-center  gap-1 login__button-google" >
+                <v-btn class="flex justify-center items-center  gap-1 login__button-google" title="Login com google">
                 Google
                 <template #prepend>
                     <img src="/assets/google.png" alt="">
@@ -86,8 +121,18 @@
             <hr style="color: #cbd5e1; margin: 15px;">
 
             <div class="flex justify-center items-center !p-2 !mb-2 text-sm login__recover-password">
-                <p class="font-['Roboto']"><nuxt-link to="/">Não possui conta? Registre-se</nuxt-link></p>
+                <p class="font-['Poppins']"><nuxt-link to="/RegisterPage" title="Crie sua conta">Não tem uma conta? Cadastre-se</nuxt-link></p>
             </div>
+
+            <div>
+                <Toasts 
+                color="red"
+                text="Testando"
+                timer="greem"
+                v-model="teste"
+                ></Toasts>
+            </div>
+
         </div>
     </v-form>
 </template>

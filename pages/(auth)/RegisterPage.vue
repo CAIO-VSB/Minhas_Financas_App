@@ -20,8 +20,8 @@
             <hr style="color: #cbd5e1; margin: 10px;">
 
             <div class="flex flex-col items-center justify-center !p-4">
-                <h3 class="text-2xl !p-1 font-['Roboto']">Criação de usuário</h3>
-                <p class="text-sm text-gray-700 font-['Roboto']">Insira suas credenciais logo abaixo</p>
+                <h3 class="text-2xl !p-1 font-['Poppins']">Criação de usuário</h3>
+                <p class="text-sm text-gray-700 font-['Poppins']">Insira suas credenciais logo abaixo</p>
             </div>
 
             <div>
@@ -81,7 +81,7 @@
                 block
                 @click="loading = !loading"
                 >
-                Entrar
+                Registrar
                 </v-btn>
             </div>
 
