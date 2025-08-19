@@ -1,0 +1,1 @@
+Verificar responsivdade 99% pronta. Verificar somente as fontes no mobile

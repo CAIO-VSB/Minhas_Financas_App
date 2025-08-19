@@ -5,6 +5,7 @@
 .nitro
 .cache
 dist
+/minhasfinancasapp-a6fd6-firebase-adminsdk-fbsvc-38f62a42d4.json
 
 # Node dependencies
 node_modules
@@ -22,3 +23,9 @@ logs
 .env
 .env.*
 !.env.example
+
+/generated/prisma
+
+/generated/prisma
+
+/generated/prisma

@@ -6,7 +6,10 @@
         color?: string,
         width?: string,
         text?: string,
-        modelValue: boolean
+        modelValue: boolean,
+        icon?: string,
+        size?: string,
+        colorIcon?: string
     }>()
 
     const modelValue = defineModel<boolean>()
@@ -21,9 +24,11 @@
       :timer="props.timer"
       :color="props.color"
       :width="props.width"
-      :text="props.text"
       v-model="modelValue"
-    ></v-snackbar>
+    >
+    <v-icon :color="props.colorIcon" start end :icon="props.icon" :size="props.size"></v-icon>
+    {{ props.text }}
+    </v-snackbar>
     </div>
 
 </template>
