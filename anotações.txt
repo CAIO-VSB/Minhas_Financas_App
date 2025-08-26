@@ -1,1 +1,5 @@
-Verificar responsivdade 99% pronta. Verificar somente as fontes no mobile
+Verificar responsivdade 99% pronta. Verificar somente as fontes no mobile---ok
+
+Refatorar telas de recupera (em andamento...)
+
+Refatorar tela de criar usuário

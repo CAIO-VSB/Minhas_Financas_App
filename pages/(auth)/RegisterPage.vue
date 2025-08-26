@@ -1,136 +1,383 @@
 <script setup lang="ts">
 
-   definePageMeta({
+  definePageMeta({
     layout: "layout-auth"
-   })
+  })
 
-   const loading = ref(false)
-   const showPassword = ref(false)
+  //Import de componentes
+  import Toasts from '~/components/Toasts.vue'
+  import type { User } from '~/types/TypeUser'
+  import { useValidateForm } from "~/composables/useValidateFields";
+
+
+  //Variáveis reativas
+  const loading = ref(false)
+  const showPassword = ref(true)
+  const errorEmail = ref(false)
+  const errorName = ref(false)
+  const errorPassword = ref(false)
+  const errorRepeatPassword = ref(false)
+  const errorMessage = ref(false)
+  const alertMessage = ref(false)
+  const currentMessage = ref("")
+
+
+  const logiForm = ref<User>({
+    name: "",
+    email: "",
+    password: "",
+    repeatPassword: ""
+  })
+
+  const listMessage = {
+    emptyField: "Preencha todos os campos obrigatórios",
+    formatName: "Limite máximo de 55 caracteres atingido",
+    formatEmail: "O e-mail informado não possui um formato válido",
+    formatPassword: "A senha deve conter no mínimo 6 caracteres",
+    checkPasswords: "Os campos de senha devem ser iguais "
+  }
+
+  const { validateEmail, validatePassword, validateName, checkPasswords } = useValidateForm()
+
+  const handleErrorName = (errorType: string) => {
+
+    if (errorType === "empty") {
+      errorName.value = true
+      errorMessage.value = true
+      currentMessage.value = listMessage.emptyField
+    }
+
+    if (errorType === "format") {
+      errorName.value = true
+      alertMessage.value = true
+      currentMessage.value = listMessage.formatName
+    }
+  }
+
+  const handleErrorEmail = (errorType: string) => {
+  
+    if (errorType === "empty") {
+      errorMessage.value = true
+      errorEmail.value = true
+      currentMessage.value = listMessage.emptyField
+    } else if (errorType === "format") {
+      alertMessage.value = true
+      currentMessage.value = listMessage.formatEmail
+   }
+
+  }
+
+  const handleErrorPassword = (errorType: string) => {
+
+    if (errorType === "empty") {
+      errorMessage.value = true
+      errorPassword.value = true
+      currentMessage.value = listMessage.emptyField
+    } else if (errorType === "format") {
+      alertMessage.value = true
+      currentMessage.value = listMessage.formatPassword
+    }
+
+  }
+
+  const incompatiblePasswords = (errorType: string) => {
+
+    if (errorType === "empty") {
+      errorRepeatPassword.value = true
+      errorMessage.value = true
+      currentMessage.value = listMessage.emptyField
+      console.log("Caiu aaqu?")
+    }
+
+    if (errorType === "incompatiblePasswords") {
+      alertMessage.value = true
+      currentMessage.value = listMessage.checkPasswords
+    }
+  }
+
+  const resetFields  = () => {
+    errorName.value = true
+    errorEmail.value = false
+    errorMessage.value = false
+    errorPassword.value = false
+    errorRepeatPassword.value = false
+  }
+
+  const submitData = () => {
+
+    const isValidName = validateName(logiForm.value.name)
+    const isValidEmail = validateEmail(logiForm.value.email)
+    const isValidPassowrd = validatePassword(logiForm.value.password)
+    const isValidCheckPassowrd = checkPasswords(logiForm.value.password, logiForm.value.repeatPassword)
+
+    if (!isValidName.isValid) {
+      handleErrorName(isValidName.errorType)
+      return false
+    }
+
+    if (!isValidEmail.isValid) {
+      handleErrorEmail(isValidEmail.errorType)
+      return false
+    }
+
+    if (!isValidPassowrd.isValid) {
+      handleErrorPassword(isValidPassowrd.errorType)
+      return false
+    }
+
+    if (!isValidCheckPassowrd.isValid) {
+      incompatiblePasswords(isValidCheckPassowrd.errorType)
+      return false
+    }
+
+
+    resetFields()
+    alert("Passou")
+    return true
+
+  }
 
 </script>
 
 <template>
-    <v-form class="register-form">
-        <div class="register__form-container !p-4">
-            <div class="flex items-center justify-center !p-3 gap-2">
-                <img src="/assets/money.png" alt="">
-                <h2 class="text-2xl register__title">Minhas finanças</h2>
+  <div class=" flex login-container">
+
+    <div class="flex container-itens">
+
+      <div class="flex flex-col items-center justify-center rounded-l-4xl inset-shadow-sm !p-4 w-full side-left">
+        <h4 class="text-center text-3xl mt-2 text-[#0096FF] font-['Montserrat'] font-semibold">Domine suas finanças.</h4>
+        <h4 class="text-center  text-3xl mt-2 font-semibold">Antes que elas dominem <u>Você.</u></h4>
+        <Carrossel></Carrossel>
+      </div>
+
+      <div class="rounded-r-4xl w-full flex items-center justify-center side-right">
+
+          <v-form class="login-form w-full !p-5 !m-5 rounded-3xl overflow-hidden">
+
+            <div class="flex items-center justify-center gap-3 bg-ambere-800 h-[100px]">
+              <img class="logo" src="/assets/report.png" alt="MinhasFinancas.logo">
+              <h2 class="text-3xl text-center font-normal font-[Montserrat] login-title">Minhas<strong>Finanças</strong></h2>
             </div>
 
-            <hr style="color: #cbd5e1; margin: 10px;">
-
-            <div class="flex flex-col items-center justify-center !p-4">
-                <h3 class="text-2xl !p-1 font-['Poppins']">Criação de usuário</h3>
-                <p class="text-sm text-gray-700 font-['Poppins']">Insira suas credenciais logo abaixo</p>
-            </div>
-
-            <div>
-                <div>
-                    <v-text-field label="Nome"
-                    type="name"
-                    name="name"
-                    clearable
-                    focused
-                    prepend-inner-icon="mdi mdi-email-alert"
-                    variant="filled"
-                    ></v-text-field>
-                </div>
-                <div>
-                    <v-text-field label="E-mail"
-                    type="email"
-                    name="email"
-                    clearable
-                    prepend-inner-icon="mdi mdi-email-alert"
-                    variant="filled"
-                    ></v-text-field>
-                </div>
-                <div>
-                    <v-text-field label="Senha"
-                    :type="showPassword ? 'text' : 'password'"
-                    prepend-inner-icon="mdi mdi-lock-alert"
-                    :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
-                    @click:append-inner="showPassword = !showPassword"
-                    class="cursor-pointer"
-                    clearable
-                    variant="filled"
-                    >
-                </v-text-field>
-                </div>
-                <div>
-                    <v-text-field label="Confirmar Senha"
-                    :type="showPassword ? 'text' : 'password'"
-                    prepend-inner-icon="mdi mdi-lock-alert"
-                    :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
-                    @click:append-inner="showPassword = !showPassword"
-                    class="cursor-pointer"
-                    clearable
-                    variant="filled"
-                    >
-                </v-text-field>
-                </div>
+             <div class="te flex flex-col items-center justify-center !p-4">
+                <h3 class="text-[1.3rem] !p-1 font-['Montserrat'] !font-semibold">Cadastre-se para começar</h3>
+                <p class="text-[0.86rem] text-gray-700 font-['Montserrat'] font-semibold">Preencha as informações abaixo</p>
             </div>
 
             <div>
-                <v-btn
-                :disabled="loading"
-                :loading="loading"
-                class="text-none mb-5 register__button"
-                size="large"
-                variant="flat"
-                color="indigo-darken-3"
-                block
-                @click="loading = !loading"
+
+              <div >
+                <v-text-field label="Nome" type="name" name="name"
+                variant="solo"
+                density="comfortable"
+                :error="errorName"   
+                v-model="logiForm.name" 
+                prepend-inner-icon="mdi-account"
+                counter="45"
                 >
-                Registrar
+                </v-text-field>
+              </div>
+
+              <div >
+                <v-text-field label="E-mail" type="email" name="email"
+                variant="solo"
+                density="comfortable"
+                :error="errorEmail"   
+                v-model="logiForm.email" 
+                placeholder="seunome@gmail.com"
+                prepend-inner-icon="mdi-email"
+                >
+                </v-text-field>
+              </div>
+
+              <div>
+                <v-text-field label="Senha" :type="showPassword ? 'password' : 'text'"
+                variant="solo"
+                density="comfortable"
+                :error="errorPassword"
+                v-model="logiForm.password"
+                prepend-inner-icon="mdi-lock"
+                >
+                <template #append-inner>
+                    <v-icon
+                    :icon="showPassword ? 'mdi mdi-eye-off' : 'mdi mdi-eye'"
+                    @click="showPassword = !showPassword"
+                    ></v-icon>
+                </template>
+                </v-text-field>
+              </div>
+
+              <div>
+                <v-text-field label="Confirmação de senha" :type="showPassword ? 'password' : 'text'"
+                variant="solo"
+                density="comfortable"
+                :error="errorRepeatPassword"
+                v-model="logiForm.repeatPassword"
+                prepend-inner-icon="mdi-lock-check"
+                >
+                <template #append-inner>
+                    <v-icon
+                    :icon="showPassword ? 'mdi mdi-eye-off' : 'mdi mdi-eye'"
+                    @click="showPassword = !showPassword"
+                    ></v-icon>
+                </template>
+                </v-text-field>
+              </div>
+
+            </div>
+
+            <div class="flex items-center justify-center gap-6 !p-2 !mt-2">
+              <div class="w-[100%]">
+                <v-btn
+                  :disabled="loading"
+                  :loading="loading"
+                  class="text-none font-['Montserrat'] rounded-xl button-login"
+                  size="large"
+                  color="indigo-darken-3"
+                  block
+                  @click="submitData"
+                  >
+                  Criar conta
                 </v-btn>
+              </div>
+            </div>
+
+          </v-form>
+
+            <div>
+                <Toasts 
+                color="error-primary"
+                :text="currentMessage"
+                timer="#E57373"
+                v-model="errorMessage"
+                icon="mdi-alert"
+                size="x-large"
+                color-icon="white"
+                >
+                </Toasts>
+            </div>
+
+            <div>
+                <Toasts 
+                color="alert-primary"
+                :text="currentMessage"
+                timer="#F0F4C3"
+                v-model="alertMessage"
+                icon="mdi-information"
+                size="x-large"
+                color-icon="black"
+                >
+                </Toasts>
             </div>
 
         </div>
-    </v-form>
+      </div>
+    </div>
 </template>
 
 <style lang="scss" scoped>
 
-@import url('https://fonts.googleapis.com/css2?family=Edu+NSW+ACT+Hand+Pre:wght@400..700&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
-
-@import url('https://fonts.googleapis.com/css2?family=Edu+NSW+ACT+Hand+Pre:wght@400..700&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
-
-.register-form {
-    max-width: 650px;
-    width: 100%;
-    height: auto;
-    padding: 10px;
-    z-index: 1;
+.login-container {
+  width: 100%;
+  max-width: 1100px;
+  overflow: auto;
 }
 
-.register__form-container {
-    padding: 10px;
-    background-color: white;
+.container-itens {
+  width: 100%;
+  min-height: 70dvh;
+  margin: 12px;
+}
+
+.side-left {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  background-color: $color-secundary;
+  z-index: 3;
+}
+
+.side-right {
+  box-shadow: 2px 4px 12px rgba(0, 0, 0, 0.5);
+  background-color: $color-primary;
+  z-index: 3;
+}
+
+.login-title {
+  color: $color-primary-title;
+  font-size: clamp(1.4rem, 2.5vw, 2rem);
+}
+
+.login-form {
+  background-color: $color-secundary;
+  padding: 5px;
+  width: 100%;
+  border-radius: 25px;
+  margin: 5px;
+}
+
+.logo {
+  width: clamp(45px, 2.5vw, 100px);
+}
+
+.button-google {
+  box-shadow: none;
+  background-color: $color-secundary;
+  border: 1px solid rgba(128, 128, 128, 0.425);
+  border-radius: 20px;
+}
+
+.button-google:hover {
+  transform: translateY(-5px);
+}
+
+.button-login {
+  background-color: $color-primary !important;
+  font-size: clamp(0.85rem, 2.5vw, 1rem);
+}
+
+.button-login:hover {
+  transform: translateY(-5px);
+}
+
+@media (max-width: 980px) {
+
+  .side-left {
+    display: none;
+  }
+
+  .container-itens {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .side-right {
+    margin: 10px;
     border-radius: 20px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-    font-family: "Poppins", sans-serif;
+    width: 100%;
+    max-width: 650px;
+  }
 }
 
-.register__title {
-    font-weight: 700;
-    color: #2c3e50;
-    font-family: "Poppins", sans-serif;
-}
+@media (max-width: 480px) {
 
-.register__recover-password {
-    color: $color-primary-link;
-}
+  .side-right  {
+    border-radius: 20px;
+    width: 95%; 
+    overflow: auto;
+  }
 
-.register__recover-password:hover {
-    color: #2c3e50;
-}
+  .login-form {
+    overflow: auto;
+  }
 
-.register__button {
-   background-color: $color-primary-button !important;
-}
+  .container-itens {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-.register__button:hover {
-    transform: translateY(-4px);
+
 }
 
 </style>
+
