@@ -20,6 +20,7 @@ export default defineNuxtConfig({
     '@nuxt/test-utils',
     '@nuxt/ui',
     '@pinia/nuxt',
+    '@vee-validate/nuxt',
     'pinia-plugin-persistedstate/nuxt',
 
     (_options, nuxt) => {

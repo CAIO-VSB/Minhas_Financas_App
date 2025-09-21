@@ -5,154 +5,77 @@
   })
 
   //Import de componentes
-  import Toasts from '~/components/Toasts.vue'
-  import type { User } from '~/types/TypeUser'
-  import { useValidateForm } from "~/composables/useValidateFields";
-
+  import type { User } from '~/types/typeUser'
+  import { authClient } from '~/lib/auth-client';
+  import { useValidateFields } from '~/composables/useValidateFields';
 
   //Variáveis reativas
   const loading = ref(false)
   const showPassword = ref(true)
-  const errorEmail = ref(false)
-  const errorName = ref(false)
-  const errorPassword = ref(false)
-  const errorRepeatPassword = ref(false)
-  const errorMessage = ref(false)
-  const alertMessage = ref(false)
-  const currentMessage = ref("")
-
-
+  const isPasswordValidatorVisible = ref(true)
+  const containerItensWithValidator = ref(false)
+  const form = ref()
   const logiForm = ref<User>({
     name: "",
     email: "",
     password: "",
-    repeatPassword: ""
+    confirmPassword: ""
   })
 
-  const listMessage = {
-    emptyField: "Preencha todos os campos obrigatórios",
-    formatName: "Limite máximo de 55 caracteres atingido",
-    formatEmail: "O e-mail informado não possui um formato válido",
-    formatPassword: "A senha deve conter no mínimo 6 caracteres",
-    checkPasswords: "Os campos de senha devem ser iguais "
+  const hasUpperCase = computed(() => /[A-Z]/.test(logiForm.value.password))
+  const hasLowerCase = computed(() => /[a-z]/.test(logiForm.value.password))
+  const hasNumber = computed(() => /[0-9]/.test(logiForm.value.password))
+  const hasCharacterSpecial = computed(() => /[^A-Za-z0-9]/.test(logiForm.value.password))
+
+  const { nameRules, emailRules, passwordRules, validateSingUp } = useValidateFields()
+
+  const confirmPasswordRules = ref([
+    (val: string) => !!val || "Campo confirmar senha é obrigatório",
+    (val: string ) => (val === logiForm.value.password) || "As senha não coincidem"
+  ])
+
+  function showListVerificationPassword() {
+    isPasswordValidatorVisible.value = false
+    containerItensWithValidator.value = true
   }
 
-  const { validateEmail, validatePassword, validateName, checkPasswords } = useValidateForm()
+  async function signIn() {
 
-  const handleErrorName = (errorType: string) => {
+    try {
+      loading.value = true
 
-    if (errorType === "empty") {
-      errorName.value = true
-      errorMessage.value = true
-      currentMessage.value = listMessage.emptyField
+      const { Formvalid } = await form.value.validate()
+
+      const result = validateSingUp(logiForm.value)
+
+      await authClient.signUp.email(logiForm.value)
+      
+    } catch (error) {
+      console.log("Erro ao criar usuário" + error)
+    } finally {
+      loading.value = false
     }
 
-    if (errorType === "format") {
-      errorName.value = true
-      alertMessage.value = true
-      currentMessage.value = listMessage.formatName
-    }
-  }
 
-  const handleErrorEmail = (errorType: string) => {
-  
-    if (errorType === "empty") {
-      errorMessage.value = true
-      errorEmail.value = true
-      currentMessage.value = listMessage.emptyField
-    } else if (errorType === "format") {
-      alertMessage.value = true
-      currentMessage.value = listMessage.formatEmail
-   }
 
   }
-
-  const handleErrorPassword = (errorType: string) => {
-
-    if (errorType === "empty") {
-      errorMessage.value = true
-      errorPassword.value = true
-      currentMessage.value = listMessage.emptyField
-    } else if (errorType === "format") {
-      alertMessage.value = true
-      currentMessage.value = listMessage.formatPassword
-    }
-
-  }
-
-  const incompatiblePasswords = (errorType: string) => {
-
-    if (errorType === "empty") {
-      errorRepeatPassword.value = true
-      errorMessage.value = true
-      currentMessage.value = listMessage.emptyField
-      console.log("Caiu aaqu?")
-    }
-
-    if (errorType === "incompatiblePasswords") {
-      alertMessage.value = true
-      currentMessage.value = listMessage.checkPasswords
-    }
-  }
-
-  const resetFields  = () => {
-    errorName.value = true
-    errorEmail.value = false
-    errorMessage.value = false
-    errorPassword.value = false
-    errorRepeatPassword.value = false
-  }
-
-  const submitData = () => {
-
-    const isValidName = validateName(logiForm.value.name)
-    const isValidEmail = validateEmail(logiForm.value.email)
-    const isValidPassowrd = validatePassword(logiForm.value.password)
-    const isValidCheckPassowrd = checkPasswords(logiForm.value.password, logiForm.value.repeatPassword)
-
-    if (!isValidName.isValid) {
-      handleErrorName(isValidName.errorType)
-      return false
-    }
-
-    if (!isValidEmail.isValid) {
-      handleErrorEmail(isValidEmail.errorType)
-      return false
-    }
-
-    if (!isValidPassowrd.isValid) {
-      handleErrorPassword(isValidPassowrd.errorType)
-      return false
-    }
-
-    if (!isValidCheckPassowrd.isValid) {
-      incompatiblePasswords(isValidCheckPassowrd.errorType)
-      return false
-    }
-
-
-    resetFields()
-    alert("Passou")
-    return true
-
-  }
-
+ 
 </script>
 
 <template>
   <div class=" flex login-container">
 
-    <div class="flex container-itens">
+    <div class="flex container-itens" :class="{'container-itens--with-validator': containerItensWithValidator}">
 
       <div class="flex flex-col items-center justify-center rounded-l-4xl inset-shadow-sm !p-4 w-full side-left">
-        <h4 class="text-center text-3xl mt-2 text-[#0096FF] font-['Montserrat'] font-semibold">Domine suas finanças.</h4>
-        <h4 class="text-center  text-3xl mt-2 font-semibold">Antes que elas dominem <u>Você.</u></h4>
+        <h4 class="text-center text-3xl text-[#0096FF] font-['Montserrat'] font-semibold">Domine suas finanças.</h4>
+        <h4 class="text-center text-3xl mt-2 font-semibold">Antes que elas dominem <u>Você.</u></h4>
         <Carrossel></Carrossel>
       </div>
 
       <div class="rounded-r-4xl w-full flex items-center justify-center side-right">
 
-          <v-form class="login-form w-full !p-5 !m-5 rounded-3xl overflow-hidden">
+          <v-form class="login-form w-full !p-5 !m-5 rounded-3xl overflow-hidden" @submit.prevent ref="form">
 
             <div class="flex items-center justify-center gap-3 bg-ambere-800 h-[100px]">
               <img class="logo" src="/assets/report.png" alt="MinhasFinancas.logo">
@@ -160,20 +83,21 @@
             </div>
 
              <div class="te flex flex-col items-center justify-center !p-4">
-                <h3 class="text-[1.3rem] !p-1 font-['Montserrat'] !font-semibold">Cadastre-se para começar</h3>
+                <h3 class="text-[1.4rem] !p-1 font-['Montserrat'] !font-semibold login-sub-title">Cadastre-se para começar</h3>
                 <p class="text-[0.86rem] text-gray-700 font-['Montserrat'] font-semibold">Preencha as informações abaixo</p>
             </div>
 
             <div>
 
               <div >
-                <v-text-field label="Nome" type="name" name="name"
+                <v-text-field  label="Nome" type="name" name="name"
                 variant="solo"
                 density="comfortable"
-                :error="errorName"   
                 v-model="logiForm.name" 
                 prepend-inner-icon="mdi-account"
-                counter="45"
+                counter="55"
+                placeholder="Insira seu nome"
+                :rules="nameRules"
                 >
                 </v-text-field>
               </div>
@@ -182,10 +106,10 @@
                 <v-text-field label="E-mail" type="email" name="email"
                 variant="solo"
                 density="comfortable"
-                :error="errorEmail"   
                 v-model="logiForm.email" 
                 placeholder="seunome@gmail.com"
                 prepend-inner-icon="mdi-email"
+                :rules="emailRules"
                 >
                 </v-text-field>
               </div>
@@ -194,9 +118,10 @@
                 <v-text-field label="Senha" :type="showPassword ? 'password' : 'text'"
                 variant="solo"
                 density="comfortable"
-                :error="errorPassword"
                 v-model="logiForm.password"
                 prepend-inner-icon="mdi-lock"
+                :rules="passwordRules"
+                @keyup="showListVerificationPassword"
                 >
                 <template #append-inner>
                     <v-icon
@@ -205,15 +130,52 @@
                     ></v-icon>
                 </template>
                 </v-text-field>
+
+               <v-list :class="{'list-validator': isPasswordValidatorVisible}"> 
+
+                <v-list-item>
+                  <template v-slot:prepend>
+                    <v-icon :color="(hasUpperCase) ? '#00C853' : '#FF0000'" :icon="(hasUpperCase) ? 'mdi mdi-check-circle': 'mdi mdi-close-circle'"></v-icon>
+                  </template>
+
+                  <v-list-item-title>Contém letra maiúscula</v-list-item-title>
+                </v-list-item>
+
+                <v-list-item>
+                  <template v-slot:prepend>
+                    <v-icon :color="(hasLowerCase) ? '#00C853' : '#FF0000'" :icon="(hasLowerCase) ? 'mdi mdi-check-circle': 'mdi mdi-close-circle'"></v-icon>
+                  </template>
+
+                  <v-list-item-title>Contém letra minúscula</v-list-item-title>
+                </v-list-item>
+
+                <v-list-item>
+                  <template v-slot:prepend>
+                    <v-icon :color="(hasNumber) ? '#00C853' : '#FF0000'" :icon="(hasNumber) ? 'mdi mdi-check-circle': 'mdi mdi-close-circle'"></v-icon>
+                  </template>
+
+                  <v-list-item-title>Contém número</v-list-item-title>
+                </v-list-item>
+
+                <v-list-item>
+                  <template v-slot:prepend>
+                    <v-icon :color="(hasCharacterSpecial) ? '#00C853' : '#FF0000'" :icon="(hasCharacterSpecial) ? 'mdi mdi-check-circle': 'mdi mdi-close-circle'"></v-icon>
+                  </template>
+
+                  <v-list-item-title class="">Contém caractere especial</v-list-item-title>
+                </v-list-item>
+
+              </v-list>
+
               </div>
 
               <div>
-                <v-text-field label="Confirmação de senha" :type="showPassword ? 'password' : 'text'"
+                <v-text-field label="Confirmar senha" :type="showPassword ? 'password' : 'text'"
                 variant="solo"
                 density="comfortable"
-                :error="errorRepeatPassword"
-                v-model="logiForm.repeatPassword"
+                v-model="logiForm.confirmPassword"
                 prepend-inner-icon="mdi-lock-check"
+                :rules="confirmPasswordRules"
                 >
                 <template #append-inner>
                     <v-icon
@@ -235,7 +197,7 @@
                   size="large"
                   color="indigo-darken-3"
                   block
-                  @click="submitData"
+                  @click="signIn"
                   >
                   Criar conta
                 </v-btn>
@@ -243,32 +205,6 @@
             </div>
 
           </v-form>
-
-            <div>
-                <Toasts 
-                color="error-primary"
-                :text="currentMessage"
-                timer="#E57373"
-                v-model="errorMessage"
-                icon="mdi-alert"
-                size="x-large"
-                color-icon="white"
-                >
-                </Toasts>
-            </div>
-
-            <div>
-                <Toasts 
-                color="alert-primary"
-                :text="currentMessage"
-                timer="#F0F4C3"
-                v-model="alertMessage"
-                icon="mdi-information"
-                size="x-large"
-                color-icon="black"
-                >
-                </Toasts>
-            </div>
 
         </div>
       </div>
@@ -280,12 +216,11 @@
 .login-container {
   width: 100%;
   max-width: 1100px;
-  overflow: auto;
 }
 
 .container-itens {
   width: 100%;
-  min-height: 70dvh;
+  min-height: 62dvh;
   margin: 12px;
 }
 
@@ -304,6 +239,10 @@
 .login-title {
   color: $color-primary-title;
   font-size: clamp(1.4rem, 2.5vw, 2rem);
+}
+
+.login-sub-title {
+  font-size: clamp(1rem, 2.5vw, 1.4rem);
 }
 
 .login-form {
@@ -331,11 +270,15 @@
 
 .button-login {
   background-color: $color-primary !important;
-  font-size: clamp(0.85rem, 2.5vw, 1rem);
+  font-size: clamp(0.90rem, 2.5vw, 1rem);
 }
 
 .button-login:hover {
   transform: translateY(-5px);
+}
+
+.list-validator {
+  display: none;
 }
 
 @media (max-width: 980px) {
@@ -361,8 +304,8 @@
 @media (max-width: 480px) {
 
   .side-right  {
-    border-radius: 20px;
-    width: 95%; 
+    border-radius: 40px;
+    width: 100%; 
     overflow: auto;
   }
 
@@ -376,6 +319,9 @@
     justify-content: center;
   }
 
+  .container-itens--with-validator  {
+    margin-top: 25vh;
+  }
 
 }
 

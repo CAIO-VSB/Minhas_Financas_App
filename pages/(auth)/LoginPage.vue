@@ -5,7 +5,7 @@
   });
 
   import Toasts from "~/components/Toasts.vue";
-  import type { UserForm } from "~/types/TypeUserForm";
+  import type { UserForm } from "~/types/typeUserForm";
   import { useValidateForm } from "~/composables/useValidateFields";
 
 

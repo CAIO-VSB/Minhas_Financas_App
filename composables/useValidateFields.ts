@@ -1,65 +1,41 @@
-import type { typesOfValidation } from "~/types/TypeValidate"
+import { singUp } from "~/schemas/auth.schema"
+import type { User } from "~/types/typeUser"
 
-export function useValidateForm() {
 
-    const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/ 
+export function useValidateFields() {
 
-    const validateEmail = (email: string): typesOfValidation => {
+    const regexEmail = /^(?!\.)(?!.*\.\.)([a-z0-9_'+\-\.]*)[a-z0-9_+-]@([a-z0-9][a-z0-9\-]*\.)+[a-z]{2,}$/i
 
-        if (email.trim().length === 0) {
-            return {isValid: false, errorType: "empty"}
-        } 
+    const nameRules = ref([
+        (val: string) => !!val || "Campo nome é obrigatório",
+        (val: string) => (val && val.length <= 55) || "Nome não pode conter mais de 55 caracteres"
+    ])
 
-        if (!regexEmail.test(email)) {
-            return {isValid: false, errorType: "format"}
+    const emailRules = ref([
+        (val: string) => !!val || "Campo e-mail é obrigatório",
+        (val: string) => (regexEmail.test(val)) || "O formato do e-mail é inválido"
+    ])
+
+    const passwordRules = ref([
+        (val: string) => !!val || "Campo senha é obrigatório",
+        (val: string) => (val && val.length >= 8) || "A senha deve conter no minímo 8 caracteres"
+    ])
+
+    const validateSingUp = (data: User) => {
+        const result = singUp.safeParse(data)
+
+        if (!result.success) {
+            console.log("Erro ao validar e criar usuário", result.error)
+        } else {
+            console.log("Validação realizada com sucesso", result.data)
         }
-
-        return {isValid: true, errorType: ""}
-    }
-
-    const validatePassword = (password: string): typesOfValidation => {
-
-        if (password.trim().length === 0) {
-            return { isValid: false, errorType: "empty" }
-        }
-
-        if (password.trim().length < 6) {
-            return { isValid: false, errorType: "format" }
-        }
-
-        return {isValid: true, errorType: ""}
-    }
-
-    const validateName = (name: string): typesOfValidation => {
-
-        if (name.trim().length === 0) {
-            return { isValid: false, errorType: "empty" }
-        }
-
-        if (name.trim().length > 45) {
-            return { isValid: false, errorType: "format" }
-        }
-
-        return {isValid: true, errorType: ""}
-    }
-
-    const checkPasswords = (password: string, repeatPassword: string) => {
-
-        if (repeatPassword.trim().length === 0) {
-            return { isValid: false, errorType: "empty" }
-        }
-
-        if (repeatPassword !== password) {
-            return { isValid: false, errorType: "incompatiblePasswords" }
-        }
-
-        return {isValid: true, errorType: ""}
     }
 
     return {
-        validateEmail,
-        validatePassword,
-        validateName,
-        checkPasswords
+        nameRules,
+        emailRules,
+        passwordRules,
+        validateSingUp
     }
+
 }

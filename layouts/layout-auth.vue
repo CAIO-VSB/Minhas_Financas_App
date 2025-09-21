@@ -15,7 +15,7 @@
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center left;
-    overflow-y: hidden;
+    overflow-y: auto;
 }
 
 .container-main::before {
