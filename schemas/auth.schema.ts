@@ -26,3 +26,26 @@ export const singUp = z.object({
     }
 })
 
+export const passwordValidate = z.object({
+    password: z.string("Campo senha vazio").
+    min(8, "Mínimo 8 caracteres)").
+    regex(/[A-Z]/, "Senha está faltando letra Maiúscula").
+    regex(/[a-z]/, "Senha está Faltando letra minúscula").
+    regex(/[0-9]/, "Senha está faltando número").
+    regex(/[^A-Za-z0-9]/, "Senha está faltando caractere especial"),
+    confirmPassword: z.string("Campo senha vazio").min(8, "Mínimo 8 caracteres")
+}).superRefine((val, ctx) => {
+    if (val.password !== val.confirmPassword) {
+        ctx.addIssue({
+            code: "custom",
+            message: "As senhas não coincidem",
+            input: val,
+            path: ["confirmPassword"]
+        })
+    }
+})
+
+export const emailValidate = z.object({
+    email: z.email("Formato do email inválido")
+})
+

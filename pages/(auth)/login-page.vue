@@ -5,90 +5,61 @@
   });
 
   import Toasts from "~/components/Toasts.vue";
-  import type { UserForm } from "~/types/typeUserForm";
-  import { useValidateForm } from "~/composables/useValidateFields";
+  import { useValidateFields } from '~/composables/useValidateFields';
+  import { useAuthStore } from "~/store/modules/auth-store";
+  import type { LoginForm } from "~/types/user/types";
 
-
-  const loading = ref(false);
-
-  const showPassword = ref(true);
-
-  const currentMessage = ref("");
-
-  const alertMessage = ref(false)
-
-  const errorEmail = ref(false)
-
-  const errorPassword = ref(false)
-
-  const errorMessage = ref(false)
-
-  const listMessage = {
-    emptyField: "Preencha todos os campos obrigatórios",
-    userNotFound: "E-mail ou senha inválidos",
-    formatEmail: "O e-mail informado não possui um formato válido",
-    formatPassword: "A senha deve conter no mínimo 6 caracteres",
-  };
-
-  const logiForm = ref<UserForm>({
+  const loadingEmail = ref(false)
+  const loadingGoogle = ref(false)
+  const showPassword = ref(true)
+  const form = ref()
+  const logiForm = ref<LoginForm>({
     email: "",
     password: "",
   })
+  
+  const authStore = useAuthStore()
 
-  const { validateEmail, validatePassword } = useValidateForm();
+  const { emailRules, passwordRules, validateSchemaSignIn } = useValidateFields()
 
-  const handleErrorEmail = (errorType: string) => {
-    
-    if (errorType === "empty") {
-      errorMessage.value = true
-      errorEmail.value = true
-      errorPassword.value = true
-      currentMessage.value = listMessage.emptyField
-    } else if (errorType === "format") {
-      alertMessage.value = true
-      currentMessage.value = listMessage.formatEmail
-    }
-  }
+  async function loginWidthEmailAndPassword() {
 
-  const handleErrorPassword = (errorType: string) => {
+    try {
+      loadingEmail.value = true 
 
-    if (errorType === "empty") {
-      errorMessage.value = true
-      errorEmail.value = true
-      errorPassword.value = true
-      currentMessage.value = listMessage.emptyField
-    } else if (errorType === "format") {
-      alertMessage.value = true
-      currentMessage.value = listMessage.formatPassword
-    }
-  }
+      const formValid = await form.value.validate()
+      const resultSchema = validateSchemaSignIn(logiForm.value)
 
-  const resetFields  = () => {
-    errorEmail.value = false
-    errorMessage.value = false
-    errorPassword.value = false
-  }
+      if (formValid) {
+        if (resultSchema) {
+          const result = await authStore.login(logiForm.value)
 
-  const submitData = () => {
-
-    const isEmailValid = validateEmail(logiForm.value.email)
-    const isPasswordValid = validatePassword(logiForm.value.password)
-
-    if (!isEmailValid.isValid) {
-      handleErrorEmail(isEmailValid.errorType)
-      return false
-    } 
-
-    if (!isPasswordValid.isValid) {
-      handleErrorPassword(isPasswordValid.errorType)
-      return false
+          if (result?.success) {
+            navigateTo({path: "/dashboard"})
+          }
+        }
+      }
+    } catch (error) {
+      console.log("Erro ao tentar fazer login (geral no catch)" + error)
+    } finally {
+      loadingEmail.value = false
     }
 
-    resetFields()
+  }
 
-    alert("Success")
+  async function loginWidthGoogle() {
 
-    return true
+    try {
+
+      loadingGoogle.value = true
+
+      await authStore.loginGoogle()
+  
+    } catch (error) {
+      console.log("Erro ao autenteicar com o google" + error)
+    } finally {
+      loadingGoogle.value = true
+    }
 
   }
 
@@ -118,11 +89,12 @@
         <v-form
           @submit.prevent
           class="login-form w-full !p-5 !m-5 rounded-3xl overflow-hidden"
+          ref="form"
         >
           <div
             class="flex items-center justify-center gap-3 bg-ambere-800 h-[100px]"
           >
-            <img class="logo" src="/assets/report.png" alt="" />
+            <img class="logo" src="/assets/report.png" alt="img-logo" />
             <h2
               class="text-3xl text-center font-normal font-[Montserrat] login-title"
             >
@@ -151,9 +123,8 @@
                 density="comfortable"
                 placeholder="seunome@gmail.com"
                 prepend-inner-icon="mdi-email"
-                :error="errorEmail"
                 v-model="logiForm.email"
-                @keyup="resetFields"
+                :rules="emailRules"
               >
               </v-text-field>
             </div>
@@ -164,11 +135,10 @@
                 :type="showPassword ? 'password' : 'text'"
                 variant="solo"
                 density="comfortable"
-                :error="errorPassword"
                 v-model="logiForm.password"
-                @keyup="resetFields"
                 hint="Digite sua senha para acessar o sistema"
                 prepend-inner-icon="mdi-lock"
+                :rules="passwordRules"
               >
                 <template #append-inner>
                   <v-icon
@@ -184,7 +154,7 @@
             <p class="font-['Montserrat'] text-base link-senha">
               <nuxt-link
                 title="Clique aqui para recuperar sua senha"
-                to="/RecoverPage"
+                to="/recover-password-page"
                 >Esqueceu sua senha?</nuxt-link
               >
             </p>
@@ -193,14 +163,14 @@
           <div class="flex items-center justify-center gap-6 !p-2 !mt-2">
             <div class="w-[40%]">
               <v-btn
-                :disabled="loading"
-                :loading="loading"
+                :disabled="loadingEmail"
+                :loading="loadingEmail"
                 class="text-none font-['Montserrat'] rounded-xl button-login"
                 size="large"
                 variant="flat"
                 color="indigo-darken-3"
                 block
-                @click="submitData"
+                @click="loginWidthEmailAndPassword"
               >
                 Fazer login
               </v-btn>
@@ -212,7 +182,7 @@
                 size="large"
                 variant="flat"
                 block
-                to="/RegisterPage"
+                to="/register-page"
               >
                 Cadastrar-se
               </v-btn>
@@ -231,8 +201,9 @@
             <v-btn
               class="flex justify-center items-center w-full gap-1 button-google"
               title="Login com google"
-              :disabled="loading"
-              :loading="loading"
+              :disabled="loadingGoogle"
+              :loading="loadingGoogle"
+              @click="loginWidthGoogle"
             >
               <template #prepend>
                 <img src="/assets/google.png" alt="" />
@@ -244,9 +215,9 @@
         <div>
           <Toasts
             color="error-primary"
-            :text="currentMessage"
+            :text="authStore.typeMessage"
             timer="#E57373"
-            v-model="errorMessage"
+            v-model="authStore.activeMessageError"
             icon="mdi-alert"
             size="x-large"
             color-icon="white"
@@ -257,9 +228,9 @@
         <div>
           <Toasts
             color="alert-primary"
-            :text="currentMessage"
+            :text="authStore.typeMessage"
             timer="#F0F4C3"
-            v-model="alertMessage"
+            v-model="authStore.activeMessageAlert"
             icon="mdi-information"
             size="x-large"
             color-icon="black"

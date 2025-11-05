@@ -6,56 +6,49 @@
 
    //Import de componentes
   import Toasts from '~/components/Toasts.vue'
+  import { useValidateFields } from '~/composables/useValidateFields';
+  import { authClient } from '~/lib/auth-client';
+  import type { RecoveryForm } from '~/types/user/types';
 
-   //Variáveis reativas
+  //Variáveis reativas
   const loading = ref(false)
-  const errorEmail = ref(false)
-  const errorMessage = ref(false)
-  const alertMessage = ref(false)
-  const currentMessage = ref("")
-  const email = ref<string>("")
+  const dialog = ref(false)
+  const userEmail = ref<RecoveryForm>({
+    email: ""
+  })
+  const form = ref()
 
-  const listMessage = {
-    emptyField: "Preencha todos os campos obrigatórios",
-    userNotFound: "Email ou senhas incorretos. Tente novamente",
-    formatEmail: "O e-mail informado não possui um formato válido"
-  }
+  const { emailRules, validateSchemaEmail } = useValidateFields()
 
-  const { validateEmail } = useValidateForm();
+  async function handleRecoverPassword() {
 
-  const handleErrorEmail = (errorType: string) => {
+    try {
+      const formValid = await form.value.validate()
+      const resultSchema = validateSchemaEmail(userEmail.value)
 
-    if (errorType === "empty") {
-      errorEmail.value = true
-      errorMessage.value = true
-      currentMessage.value = listMessage.emptyField
+      if (formValid) {
+        if (resultSchema.success) {
+          await authClient.requestPasswordReset({
+            email: userEmail.value.email,
+            redirectTo: "http://localhost:3000/reset-password-page"
+          }, {
+            onRequest(context) {
+              loading.value = true
+            },
+            onSuccess(context) {
+              dialog.value = true
+            },
+            onError(context) {
+              console.log("Erro ao enviar email de redefinir senha", context.error.message)
+            },
+          })
+        }
+      }
+    } catch (error) {
+      console.log("Erro ao enviar e-mail de reset de senha")
+    } finally {
+      loading.value = false
     }
-
-    if (errorType === "format") {
-      alertMessage.value = true
-      currentMessage.value = listMessage.formatEmail
-    }
-
-  }
-
-  const resetFields  = () => {
-    errorEmail.value = false
-    errorMessage.value = false
-  }
-   
-  const submitData = () => {
-
-    const isEmailValid = validateEmail(email.value)
-
-    if (!isEmailValid.isValid) {
-      handleErrorEmail(isEmailValid.errorType)
-      return false
-    }
-
-    resetFields()
-    alert("Passou")
-
-    return true
 
   }
 
@@ -74,7 +67,7 @@
 
       <div class="rounded-r-4xl w-full flex items-center justify-center side-right">
 
-          <v-form class="login-form w-full !p-5 !m-5 rounded-3xl overflow-hidden">
+          <v-form class="login-form w-full !p-5 !m-5 rounded-3xl overflow-hidden" @submit.prevent ref="form">
 
             <div class="flex items-center justify-center gap-3 bg-ambere-800 h-[100px]">
               <img class="logo" src="/assets/report.png" alt="">
@@ -94,9 +87,8 @@
                 density="comfortable"
                 placeholder="seunome@gmail.com"
                 prepend-inner-icon="mdi-email"
-                :error="errorEmail"   
-                v-model="email" 
-                @keyup="resetFields"
+                v-model="userEmail.email" 
+                :rules="emailRules"
                 >
                 </v-text-field>
               </div>
@@ -113,41 +105,22 @@
                   variant="flat"
                   color="indigo-darken-3"
                   block
-                  @click="submitData"
+                  @click="handleRecoverPassword"
                   >
                   Recuperar senha 
                 </v-btn>
               </div>
             </div>
 
+            <BaseModal
+              text="E-mail enviado com sucesso. 🎉 Verifique sua caixa de entrada para redefinir sua senha."
+              title="Redefinição de senha"
+              v-model="dialog"
+            >
+            </BaseModal>
+
           </v-form>
-
-            <div>
-                <Toasts 
-                color="error-primary"
-                :text="currentMessage"
-                timer="#E57373"
-                v-model="errorMessage"
-                icon="mdi-alert"
-                size="x-large"
-                color-icon="white"
-                >
-                </Toasts>
-            </div>
-
-            <div>
-                <Toasts 
-                color="alert-primary"
-                :text="currentMessage"
-                timer="#F0F4C3"
-                v-model="alertMessage"
-                icon="mdi-information"
-                size="x-large"
-                color-icon="black"
-                >
-                </Toasts>
-            </div>
-
+          
         </div>
       </div>
     </div>

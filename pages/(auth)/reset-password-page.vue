@@ -5,33 +5,33 @@
   })
 
   //Import de componentes
-  import type { User } from '~/types/typeUser'
   import { authClient } from '~/lib/auth-client';
-  import { useValidateFields } from '~/composables/useValidateFields';
+  import { useValidateFields, } from '~/composables/useValidateFields';
+  import type { ResetForm } from '~/types/user/types';
 
   //Variáveis reativas
   const loading = ref(false)
   const showPassword = ref(true)
   const isPasswordValidatorVisible = ref(true)
   const containerItensWithValidator = ref(false)
+  const successMessage = ref(false)
+  const dialog = ref(false)
   const form = ref()
-  const logiForm = ref<User>({
-    name: "",
-    email: "",
+  const formPassword = ref<ResetForm>({
     password: "",
     confirmPassword: ""
   })
 
-  const hasUpperCase = computed(() => /[A-Z]/.test(logiForm.value.password))
-  const hasLowerCase = computed(() => /[a-z]/.test(logiForm.value.password))
-  const hasNumber = computed(() => /[0-9]/.test(logiForm.value.password))
-  const hasCharacterSpecial = computed(() => /[^A-Za-z0-9]/.test(logiForm.value.password))
+  const hasUpperCase = computed(() => /[A-Z]/.test(formPassword.value.password))
+  const hasLowerCase = computed(() => /[a-z]/.test(formPassword.value.password))
+  const hasNumber = computed(() => /[0-9]/.test(formPassword.value.password))
+  const hasCharacterSpecial = computed(() => /[^A-Za-z0-9]/.test(formPassword.value.password))
 
-  const { nameRules, emailRules, passwordRules, validateSingUp } = useValidateFields()
+  const { passwordRules, validateSchemaPassword } = useValidateFields()
 
   const confirmPasswordRules = ref([
     (val: string) => !!val || "Campo confirmar senha é obrigatório",
-    (val: string ) => (val === logiForm.value.password) || "As senha não coincidem"
+    (val: string ) => (val === formPassword.value.password) || "As senha não coincidem"
   ])
 
   function showListVerificationPassword() {
@@ -39,25 +39,55 @@
     containerItensWithValidator.value = true
   }
 
-  async function signIn() {
+  async function redirectPage() {
+    successMessage.value = true
+    await new Promise((resolve) => setTimeout(resolve, 4000))
+    navigateTo({path: "/login-page"})
+  }
+
+  async function handleResetPassword() {
 
     try {
+
       loading.value = true
 
-      const { Formvalid } = await form.value.validate()
+      const formValid  = await form.value.validate()
 
-      const result = validateSingUp(logiForm.value)
+      const resultSchema = validateSchemaPassword(formPassword.value)
 
-      await authClient.signUp.email(logiForm.value)
-      
+      if (formValid) {
+        if (resultSchema.success) {
+
+          const token = new URLSearchParams(window.location.search).get("token")
+
+          console.log("Esse é o token " + token)
+          if (!token) {
+            alert("Token inválido")
+            return
+          }
+
+          await authClient.resetPassword({
+              newPassword: formPassword.value.confirmPassword,
+              token
+          }, {
+              onRequest() {
+                loading.value = true
+              },
+              onSuccess() {
+                dialog.value = true
+              },
+              onError(context) {
+                console.log("Erro ao salvar nova senha", context.error.message)
+              },
+          })
+
+        }
+      }
     } catch (error) {
       console.log("Erro ao criar usuário" + error)
     } finally {
       loading.value = false
     }
-
-
-
   }
  
 </script>
@@ -75,50 +105,25 @@
 
       <div class="rounded-r-4xl w-full flex items-center justify-center side-right">
 
-          <v-form class="login-form w-full !p-5 !m-5 rounded-3xl overflow-hidden" @submit.prevent ref="form">
+        <v-form class="login-form w-full !p-5 !m-5 rounded-3xl overflow-hidden" @submit.prevent ref="form">
 
-            <div class="flex items-center justify-center gap-3 bg-ambere-800 h-[100px]">
-              <img class="logo" src="/assets/report.png" alt="MinhasFinancas.logo">
-              <h2 class="text-3xl text-center font-normal font-[Montserrat] login-title">Minhas<strong>Finanças</strong></h2>
-            </div>
+          <div class="flex items-center justify-center gap-3 bg-ambere-800 h-[100px]">
+            <img class="logo" src="/assets/report.png" alt="MinhasFinancas.logo">
+            <h2 class="text-3xl text-center font-normal font-[Montserrat] login-title">Minhas<strong>Finanças</strong></h2>
+          </div>
 
              <div class="te flex flex-col items-center justify-center !p-4">
-                <h3 class="text-[1.4rem] !p-1 font-['Montserrat'] !font-semibold login-sub-title">Cadastre-se para começar</h3>
+                <h3 class="text-[1.4rem] !p-1 font-['Montserrat'] !font-semibold login-sub-title">Redefinir Senha</h3>
                 <p class="text-[0.86rem] text-gray-700 font-['Montserrat'] font-semibold">Preencha as informações abaixo</p>
             </div>
 
             <div>
 
-              <div >
-                <v-text-field  label="Nome" type="name" name="name"
-                variant="solo"
-                density="comfortable"
-                v-model="logiForm.name" 
-                prepend-inner-icon="mdi-account"
-                counter="55"
-                placeholder="Insira seu nome"
-                :rules="nameRules"
-                >
-                </v-text-field>
-              </div>
-
-              <div >
-                <v-text-field label="E-mail" type="email" name="email"
-                variant="solo"
-                density="comfortable"
-                v-model="logiForm.email" 
-                placeholder="seunome@gmail.com"
-                prepend-inner-icon="mdi-email"
-                :rules="emailRules"
-                >
-                </v-text-field>
-              </div>
-
               <div>
                 <v-text-field label="Senha" :type="showPassword ? 'password' : 'text'"
                 variant="solo"
                 density="comfortable"
-                v-model="logiForm.password"
+                v-model="formPassword.password"
                 prepend-inner-icon="mdi-lock"
                 :rules="passwordRules"
                 @keyup="showListVerificationPassword"
@@ -130,7 +135,7 @@
                     ></v-icon>
                 </template>
                 </v-text-field>
-
+                
                <v-list :class="{'list-validator': isPasswordValidatorVisible}"> 
 
                 <v-list-item>
@@ -166,14 +171,13 @@
                 </v-list-item>
 
               </v-list>
-
               </div>
 
               <div>
                 <v-text-field label="Confirmar senha" :type="showPassword ? 'password' : 'text'"
                 variant="solo"
                 density="comfortable"
-                v-model="logiForm.confirmPassword"
+                v-model="formPassword.confirmPassword"
                 prepend-inner-icon="mdi-lock-check"
                 :rules="confirmPasswordRules"
                 >
@@ -197,14 +201,31 @@
                   size="large"
                   color="indigo-darken-3"
                   block
-                  @click="signIn"
+                  @click="handleResetPassword"
                   >
-                  Criar conta
+                  Redefinir
                 </v-btn>
               </div>
             </div>
-
+            <BaseModal
+              text="🔒 Sua senha foi redefinida com sucesso. Utilize suas novas credenciais para fazer login."
+              title="Sucesso ✅"
+              v-model="dialog"
+              @update:model-value="redirectPage"
+            >
+            </BaseModal>
           </v-form>
+
+        <Toasts 
+        :model-value="successMessage"
+        :timeout="4000"
+        timer="#d4f7dc"
+        color="#21BA45"
+        text="Redirecionando para a página de login..."
+        color-icon="white"
+        icon="mdi mdi-check-decagram"
+        >
+        </Toasts>
 
         </div>
       </div>

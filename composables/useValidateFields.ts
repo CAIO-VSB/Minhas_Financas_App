@@ -1,6 +1,6 @@
-import { singUp } from "~/schemas/auth.schema"
-import type { User } from "~/types/typeUser"
-
+import { singIn, singUp, passwordValidate, emailValidate } from "~/schemas/auth.schema"
+import type { User } from "~/types/auth/types"
+import type { RecoveryForm, LoginForm, ResetForm } from "~/types/user/types"
 
 export function useValidateFields() {
 
@@ -21,21 +21,72 @@ export function useValidateFields() {
         (val: string) => (val && val.length >= 8) || "A senha deve conter no minímo 8 caracteres"
     ])
 
-    const validateSingUp = (data: User) => {
+    const validateSchemaSignUp = (data: User) => {
+
         const result = singUp.safeParse(data)
 
         if (!result.success) {
             console.log("Erro ao validar e criar usuário", result.error)
-        } else {
-            console.log("Validação realizada com sucesso", result.data)
+            return {success: false}
+        } 
+
+        console.log("Validação realizada com sucesso", result.data)
+        return {success: true, data: result.data}
+
+    }
+
+    const validateSchemaSignIn = (data: LoginForm): object => {
+
+        const result = singIn.safeParse(data)
+
+        if (!result.success) {
+            console.log("Erro ao tentar fazer login (objeto inválido)", result.error)
+            return {success: false}
+        } 
+
+        console.log("Objeto a ser enviado para fazer login", result.data)
+        return {success: true}
+
+    }
+
+    const validateSchemaPassword = (data: ResetForm) => {
+
+        const result = passwordValidate.safeParse(data)
+
+        if (!result.success) {
+            console.log("Erro ao validar as senhas")
+            return { success: false }
+        } 
+
+        console.log("Obejto ao ser enviado para back", result.data)
+
+        return {success: true}
+
+    }
+
+    const validateSchemaEmail = (data: RecoveryForm) => {
+
+        const result = emailValidate.safeParse(data)
+
+        if (!result.success) {
+            console.log("Erro ao validar o formato do email", result.error.message)
+            return { success: false }
         }
+        
+        console.log("Obejto ao ser enviado para back", result.data)
+        return {success: true}
+        
+
     }
 
     return {
         nameRules,
         emailRules,
         passwordRules,
-        validateSingUp
+        validateSchemaSignIn,
+        validateSchemaSignUp,
+        validateSchemaPassword,
+        validateSchemaEmail
     }
 
 }
