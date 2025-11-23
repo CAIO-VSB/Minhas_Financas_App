@@ -9,9 +9,9 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css', ],
 
   build: {
-    transpile: ['vuetify']
+    transpile: ['vuetify', 
+    '@vuepic/vue-datepicker']
   },
-
   modules: [
     '@nuxt/eslint',
     '@nuxt/fonts',

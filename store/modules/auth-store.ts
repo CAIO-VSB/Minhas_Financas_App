@@ -104,7 +104,7 @@ export const useAuthStore = defineStore('auth', () => {
         //Logica a ser implementada
     }
 
-    return { login, loginGoogle, register, logout, dialog, isAuthenticated, user }
+    return { login, loginGoogle, register, logout, dialog, isAuthenticated, activeMessageAlert, activeMessageError, typeMessage, user }
 
 }, {
     persist:{

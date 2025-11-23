@@ -35,7 +35,7 @@
           const result = await authStore.login(logiForm.value)
 
           if (result?.success) {
-            navigateTo({path: "/dashboard"})
+            navigateTo({path: "/dashboard/"})
           }
         }
       }

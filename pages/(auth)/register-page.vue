@@ -4,6 +4,10 @@
     layout: "layout-auth"
   })
 
+  document.querySelectorAll('*').forEach(el => {
+  if (el.scrollHeight > el.clientHeight + 10) console.log(el);
+});
+
   //Import de componentes
   import { useValidateFields } from '~/composables/useValidateFields';
   import type { RegisterForm } from '~/types/user/types';
@@ -262,7 +266,7 @@
 
 .container-itens {
   width: 100%;
-  min-height: 62dvh;
+  min-height: 62vh;
   margin: 12px;
 }
 
@@ -323,26 +327,6 @@
   display: none;
 }
 
-@media (max-width: 980px) {
-
-  .side-left {
-    display: none;
-  }
-
-  .container-itens {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .side-right {
-    margin: 10px;
-    border-radius: 20px;
-    width: 100%;
-    max-width: 650px;
-  }
-}
-
 @media (max-width: 480px) {
 
   .side-right  {
@@ -363,6 +347,36 @@
 
   .container-itens--with-validator  {
     margin-top: 25vh;
+  }
+
+}
+
+@media (max-width: 980px) {
+
+  .side-left {
+    display: none;
+  }
+
+  .container-itens {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .side-right {
+    margin: 10px;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 650px;
+  }
+
+}
+
+@media (max-width: 1600px) {
+
+  .container-itens--with-validator {
+    padding-top: 22vh;
+    background-color: red;
   }
 
 }

@@ -4,9 +4,23 @@ import '@mdi/font/css/materialdesignicons.css'
 
 import 'vuetify/styles'
 import  { createVuetify } from 'vuetify'
+import { VDateInput } from 'vuetify/labs/VDateInput'
+import { pt } from "vuetify/locale"
+// import { pt } from "vuetify/locale"
 
 export default defineNuxtPlugin((app) => {
-    const vuetify = createVuetify({
+   const vuetify = createVuetify({
+        components: {
+            VDateInput
+        },
+        locale: {
+            locale: "pt",
+            fallback: "en",
+            messages: { pt }
+        },
+        date: {
+            pt: 'pt',
+        },
         ssr: true,
         theme: {
             themes: {

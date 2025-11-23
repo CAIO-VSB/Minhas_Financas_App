@@ -17,7 +17,7 @@
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center left;
-    overflow-y: auto;
+    overflow: auto;
 }
 
 .container-main::before {
@@ -28,5 +28,11 @@
     width: 100%;
     height: 100%;
 }
+
+:deep(.container-main::-webkit-scrollbar) {
+  width: 20px;
+  z-index: 999999;
+}
+
 
 </style>
