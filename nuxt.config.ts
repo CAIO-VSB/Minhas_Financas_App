@@ -2,16 +2,17 @@
 import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 import tailwindcss from "@tailwindcss/vite";
 
-
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: false },
   css: ['~/assets/css/main.css', ],
 
   build: {
-    transpile: ['vuetify', 
-    '@vuepic/vue-datepicker']
+    transpile: ['vuetify']
   },
+
+  toast: {composableName: 'useNotification'},
+  
   modules: [
     '@nuxt/eslint',
     '@nuxt/fonts',
@@ -22,6 +23,7 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     '@vee-validate/nuxt',
     'pinia-plugin-persistedstate/nuxt',
+    'nuxt-toast',
 
     (_options, nuxt) => {
       nuxt.hooks.hook('vite:extendConfig', (config) => {

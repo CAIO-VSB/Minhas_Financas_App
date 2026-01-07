@@ -6,7 +6,7 @@ export const singIn = z.object({
 })
 
 export const singUp = z.object({
-    name: z.string("Campo nome vazio").max(55, "Máximo 55 caracteres"),
+    name: z.string().max(55, "Máximo 55 caracteres").min(3, "Campo nome vazio"),
     email: z.email("Formato do email inválido"),
     password: z.string("Campo senha vazio").
     min(8, "Mínimo 8 caracteres)").
@@ -46,6 +46,6 @@ export const passwordValidate = z.object({
 })
 
 export const emailValidate = z.object({
-    email: z.email("Formato do email inválido")
+    email: z.email("Formato do email inválido") 
 })
 

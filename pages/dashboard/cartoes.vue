@@ -1,9 +1,10 @@
 <script setup lang="ts">
+  import CardAddCartao from "~/components/CardAddCartao.vue"
 
-definePageMeta({
-  title: "Cartões de Crédito",
-  layout: "layout-dashboard"
-})
+  definePageMeta({
+    title: "Cartões de Crédito",
+    layout: "layout-dashboard"
+  })
 
   const menuItems = [
     { title: 'Editar Cartão', prependIcon: 'mdi-pencil', code: 'edit' }
@@ -12,18 +13,14 @@ definePageMeta({
   const showMenu = ref(false)
   const menuTarget = ref(null)
 
-  import { VueDatePicker } from "@vuepic/vue-datepicker"
-  import { ptBR } from "date-fns/locale"
-
-    const month = ref({
+  const month = ref({
     month: new Date().getMonth(),
     year: new Date().getFullYear()
   });
 
-  import CardAddCartao from "~/components/CardAddCartao.vue"
+
 
   const cartaoSelecionado = ref("")
-  const imgSelecionada = ref<unknown>(null)
   const menu = ref(false)
   const semprePuxarcartao = ref("Cartão inter")
   const modal = ref(false)
@@ -61,7 +58,6 @@ definePageMeta({
                 style="border-bottom: 1px solid black; padding: 3px; "
                 color="black"
                 v-bind="props"
-                :prepend-avatar="imgSelecionada"
                 >
 
                 {{ cartaoSelecionado || semprePuxarcartao}}
@@ -74,19 +70,19 @@ definePageMeta({
                 >
                   <v-divider></v-divider>
                   <v-list>
-                    <v-list-item  rounded="xl" @click="selecionarCartao('Banco Nubank')" value="nu" :prepend-avatar="nuImg">
+                    <v-list-item  rounded="xl"  value="nu" >
                       <v-list-item-title>Cartão nubank</v-list-item-title>
                     </v-list-item>
                   </v-list>
 
                   <v-list>
-                    <v-list-item   rounded="xl" @click="selecionarCartao('Banco Inter')" value="inter" :prepend-avatar="interImg">
+                    <v-list-item   rounded="xl"  value="inter" >
                       <v-list-item-title>Cartão inter</v-list-item-title>
                     </v-list-item>
                   </v-list>
 
                   <v-list>
-                    <v-list-item   rounded="xl" @click="selecionarCartao('Banco do Brasil')" value="brasil" :prepend-avatar="brasilImg">
+                    <v-list-item   rounded="xl"  value="brasil" >
                       <v-list-item-title>Cartão brasil</v-list-item-title>
                     </v-list-item>
                   </v-list>
@@ -104,11 +100,6 @@ definePageMeta({
                   </v-list>
                 </v-card>
               </v-menu>
-
-              <div>
-                <label for="teste">Fatura mês {{ month.month }}</label>
-                <VueDatePicker :formats="{ month: 'LLLL' }" v-model="month" month-picker :teleport="true" :locale="ptBR" />
-              </div>
 
               <Teleport v-if="modal" to="body">
                 <CardAddCartao v-model="modal"/>

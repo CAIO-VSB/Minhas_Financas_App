@@ -1,3 +1,3 @@
 export default defineEventHandler(() => {
-    return { hello: "Teste de api" }
+    return 1 + 1
 })

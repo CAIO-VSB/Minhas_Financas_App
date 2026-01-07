@@ -1,11 +1,12 @@
 <script lang="ts" setup>
 
-    const props = defineProps<{
-        text: string,
-        title: string,
-    }>()
+  const props = defineProps<{
+    text: string | undefined,
+    title: string,
+  }>()
 
     const modelValue = defineModel<boolean>()
+
 </script>
 
 <template>

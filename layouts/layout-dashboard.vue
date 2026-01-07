@@ -1,9 +1,9 @@
-<script setup>
+<script lang="ts" setup>
 
   import { ref } from 'vue'
-  import { useAuthStore } from '~/store/modules/auth-store'
+  import { authClient } from "@/lib/auth-client"
 
-  const authStore = useAuthStore()
+  const { data: session } = await authClient.getSession()
 
   const drawer = ref(true)
   const rail = ref(true)
@@ -28,8 +28,8 @@
       >
         <v-list>
           <v-list-item
-            prepend-avatar="https://randomuser.me/api/portraits/men/85.jpg"
-            :title="authStore.user?.name || 'Melhorar futuramente'"
+            :title="session?.user.name"
+            :subtitle="session?.user.email"
           >
             <template v-slot:append>
               <v-btn
@@ -160,7 +160,7 @@
             prepend-icon="mdi-bank-outline"
             title="Contas bancárias"
             value="contas"
-            to="add-new-account"
+            to="/dashboard/accounts"
             ></v-list-item>
 
             <v-list-item

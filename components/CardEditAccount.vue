@@ -6,17 +6,19 @@
   //Importações components
   import DialogAddFinancialInstitution from "~/components/DialogAddFinancialInstitution.vue"
   import type { TAccount } from "~/types/account/TAccount.types"
+  import { useAccountStore } from "~/store/modules/account-store"
+  import { useEditItem } from "~/composables/useAccount/useEditItem"
   import { useSelectedBank } from "~/composables/useAccount/useSelectedBank"
   import { useSelectedColor } from "~/composables/useAccount/useSelectedColor"
-  import { useAccountStore } from "~/store/modules/account-store"
 
   //Importaões logo
 
   const modelValue = defineModel<boolean>()
 
   const { nameRules, validateSchemaAccount } = useValidateFields()
-  const { currentAvatar, currentBank, dialogAddInstitution, currentUrl } = useSelectedBank()
-  const { currentColor, dialogColorPicker } = useSelectedColor()
+  const { newAvatar, newColor, newName, newType, newUrl  } = useEditItem()
+  const { dialogAddInstitution } = useSelectedBank()
+  const { dialogColorPicker } = useSelectedColor()
   const accountStore = useAccountStore()
 
   const selectRules = ref([
@@ -44,24 +46,12 @@
   const loadingSubmit = ref(false)
   const form = ref()
   const accountForm = ref<TAccount>({
-    name: "",
-    type: "",
-    name_bank: "",
-    color: "",
-    urlImage: "",
+    name: newName.value,
+    type: newType.value,
+    name_bank: newAvatar.value,
+    color: newColor.value,
+    urlImage: newUrl.value,
     active: true
-  })
-
-  watch(currentBank, (newValue) => {
-    accountForm.value.name_bank = newValue
-  })
-
-  watch(currentColor, (newValue) => {
-    accountForm.value.color = newValue
-  })
-
-  watch(currentUrl, (newValue) => {
-    accountForm.value.urlImage = newValue
   })
 
 
@@ -103,7 +93,7 @@
     ref="form"
     >
       <v-dialog persistent v-model="modelValue" max-width="600">
-        <v-card prepend-icon="mdi-plus-box" title="Nova Conta">
+        <v-card prepend-icon="mdi-plus-box" title="Editar conta">
           <v-divider></v-divider>
           <v-card-text>
             <form>
@@ -130,7 +120,7 @@
                 </template>
               </v-select>
 
-              <v-text-field  :rules="logoRules" persistent-hint hint="Logo de identifiação *"   color="primary"  v-model="currentBank" readonly variant="underlined">
+              <v-text-field  :rules="logoRules" persistent-hint hint="Logo de identifiação *"   color="primary"  v-model="accountForm.name_bank" readonly variant="underlined">
                 <template v-slot:append>
                     <v-icon @click="dialogAddInstitution = true" class="cursor-pointer icon-add-logo"  icon="mdi-plus" size="large"></v-icon>
                     <v-tooltip
@@ -140,13 +130,13 @@
                     </v-tooltip>
                   </template>
                   <template  #prepend-inner>
-                    <v-avatar :image="currentAvatar"></v-avatar>
+                    <v-avatar :image="accountForm.urlImage"></v-avatar>
                   </template>
 
                   <DialogAddFinancialInstitution v-model="dialogAddInstitution" />
               </v-text-field>
 
-              <v-text-field :rules="colorRules" persistent-hint hint="Cor de identifiação" color="primary" v-model="currentColor" readonly variant="underlined">
+              <v-text-field :rules="colorRules" persistent-hint hint="Cor de identifiação" color="primary" v-model="accountForm.color" readonly variant="underlined">
                 <template v-slot:append>
                     <v-icon @click="dialogColorPicker = true" class="cursor-pointer icon-add-logo"  icon="mdi-eyedropper-variant" size="large"></v-icon>
                     <v-tooltip
@@ -156,7 +146,7 @@
                     </v-tooltip>
                   </template>
                   <template  #prepend-inner>
-                    <v-avatar style="margin-right: 30px;" :color="currentColor" ></v-avatar>
+                    <v-avatar style="margin-right: 30px;" :color="accountForm.color"  ></v-avatar>
                   </template>
 
                   <DialogAddColor v-model="dialogColorPicker" />

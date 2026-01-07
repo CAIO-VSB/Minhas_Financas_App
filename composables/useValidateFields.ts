@@ -1,6 +1,8 @@
+import { schemaAccount } from "~/schemas/account.schema"
 import { singIn, singUp, passwordValidate, emailValidate } from "~/schemas/auth.schema"
-import type { User } from "~/types/auth/types"
-import type { RecoveryForm, LoginForm, ResetForm } from "~/types/user/types"
+import type { TAccount } from "~/types/account/TAccount.types"
+import type { TUser } from "~/types/auth/Tauth.types"
+import type { TRecoveryForm, TLoginForm, TResetForm } from "~/types/user/Tuser.types"
 
 export function useValidateFields() {
 
@@ -21,7 +23,7 @@ export function useValidateFields() {
         (val: string) => (val && val.length >= 8) || "A senha deve conter no minímo 8 caracteres"
     ])
 
-    const validateSchemaSignUp = (data: User) => {
+    const validateSchemaSignUp = (data: TUser) => {
 
         const result = singUp.safeParse(data)
 
@@ -35,7 +37,7 @@ export function useValidateFields() {
 
     }
 
-    const validateSchemaSignIn = (data: LoginForm): object => {
+    const validateSchemaSignIn = (data: TLoginForm): object => {
 
         const result = singIn.safeParse(data)
 
@@ -49,7 +51,7 @@ export function useValidateFields() {
 
     }
 
-    const validateSchemaPassword = (data: ResetForm) => {
+    const validateSchemaPassword = (data: TResetForm) => {
 
         const result = passwordValidate.safeParse(data)
 
@@ -64,7 +66,7 @@ export function useValidateFields() {
 
     }
 
-    const validateSchemaEmail = (data: RecoveryForm) => {
+    const validateSchemaEmail = (data: TRecoveryForm) => {
 
         const result = emailValidate.safeParse(data)
 
@@ -79,6 +81,19 @@ export function useValidateFields() {
 
     }
 
+    const validateSchemaAccount = (data: TAccount) => {
+
+        const result = schemaAccount.safeParse(data)
+
+        if (!result.success) {
+            console.log("Erro ao validar o formato da conta", result.error.message)
+            return { success: false }
+        }
+
+        console.log("Tudo certo com os dados, nada vazio", result.data)
+        return {success: true}
+    }
+
     return {
         nameRules,
         emailRules,
@@ -86,7 +101,8 @@ export function useValidateFields() {
         validateSchemaSignIn,
         validateSchemaSignUp,
         validateSchemaPassword,
-        validateSchemaEmail
+        validateSchemaEmail,
+        validateSchemaAccount
     }
 
 }

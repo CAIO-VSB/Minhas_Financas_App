@@ -1,7 +1,8 @@
-export type User = {
+export type TUser = {
+    id: string,
     createdAt?: Date,
     email: string,
-    emailVerified?: Boolean,
+    emailVerified?: boolean,
     image?: string | undefined | null,
     name: string,
     updatedAt?: Date

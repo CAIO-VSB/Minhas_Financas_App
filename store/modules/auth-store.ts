@@ -1,17 +1,17 @@
 import { defineStore } from "pinia"
 import { authClient } from "~/lib/auth-client";
-import type { User } from "~/types/auth/types";
-import type { LoginForm, RegisterForm } from "~/types/user/types";
+import type { TUser } from "~/types/auth/Tauth.types";
+import type { TLoginForm, TRegisterForm } from "~/types/user/Tuser.types";
 
 export const useAuthStore = defineStore('auth', () => {
-    const user = ref<User>()
+    const user = ref<TUser>()
     const isAuthenticated = ref<boolean>(false)
     const typeMessage = ref<string>("")
     const dialog= ref<boolean>(false)
     const activeMessageError = ref<boolean>(false)
     const activeMessageAlert = ref<boolean>(false)
 
-    const setUser = async (userData: User): Promise<void> => {
+    const setUser = async (userData: TUser): Promise<void> => {
         user.value = userData
         sessionStorage.setItem("user", JSON.stringify(userData))
     }
@@ -21,7 +21,7 @@ export const useAuthStore = defineStore('auth', () => {
         sessionStorage.setItem('isAuthenticated', JSON.stringify(value))
     }
 
-    const login = async (data: LoginForm) => {
+    const login = async (data: TLoginForm) => {
         try {
             const response = await authClient.signIn.email(data, {
                 onError(context) {
@@ -72,7 +72,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     
-    const register = async (data: RegisterForm) => {
+    const register = async (data: TRegisterForm) => {
 
         try {
 

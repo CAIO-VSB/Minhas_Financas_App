@@ -1,146 +1,188 @@
 <script setup lang="ts">
 
-  definePageMeta({
-    layout: "layout-auth"
-  })
-
   //Import de componentes
-  import { authClient } from '~/lib/auth-client';
-  import { useValidateFields, } from '~/composables/useValidateFields';
-  import type { ResetForm } from '~/types/user/types';
+  import { authClient } from "~/lib/auth-client";
+  import { useValidateFields } from "~/composables/useValidateFields";
+  import type { TResetForm } from "~/types/user/Tuser.types";
+
+  definePageMeta({
+    layout: "layout-auth",
+  });
+
 
   //Variáveis reativas
-  const loading = ref(false)
-  const showPassword = ref(true)
-  const isPasswordValidatorVisible = ref(true)
-  const containerItensWithValidator = ref(false)
-  const successMessage = ref(false)
-  const dialog = ref(false)
-  const form = ref()
-  const formPassword = ref<ResetForm>({
+  const loading = ref(false);
+  const showPassword = ref(true);
+  const isPasswordValidatorVisible = ref(true);
+  const containerItensWithValidator = ref(false);
+  const successMessage = ref(false);
+  const dialog = ref(false);
+  const form = ref();
+  const formPassword = ref<TResetForm>({
     password: "",
-    confirmPassword: ""
-  })
+    confirmPassword: "",
+  });
 
-  const hasUpperCase = computed(() => /[A-Z]/.test(formPassword.value.password))
-  const hasLowerCase = computed(() => /[a-z]/.test(formPassword.value.password))
-  const hasNumber = computed(() => /[0-9]/.test(formPassword.value.password))
-  const hasCharacterSpecial = computed(() => /[^A-Za-z0-9]/.test(formPassword.value.password))
+  const hasUpperCase = computed(() => /[A-Z]/.test(formPassword.value.password));
+  const hasLowerCase = computed(() => /[a-z]/.test(formPassword.value.password));
+  const hasNumber = computed(() => /[0-9]/.test(formPassword.value.password));
+  const hasCharacterSpecial = computed(() =>
+    /[^A-Za-z0-9]/.test(formPassword.value.password)
+  );
 
-  const { passwordRules, validateSchemaPassword } = useValidateFields()
+  const { passwordRules, validateSchemaPassword } = useValidateFields();
 
   const confirmPasswordRules = ref([
     (val: string) => !!val || "Campo confirmar senha é obrigatório",
-    (val: string ) => (val === formPassword.value.password) || "As senha não coincidem"
-  ])
+    (val: string) =>
+      val === formPassword.value.password || "As senha não coincidem",
+  ]);
 
   function showListVerificationPassword() {
-    isPasswordValidatorVisible.value = false
-    containerItensWithValidator.value = true
+    isPasswordValidatorVisible.value = false;
+    containerItensWithValidator.value = true;
   }
 
   async function redirectPage() {
-    successMessage.value = true
-    await new Promise((resolve) => setTimeout(resolve, 4000))
-    navigateTo({path: "/login-page"})
+    successMessage.value = true;
+    await new Promise((resolve) => setTimeout(resolve, 4000));
+    navigateTo({ path: "/login-page" });
   }
 
   async function handleResetPassword() {
-
     try {
+      loading.value = true;
 
-      loading.value = true
+      const formValid = await form.value.validate();
 
-      const formValid  = await form.value.validate()
-
-      const resultSchema = validateSchemaPassword(formPassword.value)
+      const resultSchema = validateSchemaPassword(formPassword.value);
 
       if (formValid) {
         if (resultSchema.success) {
+          const token = new URLSearchParams(window.location.search).get("token");
 
-          const token = new URLSearchParams(window.location.search).get("token")
-
-          console.log("Esse é o token " + token)
+          console.log("Esse é o token " + token);
           if (!token) {
-            alert("Token inválido")
-            return
+            alert("Token inválido");
+            return;
           }
 
-          await authClient.resetPassword({
+          await authClient.resetPassword(
+            {
               newPassword: formPassword.value.confirmPassword,
-              token
-          }, {
+              token,
+            },
+            {
               onRequest() {
-                loading.value = true
+                loading.value = true;
               },
               onSuccess() {
-                dialog.value = true
+                dialog.value = true;
               },
               onError(context) {
-                console.log("Erro ao salvar nova senha", context.error.message)
+                console.log("Erro ao salvar nova senha", context.error.message);
               },
-          })
-
+            }
+          );
         }
       }
     } catch (error) {
-      console.log("Erro ao criar usuário" + error)
+      console.log("Erro ao criar usuário" + error);
     } finally {
-      loading.value = false
+      loading.value = false;
     }
   }
- 
 </script>
 
 <template>
-  <div class=" flex login-container">
-
-    <div class="flex container-itens" :class="{'container-itens--with-validator': containerItensWithValidator}">
-
-      <div class="flex flex-col items-center justify-center rounded-l-4xl inset-shadow-sm !p-4 w-full side-left">
-        <h4 class="text-center text-3xl text-[#0096FF] font-['Montserrat'] font-semibold">Domine suas finanças.</h4>
-        <h4 class="text-center text-3xl mt-2 font-semibold">Antes que elas dominem <u>Você.</u></h4>
+  <div class="flex login-container">
+    <div
+      class="flex container-itens"
+      :class="{
+        'container-itens--with-validator': containerItensWithValidator,
+      }"
+    >
+      <div
+        class="flex flex-col items-center justify-center rounded-l-4xl inset-shadow-sm !p-4 w-full side-left"
+      >
+        <h4
+          class="text-center text-3xl text-[#0096FF] font-['Montserrat'] font-semibold"
+        >
+          Domine suas finanças.
+        </h4>
+        <h4 class="text-center text-3xl mt-2 font-semibold">
+          Antes que elas dominem <u>Você.</u>
+        </h4>
         <Carrossel></Carrossel>
       </div>
 
-      <div class="rounded-r-4xl w-full flex items-center justify-center side-right">
-
-        <v-form class="login-form w-full !p-5 !m-5 rounded-3xl overflow-hidden" @submit.prevent ref="form">
-
-          <div class="flex items-center justify-center gap-3 bg-ambere-800 h-[100px]">
-            <img class="logo" src="/assets/report.png" alt="MinhasFinancas.logo">
-            <h2 class="text-3xl text-center font-normal font-[Montserrat] login-title">Minhas<strong>Finanças</strong></h2>
+      <div
+        class="rounded-r-4xl w-full flex items-center justify-center side-right"
+      >
+        <v-form
+          class="login-form w-full !p-5 !m-5 rounded-3xl overflow-hidden"
+          @submit.prevent
+          ref="form"
+        >
+          <div
+            class="flex items-center justify-center gap-3 bg-ambere-800 h-[100px]"
+          >
+            <img
+              class="logo"
+              src="/assets/report.png"
+              alt="MinhasFinancas.logo"
+            />
+            <h2
+              class="text-3xl text-center font-normal font-[Montserrat] login-title"
+            >
+              Minhas<strong>Finanças</strong>
+            </h2>
           </div>
 
-             <div class="te flex flex-col items-center justify-center !p-4">
-                <h3 class="text-[1.4rem] !p-1 font-['Montserrat'] !font-semibold login-sub-title">Redefinir Senha</h3>
-                <p class="text-[0.86rem] text-gray-700 font-['Montserrat'] font-semibold">Preencha as informações abaixo</p>
-            </div>
+          <div class="te flex flex-col items-center justify-center !p-4">
+            <h3
+              class="text-[1.4rem] !p-1 font-['Montserrat'] !font-semibold login-sub-title"
+            >
+              Redefinir Senha
+            </h3>
+            <p
+              class="text-[0.86rem] text-gray-700 font-['Montserrat'] font-semibold"
+            >
+              Preencha as informações abaixo
+            </p>
+          </div>
 
+          <div>
             <div>
-
-              <div>
-                <v-text-field label="Senha" :type="showPassword ? 'password' : 'text'"
+              <v-text-field
+                label="Senha"
+                :type="showPassword ? 'password' : 'text'"
                 variant="solo"
                 density="comfortable"
                 v-model="formPassword.password"
                 prepend-inner-icon="mdi-lock"
                 :rules="passwordRules"
                 @keyup="showListVerificationPassword"
-                >
+              >
                 <template #append-inner>
-                    <v-icon
+                  <v-icon
                     :icon="showPassword ? 'mdi mdi-eye-off' : 'mdi mdi-eye'"
                     @click="showPassword = !showPassword"
-                    ></v-icon>
+                  ></v-icon>
                 </template>
-                </v-text-field>
-                
-               <v-list :class="{'list-validator': isPasswordValidatorVisible}"> 
+              </v-text-field>
 
+              <v-list :class="{ 'list-validator': isPasswordValidatorVisible }">
                 <v-list-item>
                   <template v-slot:prepend>
-                    <v-icon :color="(hasUpperCase) ? '#00C853' : '#FF0000'" :icon="(hasUpperCase) ? 'mdi mdi-check-circle': 'mdi mdi-close-circle'"></v-icon>
+                    <v-icon
+                      :color="hasUpperCase ? '#00C853' : '#FF0000'"
+                      :icon="
+                        hasUpperCase
+                          ? 'mdi mdi-check-circle'
+                          : 'mdi mdi-close-circle'
+                      "
+                    ></v-icon>
                   </template>
 
                   <v-list-item-title>Contém letra maiúscula</v-list-item-title>
@@ -148,7 +190,14 @@
 
                 <v-list-item>
                   <template v-slot:prepend>
-                    <v-icon :color="(hasLowerCase) ? '#00C853' : '#FF0000'" :icon="(hasLowerCase) ? 'mdi mdi-check-circle': 'mdi mdi-close-circle'"></v-icon>
+                    <v-icon
+                      :color="hasLowerCase ? '#00C853' : '#FF0000'"
+                      :icon="
+                        hasLowerCase
+                          ? 'mdi mdi-check-circle'
+                          : 'mdi mdi-close-circle'
+                      "
+                    ></v-icon>
                   </template>
 
                   <v-list-item-title>Contém letra minúscula</v-list-item-title>
@@ -156,7 +205,14 @@
 
                 <v-list-item>
                   <template v-slot:prepend>
-                    <v-icon :color="(hasNumber) ? '#00C853' : '#FF0000'" :icon="(hasNumber) ? 'mdi mdi-check-circle': 'mdi mdi-close-circle'"></v-icon>
+                    <v-icon
+                      :color="hasNumber ? '#00C853' : '#FF0000'"
+                      :icon="
+                        hasNumber
+                          ? 'mdi mdi-check-circle'
+                          : 'mdi mdi-close-circle'
+                      "
+                    ></v-icon>
                   </template>
 
                   <v-list-item-title>Contém número</v-list-item-title>
@@ -164,76 +220,83 @@
 
                 <v-list-item>
                   <template v-slot:prepend>
-                    <v-icon :color="(hasCharacterSpecial) ? '#00C853' : '#FF0000'" :icon="(hasCharacterSpecial) ? 'mdi mdi-check-circle': 'mdi mdi-close-circle'"></v-icon>
+                    <v-icon
+                      :color="hasCharacterSpecial ? '#00C853' : '#FF0000'"
+                      :icon="
+                        hasCharacterSpecial
+                          ? 'mdi mdi-check-circle'
+                          : 'mdi mdi-close-circle'
+                      "
+                    ></v-icon>
                   </template>
 
-                  <v-list-item-title class="">Contém caractere especial</v-list-item-title>
+                  <v-list-item-title class=""
+                    >Contém caractere especial</v-list-item-title
+                  >
                 </v-list-item>
-
               </v-list>
-              </div>
+            </div>
 
-              <div>
-                <v-text-field label="Confirmar senha" :type="showPassword ? 'password' : 'text'"
+            <div>
+              <v-text-field
+                label="Confirmar senha"
+                :type="showPassword ? 'password' : 'text'"
                 variant="solo"
                 density="comfortable"
                 v-model="formPassword.confirmPassword"
                 prepend-inner-icon="mdi-lock-check"
                 :rules="confirmPasswordRules"
-                >
+              >
                 <template #append-inner>
-                    <v-icon
+                  <v-icon
                     :icon="showPassword ? 'mdi mdi-eye-off' : 'mdi mdi-eye'"
                     @click="showPassword = !showPassword"
-                    ></v-icon>
+                  ></v-icon>
                 </template>
-                </v-text-field>
-              </div>
-
+              </v-text-field>
             </div>
+          </div>
 
-            <div class="flex items-center justify-center gap-6 !p-2 !mt-2">
-              <div class="w-[100%]">
-                <v-btn
-                  :disabled="loading"
-                  :loading="loading"
-                  class="text-none font-['Montserrat'] rounded-xl button-login"
-                  size="large"
-                  color="indigo-darken-3"
-                  block
-                  @click="handleResetPassword"
-                  >
-                  Redefinir
-                </v-btn>
-              </div>
+          <div class="flex items-center justify-center gap-6 !p-2 !mt-2">
+            <div class="w-[100%]">
+              <v-btn
+                :disabled="loading"
+                :loading="loading"
+                class="text-none font-['Montserrat'] rounded-xl button-login"
+                size="large"
+                color="indigo-darken-3"
+                block
+                @click="handleResetPassword"
+              >
+                Redefinir
+              </v-btn>
             </div>
-            <BaseModal
-              text="🔒 Sua senha foi redefinida com sucesso. Utilize suas novas credenciais para fazer login."
-              title="Sucesso ✅"
-              v-model="dialog"
-              @update:model-value="redirectPage"
-            >
-            </BaseModal>
-          </v-form>
+          </div>
+          <BaseModal
+            text="🔒 Sua senha foi redefinida com sucesso. Utilize suas novas credenciais para fazer login."
+            title="Sucesso ✅"
+            v-model="dialog"
+            @update:model-value="redirectPage"
+          >
+          </BaseModal>
+        </v-form>
 
-        <Toasts 
-        :model-value="successMessage"
-        :timeout="4000"
-        timer="#d4f7dc"
-        color="#21BA45"
-        text="Redirecionando para a página de login..."
-        color-icon="white"
-        icon="mdi mdi-check-decagram"
+        <Toasts
+          :model-value="successMessage"
+          :timeout="4000"
+          timer="#d4f7dc"
+          color="#21BA45"
+          text="Redirecionando para a página de login..."
+          color-icon="white"
+          icon="mdi mdi-check-decagram"
         >
         </Toasts>
-
-        </div>
       </div>
     </div>
+  </div>
 </template>
 
 <style lang="scss" scoped>
-
 .login-container {
   width: 100%;
   max-width: 1100px;
@@ -291,7 +354,7 @@
 
 .button-login {
   background-color: $color-primary !important;
-  font-size: clamp(0.90rem, 2.5vw, 1rem);
+  font-size: clamp(0.9rem, 2.5vw, 1rem);
 }
 
 .button-login:hover {
@@ -303,7 +366,6 @@
 }
 
 @media (max-width: 980px) {
-
   .side-left {
     display: none;
   }
@@ -323,10 +385,9 @@
 }
 
 @media (max-width: 480px) {
-
-  .side-right  {
+  .side-right {
     border-radius: 40px;
-    width: 100%; 
+    width: 100%;
     overflow: auto;
   }
 
@@ -340,11 +401,8 @@
     justify-content: center;
   }
 
-  .container-itens--with-validator  {
+  .container-itens--with-validator {
     margin-top: 25vh;
   }
-
 }
-
 </style>
-

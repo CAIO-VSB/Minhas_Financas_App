@@ -25,7 +25,8 @@
       :width="props.width"
       v-model="modelValue"
       class="elevation-24"
-    >
+      position="absolute"
+      >
     <v-icon :color="props.colorIcon" start end :icon="props.icon" :size="props.size"></v-icon>
     {{ props.text }}
 

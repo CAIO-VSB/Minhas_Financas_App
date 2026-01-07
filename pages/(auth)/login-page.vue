@@ -1,31 +1,30 @@
 <script setup lang="ts">
 
+  import Toasts from "~/components/BaseToast.vue";
+  import { useValidateFields } from "~/composables/useValidateFields";
+  import { useAuthStore } from "~/store/modules/auth-store";
+  import type { TLoginForm } from "~/types/user/Tuser.types";
+
   definePageMeta({
     layout: "layout-auth",
   });
 
-  import Toasts from "~/components/Toasts.vue";
-  import { useValidateFields } from '~/composables/useValidateFields';
-  import { useAuthStore } from "~/store/modules/auth-store";
-  import type { LoginForm } from "~/types/user/types";
-
-  const loadingEmail = ref(false)
-  const loadingGoogle = ref(false)
-  const showPassword = ref(true)
-  const form = ref()
-  const logiForm = ref<LoginForm>({
+  const loadingEmail = ref(false);
+  const loadingGoogle = ref(false);
+  const showPassword = ref(true);
+  const form = ref();
+  const logiForm = ref<TLoginForm>({
     email: "",
     password: "",
-  })
-  
-  const authStore = useAuthStore()
+  });
 
-  const { emailRules, passwordRules, validateSchemaSignIn } = useValidateFields()
+  const authStore = useAuthStore();
 
-  async function loginWidthEmailAndPassword() {
+  const { emailRules, passwordRules, validateSchemaSignIn } = useValidateFields();
 
+  async function handleWidthEmailAndPassword() {
     try {
-      loadingEmail.value = true 
+      loadingEmail.value = true
 
       const formValid = await form.value.validate()
       const resultSchema = validateSchemaSignIn(logiForm.value)
@@ -35,7 +34,7 @@
           const result = await authStore.login(logiForm.value)
 
           if (result?.success) {
-            navigateTo({path: "/dashboard/"})
+            navigateTo({ path: "/dashboard/" });
           }
         }
       }
@@ -44,25 +43,19 @@
     } finally {
       loadingEmail.value = false
     }
-
   }
 
-  async function loginWidthGoogle() {
-
+  async function handleWidthGoogle() {
     try {
+      loadingGoogle.value = true;
 
-      loadingGoogle.value = true
-
-      await authStore.loginGoogle()
-  
+      await authStore.loginGoogle();
     } catch (error) {
-      console.log("Erro ao autenteicar com o google" + error)
+      console.log("Erro ao autenteicar com o google" + error);
     } finally {
-      loadingGoogle.value = true
+      loadingGoogle.value = true;
     }
-
-  }
-
+}
 
 </script>
 
@@ -88,6 +81,7 @@
       >
         <v-form
           @submit.prevent
+          @keyup.enter="handleWidthEmailAndPassword"
           class="login-form w-full !p-5 !m-5 rounded-3xl overflow-hidden"
           ref="form"
         >
@@ -170,7 +164,8 @@
                 variant="flat"
                 color="indigo-darken-3"
                 block
-                @click="loginWidthEmailAndPassword"
+                type="submit"
+                @click="handleWidthEmailAndPassword"
               >
                 Fazer login
               </v-btn>
@@ -203,7 +198,7 @@
               title="Login com google"
               :disabled="loadingGoogle"
               :loading="loadingGoogle"
-              @click="loginWidthGoogle"
+              @click="handleWidthGoogle"
             >
               <template #prepend>
                 <img src="/assets/google.png" alt="" />

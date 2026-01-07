@@ -1,115 +1,138 @@
 <script lang="ts" setup>
 
-    // Importações logo bancos
-    import BancoNubankLogo from "~/assets/banks/banco-nubank-logo.svg"
-    import BancoBrasilLogo from "~/assets/banks/banco-bb-logo.png"
-    import BancoAmericanExpressLogo from "~/assets/banks/amex-logo.png"
-    import BancoBradescoLogo from "~/assets/banks/banco-bradesco-logo.png"
-    import BancoBmgLogo from "~/assets/banks/banco-bmg-logo.png"
-    import BancoC6Logo from "~/assets/banks/banco-c6-logo.png"
-    import BancoCaixaLogo from "~/assets/banks/banco-caixa-logo.png"
-    import BancoInterLogo from "~/assets/banks/banco-inter-logo.png"
-    import BancoItauLogo from "~/assets/banks/banco-itau-logo.png"
-    import BancoItiLogo from "~/assets/banks/banco-iti-logo.png"
-    import BancoMercadoPagoLogo from "~/assets/banks/banco-mercado-pago-logo.png"
-    import BancoPicPayLogo from "~/assets/banks/banco-pic-pay-logo.png"
-    import BancoSantanderLogo from "~/assets/banks/banco-santander-logo.png"
-    import BancoSicrediLogo from "~/assets/banks/banco-sicredi-logo.png"
-    import BancoSofisaLogo from "~/assets/banks/banco-sofisa-logo.png"
-    import BancoWillLogo from "~/assets/banks/banco-will-logo.png"
-    import BancoXpLogo from "~/assets/banks/banco-xp-logo.png"
+  // Importações logo bancos
+  import BancoNubankLogo from "../public/banks/banco-nubank-logo.svg"
+  import BancoBrasilLogo from "../public/banks/banco-bb-logo.png"
+  import BancoAmericanExpressLogo from "../public/banks/amex-logo.png"
+  import BancoBradescoLogo from "../public/banks/banco-bradesco-logo.png"
+  import BancoBmgLogo from "../public/banks/banco-bmg-logo.png"
+  import BancoC6Logo from "../public/banks/banco-c6-logo.png"
+  import BancoCaixaLogo from "../public/banks/banco-caixa-logo.png"
+  import BancoInterLogo from "../public/banks/banco-inter-logo.png"
+  import BancoItauLogo from "../public/banks/banco-itau-logo.png"
+  import BancoItiLogo from "../public/banks/banco-iti-logo.png"
+  import BancoMercadoPagoLogo from "../public/banks/banco-mercado-pago-logo.png"
+  import BancoPicPayLogo from "../public/banks/banco-pic-pay-logo.png"
+  import BancoSantanderLogo from "../public/banks/banco-santander-logo.png"
+  import BancoSicrediLogo from "../public/banks/banco-sicredi-logo.png"
+  import BancoSofisaLogo from "../public/banks/banco-sofisa-logo.png"
+  import BancoWillLogo from "../public/banks/banco-will-logo.png"
+  import BancoXpLogo from "../public/banks/banco-xp-logo.png"
 
-    // Importações logos bandeiras
-    import EloLogo from "~/assets/banks/elo-logo.png"
-    import HiperCardLogo from "~/assets/banks/hipercard-logo.png"
-    import MasterCardLogo from "~/assets/banks/mastercard-logo.png"
-    import VisaLogo from "~/assets/banks/visa-logo.png"
+  // Importações logos bandeiras
+  import EloLogo from "../public/banks/elo-logo.png"
+  import HiperCardLogo from "../public/banks/hipercard-logo.png"
+  import MasterCardLogo from "../public/banks/mastercard-logo.png"
+  import VisaLogo from "../public/banks/visa-logo.png"
 
-    // Importações logos genericas
-    import BancoGenericoLogo from "~/assets/banks/generic-bank-logo.jpg"
-    import CarteiraGenericaLogo from "~/assets/banks/carteira-generic-logo.jpg"
-    import ManGenericLogo from "~/assets/banks/man-generic-logo.jpg"
-    import CofreGenericLogo from "~/assets/banks/cofre-generic-logo.jpg"
+  // Importações logos genericas
+  import BancoGenericoLogo from "../public/banks/generic-bank-logo.jpg"
+  import CarteiraGenericaLogo from "../public/banks/carteira-generic-logo.jpg"
+  import ManGenericLogo from "../public/banks/man-generic-logo.jpg"
+  import CofreGenericLogo from "../public/banks/cofre-generic-logo.jpg"
+
+  import { useSelectedBank } from "~/composables/useAccount/useSelectedBank"
+
+  // Lista contendo todos os bancos, value e tipo 
+  const banks = [
+  {avatar: BancoBrasilLogo, text: "Banco do Brasil", value: "BancoBB", type: "instituicoes", url: "/banks/banco-bb-logo.png"},
+
+  {avatar: BancoNubankLogo, text: "Banco Nubank", value: "BancoNu", type: "instituicoes", url: "/banks/banco-nubank-logo.svg"},
+
+  {avatar: BancoBmgLogo, text: "Banco BMG", value: "BancoBmg", type: "instituicoes", url: "/banks/banco-bmg-logo.png"},
+
+  {avatar: BancoBradescoLogo, text: "Banco Bradesco", value: "BancoBradesco", type: "instituicoes", url: "/banks/banco-bradesco-logo.png"},
+
+  {avatar: BancoC6Logo, text: "Banco C6", value: "BancoC6", type: "instituicoes", url: "/banks/banco-c6-logo.png"},
+
+  {avatar: BancoCaixaLogo, text: "Banco Caixa", value: "BancoCaixa", type: "instituicoes", url: "/banks/banco-caixa-logo.png"},
+
+  {avatar: BancoInterLogo, text: "Banco Inter", value: "BancoInter", type: "instituicoes", url: "/banks/banco-inter-logo.png"},
+
+  {avatar: BancoItauLogo, text: "Banco Itaú", value: "BancoItau", type: "instituicoes", url: "/banks/banco-itau-logo.png"},
+
+  {avatar: BancoItiLogo, text: "Banco ITI", value: "BancoIti", type: "instituicoes", url: "/banks/banco-iti-logo.png"},
+
+  {avatar: BancoMercadoPagoLogo, text: "Banco Mercado Pago", value: "BancoMercadoPago", type: "instituicoes", url: "/banks/banco-mercado-pago-logo.png"},
+
+  {avatar: BancoPicPayLogo, text: "Banco PicPay", value: "BancoPicPay", type: "instituicoes", url: "/banks/banco-pic-pay-logo.png"},
+
+  {avatar: BancoSantanderLogo, text: "Banco Santander", value: "BancoSantander",  type: "instituicoes", url: "/banks/banco-santander-logo.png"},
+
+  {avatar: BancoSicrediLogo, text: "Banco Sicredi", value: "BancoSicredi", type: "instituicoes", url: "/banks/banco-sicredi-logo.png"},
+
+  {avatar: BancoSofisaLogo, text: "Banco Sofisa", value: "BancoSofisa", type: "instituicoes", url: "/banks/banco-sofisa-logo.png"},
+
+  {avatar: BancoWillLogo, text: "Banco Will", value: "BancoWill", type: "instituicoes", url: "/banks/banco-will-logo.png"},
+
+  {avatar: BancoXpLogo, text: "Banco Xp Investimentos", value: "BancoXp", type: "instituicoes", url: "/banks/banco-xp-logo.png"},
+
+  {avatar: BancoAmericanExpressLogo, text: "Banco American Express", value: "AmericanExpress", type: "instituicoes", url: "/banks/amex-logo.png"},
+
+  {avatar: EloLogo, text: "Elo", value: "Elo", type: "bandeiras", url: "public/banks/elo-logo.png"},
+
+  {avatar: HiperCardLogo, text: "HiperCard", value: "HiperCard", type: "bandeiras", url: "/banks/hipercard-logo.png"},
+
+  {avatar: MasterCardLogo, text: "MasterCard", value: "MasterCard", type: "bandeiras", url: "/banks/mastercard-logo.png"},
+  
+  {avatar: VisaLogo, text: "Visa", value: "Visa", type: "bandeiras", url: "/banks/visa-logo.png"},
+
+  {avatar: BancoGenericoLogo, text: "Banco", value: "BancoGeneric", type: "generics", url: "/banks/generic-bank-logo.jpg"},
+
+  {avatar: CarteiraGenericaLogo, text: "Carteira", value: "CarteiraGeneric", type: "generics", url: "/banks/carteira-generic-logo.jpg"},
+
+  {avatar: ManGenericLogo, text: "Man", value: "ManGeneric", type: "generic", url: "/banks/man-generic-logo.jpg"},
+
+  {avatar: CofreGenericLogo, text: "Cofre", value: "CofreGeneric", type: "generics", url: "/banks/cofre-generic-logo.jpg"},
+  ]
 
 
-    // Lista contendo todos os bancos, value e tipo 
-    const banks = [
-    {avatar: BancoBrasilLogo, text: "Banco do Brasil", value: "BancoBB", type: "instituicoes"},
-    {avatar: BancoNubankLogo, text: "Banco Nubank", value: "BancoNu", type: "instituicoes"},
-    {avatar: BancoBmgLogo, text: "Banco BMG", value: "BancoBmg", type: "instituicoes"},
-    {avatar: BancoBradescoLogo, text: "Banco Bradesco", value: "BancoBradesco", type: "instituicoes"},
-    {avatar: BancoC6Logo, text: "Banco C6", value: "BancoC6", type: "instituicoes"},
-    {avatar: BancoCaixaLogo, text: "Banco Caixa", value: "BancoCaixa", type: "instituicoes"},
-    {avatar: BancoInterLogo, text: "Banco Inter", value: "BancoInter", type: "instituicoes"},
-    {avatar: BancoItauLogo, text: "Banco Itaú", value: "BancoItau", type: "instituicoes"},
-    {avatar: BancoItiLogo, text: "Banco ITI", value: "BancoIti", type: "instituicoes"},
-    {avatar: BancoMercadoPagoLogo, text: "Banco Mercado Pago", value: "BancoMercadoPago", type: "instituicoes"},
-    {avatar: BancoPicPayLogo, text: "Banco PicPay", value: "BancoPicPay", type: "instituicoes"},
-    {avatar: BancoSantanderLogo, text: "Banco Santander", value: "BancoSantander",  type: "instituicoes"},
-    {avatar: BancoSicrediLogo, text: "Banco Sicredi", value: "BancoSicredi", type: "instituicoes"},
-    {avatar: BancoSofisaLogo, text: "Banco Sofisa", value: "BancoSofisa", type: "instituicoes"},
-    {avatar: BancoWillLogo, text: "Banco Will", value: "BancoWill", type: "instituicoes"},
-    {avatar: BancoXpLogo, text: "Banco Xp Investimentos", value: "BancoXp", type: "instituicoes"},
-    {avatar: BancoAmericanExpressLogo, text: "Banco American Express", value: "AmericanExpress", type: "instituicoes"},
-    {avatar: EloLogo, text: "Elo", value: "Elo", type: "bandeiras"},
-    {avatar: HiperCardLogo, text: "HiperCard", value: "HiperCard", type: "bandeiras"},
-    {avatar: MasterCardLogo, text: "MasterCard", value: "MasterCard", type: "bandeiras"},
-    {avatar: VisaLogo, text: "Visa", value: "Visa", type: "bandeiras"},
-    {avatar: BancoGenericoLogo, text: "Banco", value: "BancoGeneric", type: "generics"},
-    {avatar: CarteiraGenericaLogo, text: "Carteira", value: "CarteiraGeneric", type: "generics"},
-    {avatar: ManGenericLogo, text: "Man", value: "ManGeneric", type: "generic"},
-    {avatar: CofreGenericLogo, text: "Cofre", value: "CofreGeneric", type: "generics"},
-    ]
+  const { selectdBank } = useSelectedBank()
 
-    // Controla a abertura dos dialog
-    const dialogMain = ref(true)
-    const dialogFilter = ref(false)
+  const dialogFilter = ref(false)
+  const valueEntered = ref("")
+  const radios = ref("")
+  const currentRadio = ref("")
+  const loading = ref(false)
 
-    const currentBank = ref("")
-    const currentAvatar = ref("")
-    const valueEntered = ref("")
-    const loading = ref(false)
-    const radios = ref("")
-    const currentRadio = ref("")
+  function selectdItem(banco: string, avatar: string, url: string) {
+    selectdBank(banco, avatar, url)
+  }
 
-    function selectdBank(banco: string, avatar: string) {
-        currentBank.value = banco 
-        currentAvatar.value = avatar 
-        dialogMain.value = false
-    }
 
-    watch(radios, (newValue: string) => {
-        currentRadio.value = newValue
-        dialogFilter.value = false
+
+  watch(radios, (newValue: string) => {
+    currentRadio.value = newValue
+    dialogFilter.value = false
+  })
+
+  watch(valueEntered, () => {
+    loading.value = true
+    setTimeout(() => {
+      loading.value = false
+    }, 2000);
+  })
+
+  const finalData = computed(() => {
+    return banks.filter(item => {
+      const onlyText = item.text.toLowerCase().includes(valueEntered.value.toLowerCase())
+      const onlyRadio = item.type.toLowerCase().includes(currentRadio.value.toLowerCase())
+      return onlyText && onlyRadio
     })
+  })
 
-    watch(valueEntered, () => {
-        loading.value = true
-        setTimeout(() => {
-            loading.value = false
-        }, 2000);
-    })
+  const modelValue = defineModel<boolean>()
 
-    const finalData = computed(() => {
-        return banks.filter(item => {
-            const onlyText = item.text.toLowerCase().includes(valueEntered.value.toLowerCase())
-            const onlyRadio = item.type.toLowerCase().includes(currentRadio.value.toLowerCase())
-            return onlyText && onlyRadio
-        })
-    })
 
 </script>
 
 <template>
   <div class="text-center pa-4">
-    <v-btn @click="dialogMain = true">
-      Open Dialog
-    </v-btn>
-
     <v-dialog
-      v-model="dialogMain"
+      v-model="modelValue"
       max-width="600"
       min-height="600"
+      persistent
     >
 
       <v-card
@@ -153,14 +176,14 @@
             v-for="(item, i) in finalData"
             :key="i"
             rounded="xl"
-            @click="selectdBank(item.value, item.avatar)"
+            @click="selectdItem(item.text, item.avatar, item.url)"
           >
 
           <template v-slot:prepend>
             <v-avatar :image="item.avatar" size="54"></v-avatar>
           </template>
 
-          <v-list-item-title class="item-text" v-text="item.text"></v-list-item-title>
+          <v-list-item-title class="item-text">{{ item.text }}</v-list-item-title>
           
           </v-list-item>
 
