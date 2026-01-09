@@ -1,5 +1,6 @@
 import { defineStore } from "pinia"
 import type { TAccount } from "~/types/account/TAccount.types"
+const { notifyError, notifyInfo, notifySuccess } = useNotify()
 
 export const useAccountStore = defineStore("account",() => {
 
@@ -7,6 +8,7 @@ export const useAccountStore = defineStore("account",() => {
     const errorMessage = ref<string>("")
     const successMessage = ref<boolean>(false)
     const loadingAccounts = ref<boolean>(false)
+    const { notifyError, notifyInfo, notifySuccess } = useNotify()
 
     const addAccount = async (data: TAccount) => {
 
@@ -17,11 +19,9 @@ export const useAccountStore = defineStore("account",() => {
                 body: data 
             })
 
-            useNotification().success({
-                title: "Sucesso",
-                message: "Conta criada com sucesso",
-                position: "topCenter"
-            })
+            // if (response.id) {
+            //     notifySuccess("Sucesso", "Conta criada com sucesso", 6000)
+            // }
 
             accounts.value.push(response)
 

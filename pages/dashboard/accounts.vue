@@ -2,19 +2,25 @@
 
     import CardAddAccount from "~/components/CardAddAccount.vue"
     import BaseModal from "~/components/BaseModal.vue"
-    import { useAccountStore } from "~/store/modules/account-store"
     import CardEditAccount from "~/components/CardEditAccount.vue"
     import type { TAccount } from "~/types/account/TAccount.types"
     import { useEditItem } from "~/composables/useAccount/useEditItem"
+    import { fetchAccounts, useAccountsAPI } from "~/composables/useAccount/useAccountAPI"
 
     definePageMeta({
         title: "Contas bancárias",
         layout: "layout-dashboard"
     })
 
-    const accountStore = useAccountStore()
+
+    const { data: serverData } = await useAsyncData<TAccount[]>(
+        'accounts',
+        fetchAccounts
+    )
+    const { getAccounts } = useAccountsAPI()
+    const { isLoading, data, error, isError } = getAccounts(serverData.value || undefined)
     const { selectdItem } = useEditItem()
-    const modalAddAcount = ref(false)
+    const modalAddAccount = ref(false)
     const modalEditAccount = ref(false)
     const errorMessage = ref("")
     const errorModal = ref(false)
@@ -22,23 +28,14 @@
     const items = [
         { title: 'Mostrar contas desativadas' }
     ]
- 
-    watch(() => accountStore.errorMessage, (newValue) => {
-        errorMessage.value = newValue
-        errorModal.value = true
-    })
-
-    onMounted(() => {
-        accountStore.getAccounts()
-    })
 
     function handleOpenModalAddAccount() {
-        modalAddAcount.value = true
+        modalAddAccount.value = true
     }
 
     function handleOpenModalEditAccount(produto: TAccount) {
         modalEditAccount.value = true
-        selectdItem(produto.name, produto.name_bank, produto.urlImage, produto.color, produto.type, produto.active)
+        selectdItem(produto.name, produto.nameBank, produto.urlImage, produto.color, produto.type, produto.active)
         
     }
 
@@ -47,36 +44,14 @@
 
 <template>
 
+
+
     <div class="!mt-15 card">
         <v-card
         class="mx-auto "
         max-width="750"
         min-height="400"
         >
-            <template #append>
-                <v-menu>
-                    <template v-slot:activator="{ props }">
-                    <v-btn icon="mdi-dots-vertical" v-bind="props" variant="plain" ></v-btn>
-                        <v-tooltip
-                        activator="parent"
-                        location="end"
-                        >
-                        Opções
-                        </v-tooltip>
-                    </template>
-
-                    <v-list>
-                        <v-list-item
-                        v-for="(item, index) in items"
-                        :key="index"
-                        :value="index"
-                        >
-                        <v-list-item-title>{{ item.title }}</v-list-item-title>
-                        </v-list-item>
-                    </v-list>
-                </v-menu>
-            </template>
-            
             <template v-slot:title>
                 <span class="title-card">Contas</span>
             </template>
@@ -88,17 +63,15 @@
 
             <v-divider></v-divider>
 
-            <v-skeleton-loader v-if="accountStore.loadingAccounts" type="list-item-avatar"></v-skeleton-loader>
-            <v-skeleton-loader v-if="accountStore.loadingAccounts" type="list-item-avatar"></v-skeleton-loader>
-            <v-skeleton-loader v-if="accountStore.loadingAccounts" type="list-item-avatar"></v-skeleton-loader>
+            <v-skeleton-loader v-if="isLoading && !data" type="list-item-avatar"></v-skeleton-loader>
 
             <v-list 
             lines="two"
             item-props
             >
                 <v-list-item
-                v-for="(account, i) in accountStore.accounts"
-                :key="i"
+                v-for="(account, index) in data || []"
+                :key="account.id"
                 :title="account.name"
                 :style="{boxShadow: `inset 0.1875rem 0 0 ${account.color} `, marginBottom: '10px'}"
                 >
@@ -131,8 +104,8 @@
             </v-list>
 
             <div>
-                <Teleport v-if="modalAddAcount" to="body">
-                    <CardAddAccount v-model="modalAddAcount"/>
+                <Teleport v-if="modalAddAccount" to="body">
+                    <CardAddAccount v-model="modalAddAccount"/>
                 </Teleport>
             </div>
 
@@ -142,7 +115,7 @@
                 </Teleport>
             </div>
 
-            <div v-if="accountStore.accounts.length === 0 && accountStore.loadingAccounts === false">
+            <div v-if="!data || data.length === 0">
                 <BaseEmpty 
                 headline="Nenhuma conta cadastrada"
                 title="Você ainda não possui contas registradas"
@@ -166,6 +139,7 @@
             </v-tooltip>
         </div>
 
+    
         <div >
             <BaseModal
             :text="errorMessage"

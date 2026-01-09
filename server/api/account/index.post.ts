@@ -25,7 +25,7 @@ export default defineEventHandler( async (event) => {
         const account: TAccount = await prisma.contas.create({
             data: {
                 name: result.data.name,
-                name_bank: result.data.name_bank,
+                name_bank: result.data.nameBank,
                 type: result.data.type,
                 userId: session?.user.id,
                 color: result.data.color,

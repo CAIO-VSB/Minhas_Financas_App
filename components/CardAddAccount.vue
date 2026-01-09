@@ -8,16 +8,16 @@
   import type { TAccount } from "~/types/account/TAccount.types"
   import { useSelectedBank } from "~/composables/useAccount/useSelectedBank"
   import { useSelectedColor } from "~/composables/useAccount/useSelectedColor"
-  import { useAccountStore } from "~/store/modules/account-store"
+  import { useAccountsAPI } from "~/composables/useAccount/useAccountAPI"
 
-  //Importaões logo
+
 
   const modelValue = defineModel<boolean>()
-
   const { nameRules, validateSchemaAccount } = useValidateFields()
+  const { addAccount } = useAccountsAPI()
+  const { mutate, isPending } = addAccount() 
   const { currentAvatar, currentBank, dialogAddInstitution, currentUrl } = useSelectedBank()
   const { currentColor, dialogColorPicker } = useSelectedColor()
-  const accountStore = useAccountStore()
 
   const selectRules = ref([
     (val: string) => !!val || "Tipo de conta é obrigatório"
@@ -41,19 +41,18 @@
     'Conta de Investimentos'
   ])
 
-  const loadingSubmit = ref(false)
   const form = ref()
   const accountForm = ref<TAccount>({
     name: "",
     type: "",
-    name_bank: "",
+    nameBank: "",
     color: "",
     urlImage: "",
     active: true
   })
 
   watch(currentBank, (newValue) => {
-    accountForm.value.name_bank = newValue
+    accountForm.value.nameBank = newValue
   })
 
   watch(currentColor, (newValue) => {
@@ -68,27 +67,20 @@
   async function handleAddAccount() {
     
     try {
-
-      loadingSubmit.value = true
-
       const formValid = await form.value.validate()
       const resultSchema = validateSchemaAccount(accountForm.value)
 
       if (formValid) {
-        if (resultSchema.success) {
-          const response = await accountStore.addAccount(accountForm.value)
-
-          if (response?.success) {
-            modelValue.value = false
-          }
-          
+        if (resultSchema.success) {  
+          mutate(accountForm.value)
         }
       }
 
+      modelValue.value = false
     } catch (err) {
+
       console.log("Erro ao criar conta" + err)
-    } finally {
-      loadingSubmit.value = false
+
     }
 
   }
@@ -191,7 +183,7 @@
               color="primary"
               text="Salvar"
               variant="tonal"
-              :loading="loadingSubmit"
+              :loading="isPending"
               @click="handleAddAccount"
             ></v-btn>
           </v-card-actions>

@@ -3,8 +3,8 @@ export type TAccount = {
     userId?: string,
     name: string,
     type: string,
-    name_bank: string,
+    nameBank: string,
     urlImage: string,
     active: boolean,
-    color?: string | null
+    color?: null | string
 }

@@ -14,6 +14,7 @@ export default defineNuxtConfig({
   toast: {composableName: 'useNotification'},
   
   modules: [
+    '@hebilicious/vue-query-nuxt',
     '@nuxt/eslint',
     '@nuxt/fonts',
     '@nuxt/icon',
@@ -24,7 +25,7 @@ export default defineNuxtConfig({
     '@vee-validate/nuxt',
     'pinia-plugin-persistedstate/nuxt',
     'nuxt-toast',
-
+    
     (_options, nuxt) => {
       nuxt.hooks.hook('vite:extendConfig', (config) => {
         config.plugins?.push(vuetify({ autoImport: true}))
