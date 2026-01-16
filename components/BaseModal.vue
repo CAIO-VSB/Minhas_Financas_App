@@ -5,14 +5,14 @@
     title: string,
   }>()
 
-    const modelValue = defineModel<boolean>()
+  const modelValue = defineModel<boolean>()
 
 </script>
 
 <template>
   <div class="text-center pa-4">
     <v-dialog
-      v-model="modelValue"
+      :model-value="modelValue"
       width="auto"
       transition="dialog-top-transition"
     >

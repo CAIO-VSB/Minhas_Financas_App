@@ -1,4 +1,5 @@
 
+    const id_account = ref()
     const newName = ref("")
     const newAvatar = ref("")
     const newUrl = ref("")
@@ -8,7 +9,8 @@
     
     export function useEditItem() {
     
-        const selectdItem = (name: string, avatar: string, url: string, color: string, type: string, isActive: boolean) => {
+        const selectdItem = (id: number, name: string, avatar: string, url: string, color: string, type: string, isActive: boolean) => {
+            id_account.value = id
             newName.value = name
             newAvatar.value = avatar
             newUrl.value = url
@@ -23,6 +25,7 @@
             newName,
             newType,
             newUrl,
+            id_account,
             newActiveStatus,
             selectdItem
         }

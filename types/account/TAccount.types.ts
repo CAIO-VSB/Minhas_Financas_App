@@ -1,10 +1,10 @@
 export type TAccount = {
-    id?: string,
-    userId?: string,
-    name: string,
-    type: string,
-    nameBank: string,
-    urlImage: string,
+    id?: number | undefined,
+    user_id?: string,
+    name_identifier: string,
+    type_account: string,
+    name_bank: string,
+    url_image: string,
     active: boolean,
-    color?: null | string
+    color?: string | undefined
 }

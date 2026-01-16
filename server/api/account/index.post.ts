@@ -1,8 +1,6 @@
-import { prisma } from "~/lib/prisma"
-import type { TAccount } from "~/server/types/Taccount.api.type"
 import { schemaAccount } from "~/schemas/account.schema"
 import { auth } from "~/lib/auth"
-
+import client from "../utils/db"
 
 export default defineEventHandler( async (event) => {
 
@@ -22,21 +20,16 @@ export default defineEventHandler( async (event) => {
             return { status: 400, message: "Corpo da requisição inválido"}
         }
 
-        const account: TAccount = await prisma.contas.create({
-            data: {
-                name: result.data.name,
-                name_bank: result.data.nameBank,
-                type: result.data.type,
-                userId: session?.user.id,
-                color: result.data.color,
-                urlImage: result.data.urlImage,
-                active: true
-            }
-        })
+        const text = "INSERT INTO contas(user_id, name_identifier, url_image, name_bank, type_account, color) VALUES($1, $2, $3, $4, $5, $6)"
 
-        return account
+        const values = [session.user.id, result.data.name_identifier, result.data.url_image, result.data.name_bank, result.data.type_account, result.data.color]
+
+        const account = client.query(text, values)
+
+        return (await account).rows
 
     } catch (error) {
+
         console.log("Erro ao tentar criar conta", error)
     }
 

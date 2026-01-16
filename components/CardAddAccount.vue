@@ -8,14 +8,9 @@
   import type { TAccount } from "~/types/account/TAccount.types"
   import { useSelectedBank } from "~/composables/useAccount/useSelectedBank"
   import { useSelectedColor } from "~/composables/useAccount/useSelectedColor"
-  import { useAccountsAPI } from "~/composables/useAccount/useAccountAPI"
 
-
-
-  const modelValue = defineModel<boolean>()
+  const { notifyError, notifyInfo, notifySuccess } = useNotify()
   const { nameRules, validateSchemaAccount } = useValidateFields()
-  const { addAccount } = useAccountsAPI()
-  const { mutate, isPending } = addAccount() 
   const { currentAvatar, currentBank, dialogAddInstitution, currentUrl } = useSelectedBank()
   const { currentColor, dialogColorPicker } = useSelectedColor()
 
@@ -41,18 +36,24 @@
     'Conta de Investimentos'
   ])
 
+  const errorMessage = ref("")
+  const teste = ref(false)
+
   const form = ref()
+
+  const modelValue = defineModel<boolean>()
+
   const accountForm = ref<TAccount>({
-    name: "",
-    type: "",
-    nameBank: "",
+    name_identifier: "",
+    type_account: "",
+    name_bank: "",
     color: "",
-    urlImage: "",
+    url_image: "",
     active: true
   })
 
   watch(currentBank, (newValue) => {
-    accountForm.value.nameBank = newValue
+    accountForm.value.name_bank = newValue
   })
 
   watch(currentColor, (newValue) => {
@@ -60,9 +61,23 @@
   })
 
   watch(currentUrl, (newValue) => {
-    accountForm.value.urlImage = newValue
+    accountForm.value.url_image = newValue
   })
 
+  const  { mutate, isPending  } = useMutation({
+    mutationFn: async (data: TAccount) => $fetch<TAccount>("/api/account", {method: "POST", body: data}),
+
+    onSuccess: () => {
+      notifySuccess("Sucesso", "Conta criada com sucesso", 6000)
+      modelValue.value = false
+    },
+
+    onError: (error) => {
+      errorMessage.value = `Erro no servidor. Tente novamente mais tarde ou contate o surpote técnico. Erro detalhado: ${error.message}` 
+      teste.value = true
+    },
+
+  })
 
   async function handleAddAccount() {
     
@@ -70,17 +85,14 @@
       const formValid = await form.value.validate()
       const resultSchema = validateSchemaAccount(accountForm.value)
 
+      console.log("Objeto a ser envidado" + JSON.stringify(accountForm.value))
       if (formValid) {
         if (resultSchema.success) {  
           mutate(accountForm.value)
         }
       }
-
-      modelValue.value = false
     } catch (err) {
-
       console.log("Erro ao criar conta" + err)
-
     }
 
   }
@@ -103,12 +115,12 @@
                 label="Nome da conta *"
                 variant="underlined"
                 color="primary"
-                v-model="accountForm.name"
+                v-model="accountForm.name_identifier"
                 :rules="nameRules"
               >
               </v-text-field>
 
-              <v-select :rules="selectRules" v-model="accountForm.type" color="primary" persistent-hint hint="Dúvidas sobre qual conta escolher? Clique no ícone de ajuda." label="Tipo *" :items="items" variant="underlined">
+              <v-select :rules="selectRules" v-model="accountForm.type_account" color="primary" persistent-hint hint="Dúvidas sobre qual conta escolher? Clique no ícone de ajuda." label="Tipo *" :items="items" variant="underlined">
                 <template v-slot:append>
                   <nuxt-link target="_blank" to="https://www.serasa.com.br/blog/conta-bancaria/">
                     <v-icon class="cursor-pointer" color="info" icon="mdi-chat-question" size="large"></v-icon>
@@ -190,7 +202,7 @@
         </v-card>
       </v-dialog>
     </v-form>
-
+    <BaseModal :model-value="teste" title="Error" :text="errorMessage" />
   </div>
 </template>
 

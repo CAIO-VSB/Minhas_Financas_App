@@ -1,5 +1,5 @@
-import { prisma } from "~/lib/prisma"
 import { auth } from "~/lib/auth"
+import client from "../utils/db"
 
 export default defineEventHandler( async (event) => {
 
@@ -7,18 +7,17 @@ export default defineEventHandler( async (event) => {
         headers: event.headers
     })
 
-
     try {
 
         if (!session?.session.token) {
-            return { status: 204, message: "Token de usuário ausente"}
+            throw new Error("Token de usuário ausente")
         }
 
-        const accounts = await prisma.contas.findMany()
+        const text = "SELECT * FROM contas ORDER BY id ASC"
 
-        console.log("Console no bakc e na rota", accounts)
+        const accounts = client.query(text)
 
-        return accounts
+        return (await accounts).rows || "Token ausente"
 
     } catch (error) {
 

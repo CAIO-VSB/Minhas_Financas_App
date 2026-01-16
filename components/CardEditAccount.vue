@@ -6,20 +6,19 @@
   //Importações components
   import DialogAddFinancialInstitution from "~/components/DialogAddFinancialInstitution.vue"
   import type { TAccount } from "~/types/account/TAccount.types"
-  import { useAccountStore } from "~/store/modules/account-store"
   import { useEditItem } from "~/composables/useAccount/useEditItem"
   import { useSelectedBank } from "~/composables/useAccount/useSelectedBank"
   import { useSelectedColor } from "~/composables/useAccount/useSelectedColor"
-
-  //Importaões logo
+  
 
   const modelValue = defineModel<boolean>()
 
+  const { notifyError, notifyInfo, notifySuccess } = useNotify()
   const { nameRules, validateSchemaAccount } = useValidateFields()
-  const { newAvatar, newColor, newName, newType, newUrl  } = useEditItem()
-  const { dialogAddInstitution } = useSelectedBank()
-  const { dialogColorPicker } = useSelectedColor()
-  const accountStore = useAccountStore()
+  const { newAvatar, newColor, newName, newType, newUrl, id_account, newActiveStatus } = useEditItem()
+  const { dialogAddInstitution, currentBank, currentUrl } = useSelectedBank()
+  const { dialogColorPicker, currentColor } = useSelectedColor()
+
 
   const selectRules = ref([
     (val: string) => !!val || "Tipo de conta é obrigatório"
@@ -43,15 +42,49 @@
     'Conta de Investimentos'
   ])
 
-  const loadingSubmit = ref(false)
   const form = ref()
+
+  const errorMessage = ref("")
+
+  const showMessage = ref(false)
+
   const accountForm = ref<TAccount>({
-    name: newName.value,
-    type: newType.value,
+    id: id_account.value,
+    name_identifier: newName.value,
+    type_account: newType.value,
     name_bank: newAvatar.value,
     color: newColor.value,
-    urlImage: newUrl.value,
-    active: true
+    url_image: newUrl.value,
+    active: newActiveStatus.value
+  })
+
+  watch(currentBank, (newValue) => {
+    accountForm.value.name_bank = newValue
+  })
+
+  watch(currentColor, (newValue) => {
+    accountForm.value.color = newValue
+  })
+
+  watch(currentUrl, (newValue) => {
+    accountForm.value.url_image = newValue
+  })
+
+
+  const  { mutate, isPending } = useMutation({
+
+    mutationFn: async (data: TAccount) => $fetch<TAccount>("/api/account", {method: "PATCH", body: data}),
+
+    onSuccess: () => {
+      notifySuccess("Sucesso", "Conta editada com sucesso", 6000)
+      modelValue.value = false
+    },
+
+    onError: (error) => {
+      errorMessage.value = `Erro no servidor. Tente novamente mais tarde ou contate o surpote técnico. Erro detalhado: ${error.message}` 
+      showMessage.value = true
+    },
+
   })
 
 
@@ -59,27 +92,18 @@
     
     try {
 
-      loadingSubmit.value = true
-
       const formValid = await form.value.validate()
       const resultSchema = validateSchemaAccount(accountForm.value)
 
       if (formValid) {
         if (resultSchema.success) {
-          const response = await accountStore.addAccount(accountForm.value)
-
-          if (response?.success) {
-            modelValue.value = false
-          }
-          
+          mutate(accountForm.value)          
         }
       }
 
     } catch (err) {
       console.log("Erro ao criar conta" + err)
-    } finally {
-      loadingSubmit.value = false
-    }
+    } 
 
   }
 
@@ -93,7 +117,7 @@
     ref="form"
     >
       <v-dialog persistent v-model="modelValue" max-width="600">
-        <v-card prepend-icon="mdi-plus-box" title="Editar conta">
+        <v-card prepend-icon="mdi mdi-pencil-box" title="Editar conta">
           <v-divider></v-divider>
           <v-card-text>
             <form>
@@ -101,12 +125,12 @@
                 label="Nome da conta *"
                 variant="underlined"
                 color="primary"
-                v-model="accountForm.name"
+                v-model="accountForm.name_identifier"
                 :rules="nameRules"
               >
               </v-text-field>
 
-              <v-select :rules="selectRules" v-model="accountForm.type" color="primary" persistent-hint hint="Dúvidas sobre qual conta escolher? Clique no ícone de ajuda." label="Tipo *" :items="items" variant="underlined">
+              <v-select :rules="selectRules" v-model="accountForm.type_account" color="primary" persistent-hint hint="Dúvidas sobre qual conta escolher? Clique no ícone de ajuda." label="Tipo *" :items="items" variant="underlined">
                 <template v-slot:append>
                   <nuxt-link target="_blank" to="https://www.serasa.com.br/blog/conta-bancaria/">
                     <v-icon class="cursor-pointer" color="info" icon="mdi-chat-question" size="large"></v-icon>
@@ -130,7 +154,7 @@
                     </v-tooltip>
                   </template>
                   <template  #prepend-inner>
-                    <v-avatar :image="accountForm.urlImage"></v-avatar>
+                    <v-avatar :image="accountForm.url_image"></v-avatar>
                   </template>
 
                   <DialogAddFinancialInstitution v-model="dialogAddInstitution" />
@@ -179,9 +203,9 @@
 
             <v-btn
               color="primary"
-              text="Salvar"
+              text="Editar"
               variant="tonal"
-              :loading="loadingSubmit"
+              :loading="isPending"
               @click="handleAddAccount"
             ></v-btn>
           </v-card-actions>

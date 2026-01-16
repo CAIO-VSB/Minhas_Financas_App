@@ -13,8 +13,8 @@ export default defineNuxtConfig({
 
   toast: {composableName: 'useNotification'},
   
-  modules: [
-    '@hebilicious/vue-query-nuxt',
+  modules: [ 
+    '@peterbud/nuxt-query',
     '@nuxt/eslint',
     '@nuxt/fonts',
     '@nuxt/icon',
@@ -25,7 +25,7 @@ export default defineNuxtConfig({
     '@vee-validate/nuxt',
     'pinia-plugin-persistedstate/nuxt',
     'nuxt-toast',
-    
+
     (_options, nuxt) => {
       nuxt.hooks.hook('vite:extendConfig', (config) => {
         config.plugins?.push(vuetify({ autoImport: true}))
@@ -33,6 +33,21 @@ export default defineNuxtConfig({
     },
   ],
 
+  nuxtQuery: {
+    autoImports: ["useQuery", "useMutation"],
+    devtools: true,
+
+    queryClientOptions: {
+      defaultOptions: {
+        queries: {
+          refetchOnWindowFocus: false,
+
+          refetchInterval: 500
+        }
+      }
+    }
+  },
+  
   vite: {
     vue: {
       template: {
@@ -43,13 +58,15 @@ export default defineNuxtConfig({
     css: {
       preprocessorOptions: {
         scss: {
-        additionalData: '@use "~/assets/scss/_variables.scss" as *;'
+        additionalData: '@use "~/assets/sass/_variables.sass" as *;'
         },
       },
     },
 
     plugins: [
-      tailwindcss()
-    ]
+      tailwindcss(),  
+    ],
+
+
   }
 })

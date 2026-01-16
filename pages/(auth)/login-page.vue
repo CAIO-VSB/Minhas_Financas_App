@@ -34,7 +34,7 @@
           const result = await authStore.login(logiForm.value)
 
           if (result?.success) {
-            navigateTo({ path: "/dashboard/" });
+            navigateTo({ path: "/dashboard" });
           }
         }
       }
@@ -47,9 +47,10 @@
 
   async function handleWidthGoogle() {
     try {
-      loadingGoogle.value = true;
+      loadingGoogle.value = true
 
-      await authStore.loginGoogle();
+      await authStore.loginGoogle()
+      
     } catch (error) {
       console.log("Erro ao autenteicar com o google" + error);
     } finally {

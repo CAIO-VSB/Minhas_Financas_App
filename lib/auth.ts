@@ -1,14 +1,13 @@
 import { betterAuth } from "better-auth"
-import { prismaAdapter } from "better-auth/adapters/prisma"
-import { prisma } from "./prisma"
 import { sendUserEmail } from "../server/api/auth/send-verification-email"
 import { sendForgotPassword } from "../server/api/auth/send-reset-password"
+import { Pool } from "pg"
 
 
 export const auth = betterAuth({
 
-    database: prismaAdapter(prisma, {
-        provider: "mysql"
+    database: new Pool({
+        connectionString: process.env.DATABASE_URL
     }),
 
     emailAndPassword: {

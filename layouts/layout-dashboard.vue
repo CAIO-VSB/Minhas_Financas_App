@@ -1,12 +1,18 @@
 <script lang="ts" setup>
 
+  definePageMeta({
+    middleware: "auth"
+  })
+
   import { ref } from 'vue'
   import { authClient } from "@/lib/auth-client"
+
+  import meme from "~/assets/meme.jpg"
 
   const { data: session } = await authClient.getSession()
 
   const drawer = ref(true)
-  const rail = ref(true)
+  const rail = ref(false)
   const openedGroups = ref(['Groups'])
   const routes = useRoute()
 
@@ -28,8 +34,9 @@
       >
         <v-list>
           <v-list-item
-            :title="session?.user.name"
-            :subtitle="session?.user.email"
+            :title="session?.user.name || 'Token de autenticaçao ausente'"
+            :subtitle="session?.user.email || 'Por favor, realize o login novamente'"
+            :prepend-avatar="meme"
           >
             <template v-slot:append>
               <v-btn
