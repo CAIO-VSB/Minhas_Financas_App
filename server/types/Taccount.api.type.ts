@@ -1,10 +1,10 @@
 export type TAccount = {
   id: string
   userId: string
-  name: string
+  name_identifier: string
   type: string
-  nameBank: string,
-  urlImage: string,
+  name_bank: string,
+  url_image: string,
   active: boolean
   color: string | null
   initial_balance: number | null

@@ -15,9 +15,8 @@
   const { selectdItem } = useEditItem()
   const modalAddAccount = ref(false)
   const modalEditAccount = ref(false)
-  const errorMessage = ref("")
   const errorModal = ref(false)
-  const activeFilter = ref<boolean | false >(true)
+  const activeFilterAccounts = ref<boolean>(true)
 
   const options = [
     { title: 'Somente contas ativas', icon: 'mdi-toggle-switch', value: true },
@@ -37,17 +36,17 @@
   }
 
   function filterAccounts(value: boolean | null) {
-    const contas = data.value ?? []
+    const accounts = data.value ?? []
 
-    if (value === null) {
-      return contas
+    if (value === null || undefined) {
+      return accounts
     }
 
-    return contas.filter(item => item.active === value)
+    return accounts.filter(item => item.active === value)
   }
 
-  const accountsFilter = computed(() => {
-    return filterAccounts(activeFilter.value)
+  const filteredAccounts = computed(() => {
+    return filterAccounts(activeFilterAccounts.value)
   })
 
   function handleOpenModalEditAccount(produto: TAccount) {
@@ -76,7 +75,7 @@
               :value="i"
               :title="item.title"
               :prepend-icon="item.icon"
-              @click="activeFilter = item.value"
+              @click="activeFilterAccounts = item.value"
             >
               
             </v-list-item>
@@ -94,15 +93,17 @@
 
       <v-divider></v-divider>
 
-      <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
-      <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
-      <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
-      <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
-      <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
+      <v-skeleton-loader 
+      v-if="isPending"
+      v-for="n in 5" 
+      :key="n" 
+      type="list-item-avatar"
+      class="mb-2"
+      />
 
       <v-list lines="two" item-props>
         <v-list-item
-          v-for="(account, index) in accountsFilter || []"
+          v-for="(account, index) in filteredAccounts || []"
           :key="index"
           :style="{ boxShadow: `inset 0.1875rem 0 0 ${account.color}`, marginBottom: '10px' }"
         >
@@ -158,12 +159,12 @@
     <div class="fab-wrapper">
       <v-tooltip text="Nova conta" location="left">
         <template #activator="{ props }">
-          <v-fab
-            v-bind="props"
-            color="blue"
-            icon="mdi-plus"
-            size="60"
-            @click="handleOpenModalAddAccount"
+          <BaseFab 
+          v-bind="props"
+          color="blue"
+          icon="mdi-plus"
+          size="65"
+          @click="handleOpenModalAddAccount"
           />
         </template>
       </v-tooltip>

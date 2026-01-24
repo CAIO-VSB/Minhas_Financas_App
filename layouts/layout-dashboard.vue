@@ -7,7 +7,7 @@
   import { ref } from 'vue'
   import { authClient } from "@/lib/auth-client"
 
-  import meme from "~/assets/meme.jpg"
+  import defaultUser from "@/assets/default-user.webp"
 
   const { data: session } = await authClient.getSession()
 
@@ -34,9 +34,9 @@
       >
         <v-list>
           <v-list-item
-            :title="session?.user.name || 'Token de autenticaçao ausente'"
-            :subtitle="session?.user.email || 'Por favor, realize o login novamente'"
-            :prepend-avatar="meme"
+            :title="session?.user.name"
+            :subtitle="session?.user.email"
+            :prepend-avatar="session?.user.image || defaultUser"
           >
             <template v-slot:append>
               <v-btn
@@ -107,7 +107,7 @@
                 prepend-icon="mdi-credit-card-multiple-outline"
                 title="Cartões de crédito"
                 value="cartoes"
-                to="/dashboard/cartoes"
+                to="/dashboard/cards"
             >
                 <v-tooltip
                 activator="parent"
@@ -161,6 +161,7 @@
             prepend-icon="mdi-folder-outline"
             title="Categorias"
             value="categoria"
+            to="/dashboard/categories"
             ></v-list-item>
 
             <v-list-item
@@ -174,6 +175,7 @@
             prepend-icon="mdi-tag-multiple"
             title="Tags"
             value="tags"
+            to="/dashboard/tags"
             ></v-list-item>
 
             </v-list-group>
@@ -214,13 +216,13 @@
       </v-navigation-drawer>
 
       <v-main style="height: 100vh; background-color: #f2f2f2;">
-        <div class="flex align-center justify-center!p-3">
+        <div class=" title-router flex align-center">
           <v-btn
             icon="mdi-menu"
             variant="text"
             @click.stop="drawer = !drawer"
           ></v-btn>
-          <p class="title-router">{{ routes.meta.title }}</p>
+          <p class="">{{ routes.meta.title }}</p>
         </div>
         <slot></slot>
       </v-main>
@@ -239,6 +241,15 @@
   font-size: 1rem;
   font-family: "Poppins", sans-serif;
   font-weight: 500;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  background: #F4F4F4;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #dad7d7;
 }
 
 </style>

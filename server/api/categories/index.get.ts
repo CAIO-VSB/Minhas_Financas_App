@@ -13,7 +13,7 @@ export default defineEventHandler( async (event) => {
             throw new Error("Token de usuário ausente")
         }
 
-        const text = "SELECT * FROM contas ORDER BY id ASC"
+        const text = "SELECT * FROM categories ORDER BY id ASC"
 
         const accounts = client.query(text)
 
@@ -21,7 +21,7 @@ export default defineEventHandler( async (event) => {
 
     } catch (error) {
 
-        console.log("Erro ao tentar buscar contas", error)
+        console.log("Erro ao tentar buscar categorias", error)
     }
 
 })
