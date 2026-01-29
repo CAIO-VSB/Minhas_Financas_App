@@ -22,6 +22,11 @@ export default defineEventHandler( async (event) => {
     } catch (error) {
 
         console.log("Erro ao tentar buscar categorias", error)
+
+        throw createError({
+            status: 500,
+            message: "Erro buscar categorias"
+        })
     }
 
 })

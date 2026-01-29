@@ -6,19 +6,20 @@
   //Importações components
   import DialogAddFinancialInstitution from "~/components/DialogAddFinancialInstitution.vue"
   import type { TAccount } from "~/types/account/TAccount.types"
-  import { useEditItem } from "~/composables/useAccount/useEditItem"
   import { useSelectedBank } from "~/composables/useAccount/useSelectedBank"
   import { useSelectedColor } from "~/composables/useAccount/useSelectedColor"
   
+
+  const props = defineProps<{
+    draft: TAccount | null
+  }>()
 
   const modelValue = defineModel<boolean>()
 
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
   const { nameRules, validateSchemaAccount } = useValidateFields()
-  const { newAvatar, newColor, newName, newType, newUrl, id_account, newActiveStatus } = useEditItem()
-  const { dialogAddInstitution, currentBank, currentUrl } = useSelectedBank()
-  const { dialogColorPicker, currentColor } = useSelectedColor()
-
+  const { dialogAddInstitution, currentAvatar, currentBank, currentUrl} = useSelectedBank()
+  const { dialogColorPicker } = useSelectedColor()
 
   const selectRules = ref([
     (val: string) => !!val || "Tipo de conta é obrigatório"
@@ -42,34 +43,13 @@
     'Conta de Investimentos'
   ])
 
-  const form = ref()
-
-  const errorMessage = ref("")
-
-  const showMessage = ref(false)
-
-  const accountForm = ref<TAccount>({
-    id: id_account.value,
-    name_identifier: newName.value,
-    type_account: newType.value,
-    name_bank: newAvatar.value,
-    color: newColor.value,
-    url_image: newUrl.value,
-    active: newActiveStatus.value
-  })
-
   watch(currentBank, (newValue) => {
-    accountForm.value.name_bank = newValue
+    props.draft.name_bank = newValue
   })
 
-  watch(currentColor, (newValue) => {
-    accountForm.value.color = newValue
-  })
-
-  watch(currentUrl, (newValue) => {
-    accountForm.value.url_image = newValue
-  })
-
+  const form = ref()
+  const errorMessage = ref("")
+  const showMessage = ref(false)
 
   const  { mutate, isPending } = useMutation({
 
@@ -92,15 +72,21 @@
     
     try {
 
+      if(!props.draft) {
+        notifyError("Atenção", "O objeto passado é inválido. Tente novamente.")
+        return
+      }
+
       const formValid = await form.value.validate()
-      const resultSchema = validateSchemaAccount(accountForm.value)
+      const resultSchema = validateSchemaAccount(props.draft)
 
       if (formValid) {
         if (resultSchema.success) {
-          mutate(accountForm.value)          
+          if(props.draft)
+          mutate(props.draft)
         }
       }
-
+      
     } catch (err) {
       console.log("Erro ao criar conta" + err)
     } 
@@ -115,6 +101,7 @@
     <v-form
     @submit.prevent
     ref="form"
+    v-if="props.draft"
     >
       <v-dialog persistent v-model="modelValue" max-width="600">
         <v-card prepend-icon="mdi mdi-pencil-box" title="Editar conta">
@@ -125,12 +112,12 @@
                 label="Nome da conta *"
                 variant="underlined"
                 color="primary"
-                v-model="accountForm.name_identifier"
+                v-model="props.draft.name_identifier"
                 :rules="nameRules"
               >
               </v-text-field>
 
-              <v-select :rules="selectRules" v-model="accountForm.type_account" color="primary" persistent-hint hint="Dúvidas sobre qual conta escolher? Clique no ícone de ajuda." label="Tipo *" :items="items" variant="underlined">
+              <v-select :rules="selectRules" v-model="props.draft.type_account" color="primary" persistent-hint hint="Dúvidas sobre qual conta escolher? Clique no ícone de ajuda." label="Tipo *" :items="items" variant="underlined">
                 <template v-slot:append>
                   <nuxt-link target="_blank" to="https://www.serasa.com.br/blog/conta-bancaria/">
                     <v-icon class="cursor-pointer" color="info" icon="mdi-chat-question" size="large"></v-icon>
@@ -144,7 +131,7 @@
                 </template>
               </v-select>
 
-              <v-text-field  :rules="logoRules" persistent-hint hint="Logo de identifiação *"   color="primary"  v-model="accountForm.name_bank" readonly variant="underlined">
+              <v-text-field  :rules="logoRules" persistent-hint hint="Logo de identifiação *"   color="primary"  v-model="props.draft.name_bank" readonly variant="underlined">
                 <template v-slot:append>
                     <v-icon @click="dialogAddInstitution = true" class="cursor-pointer icon-add-logo"  icon="mdi-plus" size="large"></v-icon>
                     <v-tooltip
@@ -154,13 +141,13 @@
                     </v-tooltip>
                   </template>
                   <template  #prepend-inner>
-                    <v-avatar :image="accountForm.url_image"></v-avatar>
+                    <v-avatar :image="props.draft.url_image"></v-avatar>
                   </template>
 
                   <DialogAddFinancialInstitution v-model="dialogAddInstitution" />
               </v-text-field>
 
-              <v-text-field :rules="colorRules" persistent-hint hint="Cor de identifiação" color="primary" v-model="accountForm.color" readonly variant="underlined">
+              <v-text-field :rules="colorRules" persistent-hint hint="Cor de identifiação" color="primary" v-model="props.draft.color" readonly variant="underlined">
                 <template v-slot:append>
                     <v-icon @click="dialogColorPicker = true" class="cursor-pointer icon-add-logo"  icon="mdi-eyedropper-variant" size="large"></v-icon>
                     <v-tooltip
@@ -170,14 +157,14 @@
                     </v-tooltip>
                   </template>
                   <template  #prepend-inner>
-                    <v-avatar style="margin-right: 30px;" :color="accountForm.color"  ></v-avatar>
+                    <v-avatar style="margin-right: 30px;" :color="props.draft.color"  ></v-avatar>
                   </template>
 
                   <DialogAddColor v-model="dialogColorPicker" />
               </v-text-field>
 
               <v-switch
-                v-model="accountForm.active"
+                v-model="props.draft.active"
                 color="success"
                 label="Ativo"
                 hide-details

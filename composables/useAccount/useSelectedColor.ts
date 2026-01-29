@@ -1,6 +1,5 @@
-    
-    const currentColor = ref("")
-    const dialogColorPicker = ref(false)
+    const currentColor = useState("account:selectColor:selected", () => "")
+    const dialogColorPicker = useState("account:dialogColorPicker", () => false)
 
     export function useSelectedColor() {
 
@@ -8,8 +7,6 @@
             currentColor.value = color
             dialogColorPicker.value = false
         }
-
-        currentColor.value = ""
 
         return {
             selectdColor,

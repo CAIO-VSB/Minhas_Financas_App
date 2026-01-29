@@ -1,8 +1,7 @@
-
-    const currentBank = ref("")
-    const currentAvatar = ref("")
-    const currentUrl = ref("")
-    const dialogAddInstitution = ref(false)
+    const currentBank = useState("account:selectBank:bank", () => "")
+    const currentAvatar = useState("account:selectAvatar:avatar", () => "")
+    const currentUrl = useState("account:selectUrl:url", () => "")
+    const dialogAddInstitution = useState("account:dialogAdd:dialogOpen", () => false)
     
     export function useSelectedBank() {
     
@@ -11,17 +10,8 @@
             currentBank.value = banco
             currentUrl.value = url
 
-
             dialogAddInstitution.value = false
         } 
-
-        console.log(currentUrl.value)
-
-        currentAvatar.value = ""
-
-        currentBank.value = ""
-
-        currentUrl.value = ""
 
         return {
             selectdBank,

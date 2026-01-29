@@ -1,7 +1,7 @@
 
 import { auth } from "~/lib/auth"
 import client from "../utils/db"
-import { schemaCategorias } from "~/schemas/categories.schema"
+import { schemaCategories } from "~/schemas/categories.schema"
 
 export default defineEventHandler( async (event) => {
 
@@ -15,7 +15,7 @@ export default defineEventHandler( async (event) => {
             throw new Error("Token de usuário ausente")
         }
             
-        const result = await readValidatedBody(event, body => schemaCategorias.safeParse(body))
+        const result = await readValidatedBody(event, body => schemaCategories.safeParse(body))
 
         if (!result.success) {
             throw new Error("Corpo da requisição inválido")
@@ -30,8 +30,11 @@ export default defineEventHandler( async (event) => {
         return {message:"Categoria criada com sucesso", status: 200}
 
     } catch (error) {
-
-        console.log("Erro ao tentar criar categoria", error)
+        console.log("Erro a criar categoria", error)
+        throw createError({
+            status: 500,
+            message: "Erro ao criar categoria"
+        })
     }
 
 })

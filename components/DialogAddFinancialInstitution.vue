@@ -86,7 +86,6 @@
   {avatar: CofreGenericLogo, text: "Cofre", value: "CofreGeneric", type: "generics", url: "/banks/cofre-generic-logo.jpg"},
   ]
 
-
   const { selectdBank } = useSelectedBank()
 
   const dialogFilter = ref(false)
@@ -95,11 +94,9 @@
   const currentRadio = ref("")
   const loading = ref(false)
 
-  function selectdItem(banco: string, avatar: string, url: string) {
-    selectdBank(banco, avatar, url)
+  function selectdItem(bank_name: string, avatar: string, url_avatar: string) {
+    selectdBank(bank_name, avatar, url_avatar)
   }
-
-
 
   watch(radios, (newValue: string) => {
     currentRadio.value = newValue

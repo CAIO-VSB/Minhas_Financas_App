@@ -1,4 +1,4 @@
-export type TAccount = {
+export type TAccountApi = {
   id: string
   userId: string
   name_identifier: string

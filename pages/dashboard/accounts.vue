@@ -10,13 +10,12 @@
   import BaseModal from "~/components/BaseModal.vue"
   import CardEditAccount from "~/components/CardEditAccount.vue"
   import type { TAccount } from "~/types/account/TAccount.types"
-  import { useEditItem } from "~/composables/useAccount/useEditItem"
 
-  const { selectdItem } = useEditItem()
   const modalAddAccount = ref(false)
   const modalEditAccount = ref(false)
   const errorModal = ref(false)
   const activeFilterAccounts = ref<boolean>(true)
+  const editDraft = ref<TAccount | null>(null)
 
   const options = [
     { title: 'Somente contas ativas', icon: 'mdi-toggle-switch', value: true },
@@ -49,9 +48,15 @@
     return filterAccounts(activeFilterAccounts.value)
   })
 
-  function handleOpenModalEditAccount(produto: TAccount) {
+  function handleOpenModalEditAccount(account: TAccount) {
+    console.log("Copia para edicao", account)
     modalEditAccount.value = true
-    selectdItem(produto.id ?? 0, produto.name_identifier, produto.name_bank, produto.url_image, produto.color ?? "", produto.type_account, produto.active)
+    editDraft.value = structuredClone(toRaw(account))
+  }
+
+  function handleCloseEditAccount () {
+    modalEditAccount.value = false
+    editDraft.value = null
   }
 
 </script>
@@ -104,7 +109,7 @@
       <v-list lines="two" item-props>
         <v-list-item
           v-for="(account, index) in filteredAccounts || []"
-          :key="index"
+          :key="account.id"
           :style="{ boxShadow: `inset 0.1875rem 0 0 ${account.color}`, marginBottom: '10px' }"
         >
 
@@ -146,14 +151,14 @@
         />
       </div>
 
-      <!-- Teleports para modais -->
-      <Teleport v-if="modalAddAccount" to="body">
         <CardAddAccount v-model="modalAddAccount" />
-      </Teleport>
 
-      <Teleport v-if="modalEditAccount" to="body">
-        <CardEditAccount v-model="modalEditAccount" />
-      </Teleport>
+        <CardEditAccount
+        :draft="editDraft"
+        v-model="modalEditAccount"
+        @close="handleCloseEditAccount"
+        />
+
     </v-card>
 
     <div class="fab-wrapper">

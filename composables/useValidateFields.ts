@@ -1,7 +1,9 @@
 import { schemaAccount } from "~/schemas/account.schema"
 import { singIn, singUp, passwordValidate, emailValidate } from "~/schemas/auth.schema"
+import { schemaCategories } from "~/schemas/categories.schema"
 import type { TAccount } from "~/types/account/TAccount.types"
 import type { TUser } from "~/types/auth/Tauth.types"
+import type { TCategorie } from "~/types/categorie/TCategorie"
 import type { TRecoveryForm, TLoginForm, TResetForm } from "~/types/user/Tuser.types"
 
 export function useValidateFields() {
@@ -77,7 +79,6 @@ export function useValidateFields() {
         
         console.log("Obejto ao ser enviado para back", result.data)
         return {success: true}
-        
 
     }
 
@@ -94,6 +95,19 @@ export function useValidateFields() {
         return {success: true}
     }
 
+    const validateSchemaCategorie = (data: TCategorie) => {
+
+        const result = schemaCategories.safeParse(data)
+
+        if (!result.success) {
+            console.log("Erro ao validar o formato da categoria", result.error.message)
+            return { success: false }
+        }
+
+        console.log("Tudo certo com os dados, nada vazio", result.data)
+        return {success: true}
+    }
+
     return {
         nameRules,
         emailRules,
@@ -102,7 +116,8 @@ export function useValidateFields() {
         validateSchemaSignUp,
         validateSchemaPassword,
         validateSchemaEmail,
-        validateSchemaAccount
+        validateSchemaAccount,
+        validateSchemaCategorie
     }
 
 }

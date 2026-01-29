@@ -1,38 +1,40 @@
 <script setup lang="ts">
-import type { TCategorie } from '~/server/types/TCategories.type';
 
-    definePageMeta({
-      title: "Categorias",
-      layout: "layout-dashboard",
-    })
+  definePageMeta({
+    title: "Categorias",
+    layout: "layout-dashboard",
+    middleware: "auth"
+  })
 
-    const options = [
-      { title: 'Editar', icon: 'mdi-pencil', value: true },
-      { title: 'Inativar', icon: 'mdi-block-helper', value: false },
-    ]
+  import { useHttpCategories } from '~/composables/useVerbsHttp/useHttpCategories'
 
-    const items = [
-      {
-        title: 'Despesas',
-        value: 12,
-        icon: "mdi-arrow-down-thin"
-      },
-      {
-        title: 'Receitas',
-        value: 9,
-        icon: "mdi-arrow-up-thin"
-      },
+  const { getCategories } = useHttpCategories()
 
-    ]
+  const options = [
+    { title: 'Editar', icon: 'mdi-pencil', value: true },
+    { title: 'Inativar', icon: 'mdi-block-helper', value: false },
+  ]
 
-    const getAccounts = async () => {
-      return await $fetch<TCategorie []>("/api/categories", {method: "GET"})
-    }
+  const items = [
+    {
+      title: 'Despesas',
+      value: 12,
+      icon: "mdi-arrow-down-thin"
+    },
+    {
+      title: 'Receitas',
+      value: 9,
+      icon: "mdi-arrow-up-thin"
+    },
 
-    const { isPending, data, error } = useQuery({
-      queryKey: ['accounts'],
-      queryFn: getAccounts,
-    })
+  ]
+
+  const modalAddCategorie = ref(false)
+
+  const { isPending, data, error } = useQuery({
+    queryKey: ['categories'],
+    queryFn: getCategories,
+  })
 
 
 </script>
@@ -42,6 +44,7 @@ import type { TCategorie } from '~/server/types/TCategories.type';
   <div class="container">
 
     <div class="filter-card">
+      
       <v-card
         class="mx-auto"
         >
@@ -49,6 +52,7 @@ import type { TCategorie } from '~/server/types/TCategories.type';
           <v-list-subheader>Filtro</v-list-subheader>
 
           <v-divider></v-divider>
+
           <v-list-item
             v-for="(item, i) in items"
             :key="i"
@@ -72,7 +76,7 @@ import type { TCategorie } from '~/server/types/TCategories.type';
     </div>
 
     <div class="card-list">
-      
+          
       <v-list  lines="two" item-props>
 
         <v-list-subheader>Categorias</v-list-subheader>
@@ -108,7 +112,7 @@ import type { TCategorie } from '~/server/types/TCategories.type';
                   :value="i"
                   :title="item.title"
                   :prepend-icon="item.icon"
-                  @click="activeFilterAccounts = item.value"
+                  
                 >
                 </v-list-item>
               </v-list>
@@ -124,12 +128,23 @@ import type { TCategorie } from '~/server/types/TCategories.type';
             color="blue"
             icon="mdi-plus"
             size="60"
-            @click="handleOpenModalAddAccount"
+            @click="modalAddCategorie = true"
             />
           </template>
         </v-tooltip>
     </div>
-    </div>
+
+    <v-skeleton-loader 
+    v-if="isPending"
+    v-for="n in 12" 
+    :key="n" 
+    type="list-item-avatar"
+    class="mb-2"
+    />
+
+  </div>
+
+  <CardAddCategorie v-model="modalAddCategorie" />
 
   </div>
 </template>
@@ -143,7 +158,7 @@ import type { TCategorie } from '~/server/types/TCategories.type';
   margin-top: 10px;
   justify-content: center;
   max-width: 100%;
-  background-color: red;
+  height: 100%;
 }
 
 .filter-card {
@@ -155,13 +170,15 @@ import type { TCategorie } from '~/server/types/TCategories.type';
 .card-list {
   width: 65%;
   overflow-y: auto;
-  height: auto;
+  margin-bottom: 68px;
+  border-radius: 5px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .fab-wrapper {
   position: fixed;
   bottom: 25px;
-  right: 24px;
+  right: 22px;
   z-index: 9999;
 }
 
@@ -190,7 +207,8 @@ import type { TCategorie } from '~/server/types/TCategories.type';
 }
 
 ::-webkit-scrollbar {
-  width: 5px;
+  width: 4px;
+  border-radius: 15px;
   background: #F4F4F4;
 }
 
@@ -202,62 +220,28 @@ import type { TCategorie } from '~/server/types/TCategories.type';
   text-decoration: line-through;
 }
 
-@media (max-width: 680px) {
+@media (max-width: 980px) {
+
   .container {
-    display: flex;
     flex-direction: column;
-    align-items: center;
   }
 
   .filter-card {
     width: 100%;
-    padding: 0 10px 0 10px;
-    margin-top: 5px;
+    padding: 0 8px 0 8px;
+    position: sticky;
+    top: 0;
   }
 
   .card-list {
-    width: 100%;
-    padding: 0 10px 0 10px;
-  }
-}
-
-@media (max-width: 780px) {
-  .container {
-    display: flex;
-    flex-direction: column;
     max-width: 100%;
+    width: 100%;
+    padding: 0 8px 0 8px;
+    margin-bottom: -15px;
   }
 
-  .filter-card {
-    width: 100%;
-    padding: 0 10px 0 10px;
-    margin-top: 5px;
-  }
-
-  .card-list {
-    width: 100%;
-    padding: 0 10px 0 10px;
-  }
 }
 
-@media (max-width: 1200px) {
-  .container {
-    display: flex;
-    flex-direction: column;
-    max-width: 100%;
-  }
-
-  .filter-card {
-    width: 100%;
-    padding: 0 10px 0 10px;
-    margin-top: 5px;
-  }
-
-  .card-list {
-    width: 100%;
-    padding: 0 10px 0 10px;
-  }
-}
 
 
 </style>
