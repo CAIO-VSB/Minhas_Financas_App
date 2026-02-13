@@ -390,6 +390,7 @@
 
   .container {
     flex-direction: column;
+    /* Ajuste feito pra compensar o gap em telas menores */
     height: calc(100% + 93px);
   }
 
