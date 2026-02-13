@@ -21,13 +21,13 @@ export default defineEventHandler( async (event) => {
             throw new Error("Corpo da requisição inválido")
         }
 
-        const text = "INSERT INTO categories(user_id, name_identifier, url_icon, active, type_categorie) VALUES($1, $2, $3, $4, $5)"
+        const text = "INSERT INTO categorias(user_id, name_identifier, url_icon, active, type_categorie) VALUES($1, $2, $3, $4, $5) RETURNING id, name_identifier, url_icon, active, type_categorie"
 
         const values = [session.user.id, result.data.name_identifier, result.data.url_icon, result.data.active, result.data.type_categorie]
 
         const categorie = client.query(text, values)
 
-        return {message:"Categoria criada com sucesso", status: 200}
+        return {message:"Categoria criada com sucesso", status: 200, data: (await categorie).rows[0]}
 
     } catch (error) {
         console.log("Erro a criar categoria", error)

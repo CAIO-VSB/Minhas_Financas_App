@@ -31,7 +31,7 @@
   import ManGenericLogo from "../public/banks/man-generic-logo.jpg"
   import CofreGenericLogo from "../public/banks/cofre-generic-logo.jpg"
 
-  import { useSelectedBank } from "~/composables/useAccount/useSelectedBank"
+  import { useSelectedBank, type TSelectBank } from "~/composables/useAccount/useSelectedBank"
 
   // Lista contendo todos os bancos, value e tipo 
   const banks = [
@@ -86,7 +86,7 @@
   {avatar: CofreGenericLogo, text: "Cofre", value: "CofreGeneric", type: "generics", url: "/banks/cofre-generic-logo.jpg"},
   ]
 
-  const { selectdBank } = useSelectedBank()
+  const { selectBank } = useSelectedBank()
 
   const dialogFilter = ref(false)
   const valueEntered = ref("")
@@ -94,8 +94,8 @@
   const currentRadio = ref("")
   const loading = ref(false)
 
-  function selectdItem(bank_name: string, avatar: string, url_avatar: string) {
-    selectdBank(bank_name, avatar, url_avatar)
+  function selectdItem(data: TSelectBank) {
+    selectBank(data)
   }
 
   watch(radios, (newValue: string) => {
@@ -173,7 +173,7 @@
             v-for="(item, i) in finalData"
             :key="i"
             rounded="xl"
-            @click="selectdItem(item.text, item.avatar, item.url)"
+            @click="selectdItem({name: item.text, url: item.url, avatar: item.avatar})"
           >
 
           <template v-slot:prepend>

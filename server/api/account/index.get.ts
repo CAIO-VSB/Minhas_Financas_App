@@ -7,13 +7,13 @@ export default defineEventHandler( async (event) => {
         headers: event.headers
     })
 
-    const userId = session?.session.userId
-
     try {
 
         if (!session?.session.token) {
             throw new Error("Token de usuário ausente")
         }
+
+        const userId = session?.session.userId
 
         const text = "SELECT * FROM contas where user_id = $1 ORDER BY id ASC"
 
@@ -23,7 +23,12 @@ export default defineEventHandler( async (event) => {
 
     } catch (error) {
 
-        console.log("Erro ao tentar buscar contas", error)
+        console.log("Erro ao tentar buscar categorias", error)
+
+        throw createError({
+            status: 500,
+            message: "Erro buscar categorias"
+        })
     }
 
 })

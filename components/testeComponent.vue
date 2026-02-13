@@ -1,14 +1,13 @@
 <script lang="ts" setup>
   import colors from '~/public/colors/catalog';
-  import { useSelectedColor, type TSelectColor } from '~/composables/useAccount/useSelectedColor';
 
-  const modelValue = defineModel<boolean>() 
-  const { selectColor } = useSelectedColor()
+  const modelValue = defineModel<boolean>()
 
   const valueEntered = ref("")
   const currentRadio = ref("")
   const loading = ref(false)
- 
+
+
   watch(valueEntered, () => {
     loading.value = true
     setTimeout(() => {
@@ -24,16 +23,13 @@
     })
   })
 
-  function selectdItem(data: TSelectColor) {
-    selectColor(data)
-  }
-
 </script>
 
 <template>
   <div class="text-center pa-4">
     <v-dialog
       v-model="modelValue"
+      persistent
     >
 
       <v-card
@@ -68,7 +64,6 @@
             v-for="(item, i) in finalData"
             :key="i"
             rounded="xl"
-            @click="selectdItem({color: item.cor, name_color: item.name})"
           >
 
           <template v-slot:prepend>

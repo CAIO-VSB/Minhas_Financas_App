@@ -13,9 +13,11 @@ export default defineEventHandler( async (event) => {
             throw new Error("Token de usuário ausente")
         }
 
-        const text = "SELECT * FROM categories ORDER BY id ASC"
+        const userId = session?.session.userId
 
-        const accounts = client.query(text)
+        const text = "SELECT * FROM categorias WHERE user_id IS NULL OR user_id = $1 ORDER BY user_id IS NULL DESC, name_identifier ASC"
+
+        const accounts = client.query(text, [userId])
 
         return (await accounts).rows 
 

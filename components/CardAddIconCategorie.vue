@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 
-  import { useSelectedIcon } from "~/composables/useCategorie/useSelectedIcon"
+  import { useSelectedIcon, type TSelectIcon } from "~/composables/useCategorie/useSelectedIcon"
+  import type { TCategorie } from "~/types/categorie/TCategorie"
 
   // Lista contendo todos os bancos, value e tipo 
   const icons = [
@@ -48,7 +49,7 @@
   { name: 'Cabeleireiro', icon: 'mdi-content-cut', type: 'Despesa' },
   { name: 'Eletrônicos', icon: 'mdi-cellphone', type: 'Despesa' },
 ]
-  const { selectdIcon } = useSelectedIcon()
+  const { selectIcon } = useSelectedIcon()
 
   const dialogFilter = ref(false)
   const valueEntered = ref("")
@@ -56,8 +57,8 @@
   const currentRadio = ref("")
   const loading = ref(false)
 
-  function selectdItem(icon: string) {
-    selectdIcon(icon)
+  function selectdItem(data: TSelectIcon) {
+    selectIcon(data)
   }
 
   watch(radios, (newValue: string) => {
@@ -137,7 +138,7 @@
             v-for="(item, i) in finalData"
             :key="i"
             rounded="xl"
-            @click="selectdItem(item.icon)"
+            @click="selectdItem(item)"
           >
 
           <template v-slot:prepend>
@@ -182,22 +183,18 @@
 
 .item-text {
   font-size: 1rem;
-  font-family: "Poppins", sans-serif;
   color: #AFB1AC;
 }
 
 .title-card {
-  font-family: "Poppins", sans-serif;
   font-size: 1rem;
 }
 
 ::v-deep(.v-selection-control .v-label ) {
-  font-family: "Poppins", sans-serif;
   font-size: 0.85rem;
 }
 
 ::v-deep(.v-card-item .v-card-title ) {
-  font-family: "Poppins", sans-serif;
   font-size: 1.3rem;
 }
 </style> 

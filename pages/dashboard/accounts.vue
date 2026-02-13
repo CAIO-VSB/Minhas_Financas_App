@@ -3,13 +3,16 @@
   definePageMeta({
     title: "Contas bancárias",
     layout: "layout-dashboard",
-    middleware: "auth"
+    middleware: "session"
   })
 
   import CardAddAccount from "~/components/CardAddAccount.vue"
   import BaseModal from "~/components/BaseModal.vue"
   import CardEditAccount from "~/components/CardEditAccount.vue"
   import type { TAccount } from "~/types/account/TAccount.types"
+  import { useHttpAccounts } from "~/composables/useHttp/useHttpAccounts"
+
+  const { getAccounts } = useHttpAccounts()
 
   const modalAddAccount = ref(false)
   const modalEditAccount = ref(false)
@@ -21,9 +24,6 @@
     { title: 'Somente contas ativas', icon: 'mdi-toggle-switch', value: true },
     { title: 'Somente contas desativadas', icon: 'mdi-toggle-switch-off', value: false }
   ]
-  const getAccounts = async () => {
-    return await $fetch<TAccount []>("/api/account", {method: "GET"})
-  }
 
   const { isPending, data, error } = useQuery({
     queryKey: ['accounts'],
@@ -49,7 +49,6 @@
   })
 
   function handleOpenModalEditAccount(account: TAccount) {
-    console.log("Copia para edicao", account)
     modalEditAccount.value = true
     editDraft.value = structuredClone(toRaw(account))
   }
@@ -156,7 +155,7 @@
         <CardEditAccount
         :draft="editDraft"
         v-model="modalEditAccount"
-        @close="handleCloseEditAccount"
+        @Close="handleCloseEditAccount"
         />
 
     </v-card>
@@ -189,22 +188,6 @@
   bottom: 25px;
   right: 24px;
   z-index: 9999;
-}
-
-.title-card {
-  font-family: "Poppins", sans-serif;
-} 
-
-.sub-title-card {
-  font-family: "Poppins", sans-serif;
-}
-
-::v-deep(.v-list-item-title) {
-  font-family: "Poppins", sans-serif;
-}
-
-::v-deep(.v-list-item-subtitle) {
-  font-family: "Poppins", sans-serif;
 }
 
 .card {

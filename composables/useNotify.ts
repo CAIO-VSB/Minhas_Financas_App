@@ -4,7 +4,7 @@ export function useNotify() {
         useNotification().success({
             title: title,
             message: message,
-            position: "topCenter",
+            position: "bottomLeft",
             timeout: timer
         })
     }
@@ -13,7 +13,7 @@ export function useNotify() {
         useNotification().info({
             title: title,
             message: message,
-            position: "topCenter",
+            position: "bottomCenter",
             timeout: timer
         })
     }

@@ -1,1 +1,3 @@
-Refatorar a composable para subcomposable em pastas - 
+--Corrigir seleção de categorias por usuário
+
+Atribuir user_id somente no ato do cadastro

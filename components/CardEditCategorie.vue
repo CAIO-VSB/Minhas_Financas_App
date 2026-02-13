@@ -5,18 +5,23 @@
   import { useValidateFields } from "~/composables/useValidateFields"
   import { useHttpCategories } from "~/composables/useHttp/useHttpCategories"
   import type { TCategorie } from "~/types/categorie/TCategorie"
-  import { authClient } from "~/lib/auth-client"
+  import { useSelectedCategorie } from "~/composables/useCategorie/useSelectedCategorie"
 
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
   const { nameRules, validateSchemaCategorie } = useValidateFields() 
   const { selectedIcon } = useSelectedIcon()
-  const { postCategorie } = useHttpCategories() 
-  const { data: session } = await authClient.getSession()
+  const { selectedCategorie  } = useSelectedCategorie()
+  const {  patchCategorie } = useHttpCategories()  
 
   const items = ref([
-  'Despesa',
-  'Receita',
+    'Despesa',
+    'Receita',
   ])
+
+  const props = defineProps<{
+    draft: TCategorie | null
+  }>()
+
 
   const selectRules = ref([
     (val: string) => !!val || "Campo tipo é obrigatório",
@@ -27,68 +32,61 @@
   const modalAddIconCategorie = ref(false)
   const form = ref()
   const modelValue = defineModel<boolean>()
-  const categorieForm = ref<TCategorie>({
-    name_identifier: "",
-    type_categorie: "",
-    url_icon: "",
-    active: true
-  })
 
   watch(selectedIcon, (newIcon) => {
-    if (newIcon !== null) {
-      categorieForm.value.url_icon = newIcon.icon
+    if (props.draft !== null && newIcon !== null) {
+      props.draft.url_icon = newIcon.icon
       modalAddIconCategorie.value = false
     }
   })
 
-  function resetForm() {
-    categorieForm.value.name_identifier = ""
-    categorieForm.value.type_categorie = ""
-    categorieForm.value.url_icon = ""
-    modelValue.value = false
-  }
-
+  watch(selectedCategorie, (newcategoire) => {
+    if (props.draft !== null && newcategoire !== null ) {
+      props.draft.name_identifier = newcategoire?.name
+      props.draft.type_categorie = newcategoire.type_categorie
+    }
+  })
 
   const  { mutate, isPending  } = useMutation({
 
-    mutationFn: (payload: TCategorie) => postCategorie(payload),
+    mutationFn: (payload: TCategorie) => patchCategorie(payload),
 
     onSuccess: () => {
-      notifySuccess("Sucesso", "Categoria criada com sucesso", 6000)
-      modelValue.value = false
-      resetForm()
+    notifySuccess("Sucesso", "Categoria editada com sucesso", 6000)
+    modelValue.value = false
     },
 
     onError: (error) => {
-      errorMessage.value = `Erro no servidor. Tente novamente mais tarde ou contate o surpote técnico. Erro detalhado: ${error.message}`
-      errorActive.value = true 
+    errorMessage.value = `Erro no servidor. Tente novamente mais tarde ou contate o surpote técnico. Erro detalhado: ${error.message}`
+    errorActive.value = true 
     },
 
   })
 
   async function handleAddAccount() {
 
+    if(!props.draft) {
+      notifyError("Atenção", "O objeto passado é inválido. Tente novamente.")
+      return
+    }
+
     try {
-      const formValid = await form.value.validate()
-      const resultSchema = validateSchemaCategorie(categorieForm.value)
+        const formValid = await form.value.validate()
+        const resultSchema = validateSchemaCategorie(props.draft)
 
-      console.log("Objeto a ser envidado" + JSON.stringify(categorieForm.value))
-      
-      if (formValid) {
-
-        if (categorieForm.value.url_icon === ""){
-          return notifyInfo("Atenção", "Escolha um ícone que represente esta categoria", 7000)
+        console.log("Objeto a ser envidado" + JSON.stringify(props.draft))
+        
+        if (formValid) {
+          if (resultSchema.success) {  
+            mutate(props.draft)
+          }
         }
-
-        if (resultSchema.success) {  
-          mutate(categorieForm.value)
-        }
-      }
     } catch (err) {
       console.log("Erro ao criar conta" + err)
     }
 
   }
+
 
 </script>
 
@@ -97,9 +95,10 @@
     <v-form
     @submit.prevent
     ref="form"
+    v-if="props.draft"
     >
       <v-dialog persistent v-model="modelValue" max-width="600">
-        <v-card prepend-icon="mdi-plus-box" title="Nova Categoria">
+        <v-card prepend-icon="mdi-plus-box" title="Editar categoria">
           <v-divider></v-divider>
           <v-card-text>
             <form>
@@ -107,14 +106,14 @@
                 label="Nome da categoria *"
                 variant="underlined"
                 color="primary"
-                v-model="categorieForm.name_identifier"
+                v-model="props.draft.name_identifier"
                 :rules="nameRules"
                 hint="Adicione um ícone clicando no botão ao lado"
                 persistent-hint
               >
 
                <template v-slot:append>
-                <v-icon @click="modalAddIconCategorie = true" class="cursor-pointer" :icon=" categorieForm.url_icon || 'mdi-plus'" size="large"></v-icon>
+                <v-icon @click="modalAddIconCategorie = true" class="cursor-pointer" :icon=" props.draft.url_icon || 'mdi-plus'" size="large"></v-icon>
                 <v-tooltip
                 activator="parent"
                 location="top"
@@ -124,11 +123,11 @@
                 </template>
               </v-text-field>
 
-              <v-select :rules="selectRules" v-model="categorieForm.type_categorie" color="primary" persistent-hint hint="Selecione o tipo de categoria" label="Tipo *" :items="items" variant="underlined">
+              <v-select :rules="selectRules" v-model="props.draft.type_categorie" color="primary" persistent-hint hint="Selecione o tipo de categoria" label="Tipo *" :items="items" variant="underlined">
               </v-select>
 
               <v-switch
-                v-model="categorieForm.active"
+                v-model="props.draft.active"
                 color="success"
                 label="Ativo"
                 hide-details
@@ -149,12 +148,12 @@
             <v-btn
               text="Fechar"
               variant="plain"
-              @click="resetForm"
+              @click="modelValue = false"
             ></v-btn>
 
             <v-btn
               color="primary"
-              text="Salvar"
+              text="Editar"
               variant="tonal"
               :loading="isPending"
               @click="handleAddAccount"

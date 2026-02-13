@@ -3,6 +3,7 @@ import { authClient } from "~/lib/auth-client";
 import type { TUser } from "~/types/auth/Tauth.types";
 import type { TLoginForm, TRegisterForm } from "~/types/user/Tuser.types";
 
+
 export const useAuthStore = defineStore('auth', () => {
     const user = ref<TUser>()
     const isAuthenticated = ref<boolean>(false)
@@ -100,8 +101,14 @@ export const useAuthStore = defineStore('auth', () => {
         }
     }
 
-    const logout = () => {
-        //Logica a ser implementada
+    const logout  = async () => {
+        await authClient.signOut({
+            fetchOptions: {
+                onSuccess: () => {
+                    navigateTo({ path: "/login-page" });
+                }
+            }
+        })
     }
 
     return { login, loginGoogle, register, logout, dialog, isAuthenticated, activeMessageAlert, activeMessageError, typeMessage, user }

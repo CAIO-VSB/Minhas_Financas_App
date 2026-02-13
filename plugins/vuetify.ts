@@ -1,7 +1,6 @@
 // import this after install `@mdi/font` package
 import '@mdi/font/css/materialdesignicons.css'
 
-
 import 'vuetify/styles'
 import  { createVuetify } from 'vuetify'
 import { VDateInput } from 'vuetify/labs/VDateInput'
@@ -30,7 +29,7 @@ export default defineNuxtPlugin((app) => {
                         "error-primary": '#C10015',
                         "success-primary": "#21BA45",
                         "alert-primary": "#F2C037"
-                    }
+                    },
                 }
             }
         }

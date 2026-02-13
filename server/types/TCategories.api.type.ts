@@ -1,6 +1,6 @@
 export type TCategorieApi = {
   id: string
-  userId: string
+  userId?: string 
   name_identifier: string,
   type_categorie: string
   url_icon: string,

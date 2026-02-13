@@ -1,14 +1,11 @@
 <script lang="ts" setup>
 
-  definePageMeta({
-    middleware: "auth"
-  })
-
   import { ref } from 'vue'
   import { authClient } from "@/lib/auth-client"
 
   import defaultUser from "@/assets/default-user.webp"
-
+  import InfoUser from './components/InfoUser.vue'
+ 
   const { data: session } = await authClient.getSession()
 
   const drawer = ref(true)
@@ -33,11 +30,27 @@
         :width="350"
       >
         <v-list>
+
           <v-list-item
-            :title="session?.user.name"
-            :subtitle="session?.user.email"
-            :prepend-avatar="session?.user.image || defaultUser"
           >
+            <template #title>
+              <client-only>
+                {{ session?.user.name }}
+              </client-only>
+            </template>
+
+            <template #subtitle>
+              <client-only>
+                {{ session?.user.email }}
+              </client-only>
+            </template>
+
+            <template #prepend>
+              <client-only>
+               <v-avatar :image="session?.user.image || defaultUser"></v-avatar>
+              </client-only>
+            </template>
+
             <template v-slot:append>
               <v-btn
                 icon="mdi-chevron-left"
@@ -171,27 +184,9 @@
             to="/dashboard/accounts"
             ></v-list-item>
 
-            <v-list-item
-            prepend-icon="mdi-tag-multiple"
-            title="Tags"
-            value="tags"
-            to="/dashboard/tags"
-            ></v-list-item>
-
             </v-list-group>
 
             <v-divider></v-divider>
-
-            <v-list-item
-            prepend-icon="mdi-account"
-            title="Minha conta"
-            value="Minha conta"
-            >
-            <v-tooltip
-            activator="parent"
-            location="start"
-            >Minha conta</v-tooltip>
-            </v-list-item>
 
         </v-list>
 
@@ -199,16 +194,12 @@
           <div class="mb-4">
             <v-list density="compact" nav >
                 <v-list-item
-                prepend-icon="mdi-power"
-                title="Sair"
-                value="sair"
-                :active="true"
-                color="red"
+                prepend-icon="mdi-tag-outline"
+                style="color: #777;"
                 >
-                <v-tooltip
-                activator="parent"
-                location="start"
-                >Sair</v-tooltip>
+                <template #title>
+                  <p style="font-size: 0.60rem; color: #777;">Versão 1.0</p>
+                </template>
             </v-list-item>
             </v-list>
           </div>
@@ -222,7 +213,10 @@
             variant="text"
             @click.stop="drawer = !drawer"
           ></v-btn>
-          <p class="">{{ routes.meta.title }}</p>
+          <p class="text-title">{{ routes.meta.title }}</p>
+          <div class="info-user">
+            <infoUser />
+          </div>
         </div>
         <slot></slot>
       </v-main>
@@ -231,16 +225,29 @@
   </v-card>
 </template>
 
-<style scoped lang="scss">
+<style scoped >
 
 ::v-deep(.v-list-item--nav .v-list-item-title) {
-  font-size: 1rem;
+  font-size: 0.95rem;
 }
 
 .title-router {
   font-size: 1rem;
-  font-family: "Poppins", sans-serif;
   font-weight: 500;
+  display: flex;
+}
+
+.text-title {
+  white-space: nowrap;
+  margin-right: 12px;
+}
+
+.info-user {
+  width: 100%;
+  display: flex;
+  align-items: end;
+  justify-content: end;
+  margin-right: 60px;
 }
 
 ::-webkit-scrollbar {

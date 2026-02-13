@@ -8,8 +8,9 @@
   import type { TAccount } from "~/types/account/TAccount.types"
   import { useSelectedBank } from "~/composables/useAccount/useSelectedBank"
   import { useSelectedColor } from "~/composables/useAccount/useSelectedColor"
+  import { useHttpAccounts } from "~/composables/useHttp/useHttpAccounts"
+  const { patchAccount } = useHttpAccounts()
   
-
   const props = defineProps<{
     draft: TAccount | null
   }>()
@@ -18,8 +19,9 @@
 
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
   const { nameRules, validateSchemaAccount } = useValidateFields()
-  const { dialogAddInstitution, currentAvatar, currentBank, currentUrl} = useSelectedBank()
-  const { dialogColorPicker } = useSelectedColor()
+  const { dialogAddInstitution, selectedBank } = useSelectedBank()
+  const { dialogColorPicker, selectedColor } = useSelectedColor()
+  
 
   const selectRules = ref([
     (val: string) => !!val || "Tipo de conta é obrigatório"
@@ -43,9 +45,6 @@
     'Conta de Investimentos'
   ])
 
-  watch(currentBank, (newValue) => {
-    props.draft.name_bank = newValue
-  })
 
   const form = ref()
   const errorMessage = ref("")
@@ -53,7 +52,7 @@
 
   const  { mutate, isPending } = useMutation({
 
-    mutationFn: async (data: TAccount) => $fetch<TAccount>("/api/account", {method: "PATCH", body: data}),
+    mutationFn: patchAccount,
 
     onSuccess: () => {
       notifySuccess("Sucesso", "Conta editada com sucesso", 6000)
@@ -67,8 +66,22 @@
 
   })
 
+  watch( selectedBank, (bank) => {
+    if (props.draft !== null && bank !== null) {
+      props.draft.name_bank = bank.name
+      props.draft.url_image = bank.url
+    }
+  })
 
-  async function handleAddAccount() {
+  watch (selectedColor, (color) => {
+    if (props.draft !== null && color !== null) {
+      props.draft.color = color.color
+      props.draft.name_color = color.name_color
+    }
+  })
+
+  
+  async function handleEditAccount() {
     
     try {
 
@@ -147,7 +160,7 @@
                   <DialogAddFinancialInstitution v-model="dialogAddInstitution" />
               </v-text-field>
 
-              <v-text-field :rules="colorRules" persistent-hint hint="Cor de identifiação" color="primary" v-model="props.draft.color" readonly variant="underlined">
+              <v-text-field :rules="colorRules" persistent-hint hint="Cor de identifiação" color="primary" v-model="props.draft.name_color" readonly variant="underlined">
                 <template v-slot:append>
                     <v-icon @click="dialogColorPicker = true" class="cursor-pointer icon-add-logo"  icon="mdi-eyedropper-variant" size="large"></v-icon>
                     <v-tooltip
@@ -193,7 +206,7 @@
               text="Editar"
               variant="tonal"
               :loading="isPending"
-              @click="handleAddAccount"
+              @click="handleEditAccount"
             ></v-btn>
           </v-card-actions>
         </v-card>
@@ -214,12 +227,10 @@
 
 ::v-deep(.v-field__field) {
   align-items: center;
-  font-family: "Poppins", sans-serif;
 }
 
 ::v-deep(.v-card-title) {
   align-items: center;
-  font-family: "Poppins", sans-serif;
 }
 
 

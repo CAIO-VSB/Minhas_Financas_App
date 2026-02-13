@@ -20,9 +20,9 @@ export default defineEventHandler( async (event) => {
             return { status: 400, message: "Corpo da requisição inválido"}
         }
 
-        const text = "INSERT INTO contas(user_id, name_identifier, url_image, name_bank, type_account, color) VALUES($1, $2, $3, $4, $5, $6)"
+        const text = "INSERT INTO contas(user_id, name_identifier, url_image, name_bank, type_account, color, name_color) VALUES($1, $2, $3, $4, $5, $6, $7)"
 
-        const values = [session.user.id, result.data.name_identifier, result.data.url_image, result.data.name_bank, result.data.type_account, result.data.color]
+        const values = [session.user.id, result.data.name_identifier, result.data.url_image, result.data.name_bank, result.data.type_account, result.data.color, result.data.name_color]
 
         const account = client.query(text, values)
 
@@ -30,7 +30,13 @@ export default defineEventHandler( async (event) => {
 
     } catch (error) {
 
-        console.log("Erro ao tentar criar conta", error)
+        console.log("Erro a criar conta", error)
+
+        throw createError({
+            status: 500,
+            message: "Erro ao criar conta",
+            cause: error
+        })
     }
 
 })

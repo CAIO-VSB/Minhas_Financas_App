@@ -1,16 +1,26 @@
-    const currentColor = useState("account:selectColor:selected", () => "")
-    const dialogColorPicker = useState("account:dialogColorPicker", () => false)
+    export type TSelectColor = {
+        color: string,
+        name_color: string
+    }
 
     export function useSelectedColor() {
 
-        const selectdColor = (color: string) => {
-            currentColor.value = color
+        const selectedColor = useState<TSelectColor | null>("account:selectColor:selected", () => null)
+        const dialogColorPicker = useState("account:dialogColorPicker", () => false)
+
+        const selectColor = (data: TSelectColor) => {
+            selectedColor.value = data
             dialogColorPicker.value = false
         }
 
+        const resetColor = () => {
+            selectedColor.value = null
+        }
+
         return {
-            selectdColor,
-            currentColor,
+            selectedColor,
+            resetColor,
+            selectColor,
             dialogColorPicker
         }
     }

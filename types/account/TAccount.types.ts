@@ -6,5 +6,6 @@ export type TAccount = {
     name_bank: string,
     url_image: string,
     active: boolean,
-    color?: string | undefined
+    color?: string | undefined,
+    name_color: string
 }

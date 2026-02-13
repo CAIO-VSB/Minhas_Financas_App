@@ -1,255 +1,452 @@
-<script lang="ts" setup>
+<script setup lang="ts">
 
   definePageMeta({
-    middleware: "auth"
+    title: "Categorias",
+    layout: "layout-dashboard",
+    middleware: "session"
   })
 
-  import { ref } from 'vue'
-  import { authClient } from "@/lib/auth-client"
+  /*
+  Tipo das opções disponíveis
+  */
+  type TOptionAction = {
+    title: string,
+    icon: string,
+    value: "edit" | boolean
+  }
 
-  import defaultUser from "@/assets/default-user.webp"
+  //Imports
+  import { useHttpCategories } from '~/composables/useHttp/useHttpCategories'
+  import type { TCategorie } from '~/types/categorie/TCategorie'
+  
+  //Importações composables
+  const { getCategories } = useHttpCategories()
+  const { notifyError, notifyInfo, notifySuccess } = useNotify()
+  const {  patchCategorie } = useHttpCategories() 
 
-  const { data: session } = await authClient.getSession()
+  
+  const modalEditCategorie = ref(false)
+  const modalAddCategorie = ref(false)
+  const editDraft = ref<TCategorie | null>(null)
+  const filterCategorieActive = ref<boolean | null>(true)
+  const selectedTypeCategorie = ref("")
 
-  const drawer = ref(true)
-  const rail = ref(false)
-  const openedGroups = ref(['Groups'])
-  const routes = useRoute()
-
-  watch(rail, () => {
-    openedGroups.value = []
+  
+  const {isPending, data, error } = useQuery({
+    queryKey: ['categories'],
+    queryFn: getCategories,
   })
+  
+  const  { mutate } = useMutation({
+
+    mutationFn: (payload: TCategorie) => patchCategorie(payload),
+
+    onSuccess: () => {
+      notifySuccess("Sucesso", "Categoria editada com sucesso", 6000)
+    },
+
+    onError: (error) => {
+      notifyInfo("Atenção", `Erro no servidor. Tente novamente mais tarde ou contate o surpote técnico. Erro detalhado: ${error.message}`)
+    },
+
+  })
+
+  /**
+   * Função que intera no array e retorna o total Receitas
+   */
+  const totalReceitas = computed(() => {
+
+    return (data.value || [])
+    .reduce((acc, item) => {
+      return item.type_categorie === "Receita" ? acc + 1 : acc
+    }, 0)
+  
+  })
+
+  /**
+   * Função que intera no array e retorna o total de Despesas 
+   */
+  const totalDespesas = computed(() => {
+
+    return (data.value || [])
+    .reduce((acc, item) => {
+      return item.type_categorie === "Despesa" ? acc + 1 : acc
+    }, 0)
+  
+  })
+
+  /**
+   * Função que intera no array e retorna o total geral
+   */
+  const totalGeral = computed(() => {
+
+    return (data.value || [])
+    .reduce((acc, item) => {
+      return item.type_categorie ? acc + 1 : acc
+    }, 0)
+  
+  })
+
+
+  //Itens fixos das opções do filtro
+  const item = [
+    {
+      title: 'Despesas',
+      value: 'despesas',
+      icon: "mdi-arrow-down-thin",
+      total: totalDespesas
+    },
+    {
+      title: 'Receitas',
+      value: 'receitas',
+      icon: "mdi-arrow-up-thin",
+      total: totalReceitas
+    },
+    {
+      title: 'Geral',
+      value: 'geral',
+      icon: "mdi-view-dashboard",
+      total: totalGeral
+    },
+
+  ]
+
+
+  const items = Array.from({ length: 1000 }, (k, v) => v + 1)
+
+  /**
+   * Lida com a abertura do modal de edição das categorias
+   * @param categorie - Categoria mandada via formulário
+   * Cria uma copia da categoria a ser editada e inicia a abertura do modal
+   */
+  function handleOpenModalEditCategorie(categorie: TCategorie) {
+    modalEditCategorie.value = true
+
+    //Usamos structuredClone + toRaw para evitar mutar o objeto reativo do Vue
+    editDraft.value = structuredClone(toRaw(categorie))
+  }
+
+
+  /**
+   * Função principal por filtrar as categoiras com base nos filtros existentes na tela
+   * @param choiceOnlyActive - Parametro para filtar por tipo ativo
+   * @param choiceOnlyTypeCategorie - parametro para filtar por tipo de categoria
+   */
+  function filterCategorie(choiceOnlyActive?: boolean | null, choiceOnlyTypeCategorie?: string) {
+    let categorie = data.value ?? []
+
+    //Retorna as categorias com base no seu tipo
+    if (choiceOnlyTypeCategorie === "despesas") {
+      categorie = categorie.filter(item => item.type_categorie === "Despesa")
+    } 
+    
+    if (choiceOnlyTypeCategorie === "receitas") {
+      categorie = categorie.filter(item => item.type_categorie === "Receita")
+    } 
+
+    //Retorna somente as categorias com status ativa
+    if (choiceOnlyActive === true) {
+      categorie = categorie.filter(item => item.active === true)
+    } 
+
+    return categorie
+
+  }
+
+  /**
+   * @param '' Passa uma variavel como argumento
+   * @returns Chama a função de filtrar as categorias 
+  */
+  const filteredCategories = computed(() => {
+    return filterCategorie(filterCategorieActive.value, selectedTypeCategorie.value)
+  })
+
+
+  /**
+   * Função responsável apenas por resetar os valores ao fechar o modal
+   */
+  function handleCloseEditCategorie() {
+    editDraft.value = null
+    modalEditCategorie.value = false
+  }
+
+  /**
+   * Gera opções dinâmicas baseadas no estado da categoria (ativa/desativada)
+   * @param categorie - Recebe a categoria selecionada para definir as opções dinamicamente
+   * @returns Retorna um array de opções com base no tipo passado
+   */
+  function getOptions(categorie: TCategorie): TOptionAction [] {
+    return [
+      {title: "Editar", icon: "mdi-pencil", value: "edit"},
+      {
+        title: categorie.active ? "Inativar" : "Ativar",
+        icon: categorie.active ? "mdi-block-helper" : "mdi-check-circle",
+        value: categorie.active ? false : true
+      }
+    ]
+  }
+
+
+  /**
+   * Função responsável por chamar a api e setar os valores com base nas opções
+   * @param option - Objeto que retorna a escolha do usuário via formulário 
+   * @param data - Categoria que será modificada
+   * @returns Abre o modal de edições ou seta os valores 
+   */
+  function handleOptionClick(option: TOptionAction, data: TCategorie) {
+
+    //Abre o modal para edições na categoria selecionada
+    if (option.value === "edit") {
+      handleOpenModalEditCategorie(data)
+      return
+    }
+
+    //Usamos structuredClone + toRaw para evitar mutar o objeto reativo do Vue
+    const payload = structuredClone(toRaw(data))
+    payload.active = option.value
+    
+    //Passa o valor da cópia do objeto para à API
+    mutate(payload)
+
+  }
 
 </script>
 
+
 <template>
-  <v-card>
-    <v-layout>
-      <v-navigation-drawer
-        v-model="drawer"
-        :rail="rail"
-        @click="rail = false"
-        style="height: 100vh;"
-        :width="350"
-      >
-        <v-list>
+  <!-- <div class="container">
+
+    <div class="filter-card">
+      
+      <v-card
+        class="mx-auto"
+        >
+        <v-list density="compact">
+          <v-list-subheader>Filtro</v-list-subheader>
+
+          <v-divider></v-divider>
+
           <v-list-item
-            :title="session?.user.name"
-            :subtitle="session?.user.email"
-            :prepend-avatar="session?.user.image || defaultUser"
+            v-for="(item, i) in items"
+            :key="i"
+            :value="item.value"
+            color="black"
+            v-model="filterCategorie"
+            @click="selectedTypeCategorie = item.value"
           >
-            <template v-slot:append>
-              <v-btn
-                icon="mdi-chevron-left"
-                variant="text"
-                @click.stop="rail = !rail"
-              ></v-btn>
+            <template v-slot:prepend>
+              <v-icon :icon="item.icon"></v-icon>
             </template>
+
+            <template v-slot:append>
+              <v-chip>
+                {{ item.total }}
+              </v-chip>
+            </template>
+
+            <v-list-item-title v-text="item.title"></v-list-item-title>
           </v-list-item>
         </v-list>
+      </v-card>
 
+      <div style="margin-top: 10px;">
+        <v-switch
+          v-model="filterCategorieActive"
+          label="Exibir apenas categorias ativas"
+          hide-details
+          inset
+          color="success"
+        ></v-switch>
+      </div>
+
+    </div>
+
+    <div class="card-list">
+          
+      <v-list lines="two" item-props>
+
+        <v-list-subheader>Categorias</v-list-subheader>
+        
         <v-divider></v-divider>
 
-        <v-list density="compact" nav v-model:opened="openedGroups">
-            <v-list-item
-                prepend-icon="mdi-home-analytics"
-                title="Visão geral"
-                value="Visão geral"
-                to="/dashboard/home"
-            >
-                <v-tooltip
-                activator="parent"
-                location="start"
-                >Visão geral</v-tooltip>
-            </v-list-item>
+        <v-list-item
+          v-for="(categorie, index) in filteredCategories ||  []"
+          :key="index"
+          :prepend-icon="categorie.url_icon"
+        >
 
-            <v-list-group value="Movimentacoes">
-            <template v-slot:activator="{ props }">
-                <v-list-item
-                v-bind="props"
-                title="Movimentações e caixa"
-                prepend-icon="mdi-swap-horizontal-bold"
-                >
-                <v-tooltip
-                activator="parent"
-                location="start"
-                >Movimentações e caixa</v-tooltip>
-                </v-list-item>
-            </template>
+          <template #title>
+            <p :class="{'text-disabled': !categorie.active}" style="padding-bottom: 12px; ">{{ categorie.name_identifier }}</p>
+          </template>
 
-            <v-list-item
-            prepend-icon="mdi-view-list"
-            title="Lançamentos"
-            value="lancamentos"
-            ></v-list-item>
+          <template #subtitle>
+            <p  style="padding-bottom: 12px;">{{ categorie.type_categorie }}</p>
+          </template>
 
-            <v-list-item
-            prepend-icon="mdi-finance"
-            title="Fluxo"
-            value="fluxo"
-            ></v-list-item>
-
-            <v-list-item
-            prepend-icon="mdi-format-list-checks"
-            title="A pagar e receber"
-            value="a pagar e receber"
-            ></v-list-item>
-
-            <v-list-item
-            prepend-icon="mdi-clipboard-check"
-            title="Pagas e recebidas"
-            value="pagas e recebidas"
-            ></v-list-item>
-
-            </v-list-group>
-
-            <v-list-item
-                prepend-icon="mdi-credit-card-multiple-outline"
-                title="Cartões de crédito"
-                value="cartoes"
-                to="/dashboard/cards"
-            >
-                <v-tooltip
-                activator="parent"
-                location="start"
-                >Cartões de crédito</v-tooltip>   
-            </v-list-item>
-
-            <v-list-group value="Metas">
-            <template v-slot:activator="{ props }">
-                <v-list-item
-                v-bind="props"
-                title="Metas"
-                prepend-icon="mdi-target"
-                >
-                <v-tooltip
-                activator="parent"
-                location="start"
-                >Metas</v-tooltip>
-                </v-list-item>
-            </template>
-
-            <v-list-item
-            prepend-icon="mdi-chart-pie"
-            title="Orçamento"
-            value="orçamento"
-            ></v-list-item>
-
-            <v-list-item
-            prepend-icon="mdi-piggy-bank-outline"
-            title="Economia"
-            value="economia"
-            ></v-list-item>
-
-            </v-list-group>
-
-            <v-list-group value="Cadastros" >
-              <template v-slot:activator="{ props }">
-                  <v-list-item
-                  v-bind="props"
-                  title="Cadastros"
-                  prepend-icon="mdi-database-plus"
+          <v-divider></v-divider>
+           
+          <template #append>
+            <div class="text-center">
+              <v-menu location="center">
+                <template v-slot:activator="{ props }">
+                  <v-btn
+                    v-bind="props"
+                    icon="mdi-dots-vertical"
+                    variant="text"
+                    :loading="isPending"
                   >
-                  <v-tooltip
-                  activator="parent"
-                  location="start"
-                  >Cadastros</v-tooltip>
+                  </v-btn>
+                </template>
+
+                <v-list>
+                  <v-list-item
+                    v-for="item in getOptions(categorie)"
+                    :key="item.title"
+                    :prepend-icon="item.icon"
+                    @click="handleOptionClick(item, categorie)"
+                  >
+                    <v-list-item-title>{{ item.title }}</v-list-item-title>
                   </v-list-item>
-              </template>
+                </v-list>
+              </v-menu>
+            </div>
+          </template>
+        </v-list-item>
+      </v-list>
 
-            <v-list-item
-            prepend-icon="mdi-folder-outline"
-            title="Categorias"
-            value="categoria"
-            to="/dashboard/categories"
-            ></v-list-item>
+      <div class="fab-wrapper">
+        <v-tooltip text="Nova Categoria" location="left">
+          <template #activator="{ props }">
+            <BaseFab 
+            v-bind="props"
+            color="blue"
+            icon="mdi-plus"
+            size="60"
+            @click="modalAddCategorie = true"
+            />
+          </template>
+        </v-tooltip>
+    </div>
 
-            <v-list-item
-            prepend-icon="mdi-bank-outline"
-            title="Contas bancárias"
-            value="contas"
-            to="/dashboard/accounts"
-            ></v-list-item>
+    <v-skeleton-loader 
+    v-if="isPending"
+    v-for="n in 12" 
+    :key="n" 
+    type="list-item-avatar"
+    class="mb-2"
+    />
 
-            <v-list-item
-            prepend-icon="mdi-tag-multiple"
-            title="Tags"
-            value="tags"
-            to="/dashboard/tags"
-            ></v-list-item>
+  </div>
 
-            </v-list-group>
+  <CardAddCategorie v-model="modalAddCategorie" />
 
-            <v-divider></v-divider>
+  <CardEditCategorie 
+    :draft="editDraft"
+    @Close="handleCloseEditCategorie"
+    v-model="modalEditCategorie" 
+  />
 
-            <v-list-item
-            prepend-icon="mdi-account"
-            title="Minha conta"
-            value="Minha conta"
-            >
-            <v-tooltip
-            activator="parent"
-            location="start"
-            >Minha conta</v-tooltip>
-            </v-list-item>
+  </div> -->
 
-        </v-list>
+  <v-card
+    class="mx-auto"
+    max-width="500"
+    style="height: 94%;"
+  >
+    <v-card-title>
+      Company Employee List
+    </v-card-title>
 
-        <template v-slot:append>
-          <div class="mb-4">
-            <v-list density="compact" nav >
-                <v-list-item
-                prepend-icon="mdi-power"
-                title="Sair"
-                value="sair"
-                :active="true"
-                color="red"
-                >
-                <v-tooltip
-                activator="parent"
-                location="start"
-                >Sair</v-tooltip>
-            </v-list-item>
-            </v-list>
-          </div>
-        </template>
-      </v-navigation-drawer>
+    <v-divider></v-divider>
 
-      <v-main style="height: 100vh; background-color: #f2f2f2; overflow: auto;">
-        <div class=" title-router flex align-center">
-          <v-btn
-            icon="mdi-menu"
-            variant="text"
-            @click.stop="drawer = !drawer"
-          ></v-btn>
-          <p class="">{{ routes.meta.title }}</p>
-        </div>
-        <slot></slot>
-      </v-main>
+    <v-virtual-scroll
+      :items="items"
+      style="height: 100%;"
+      item-height="50"
+    >
+      <template v-slot:default="{ item }">
+        <v-list-item
+          :subtitle="`Badge #${item}`"
+          :title="`Employee Name`"
+        >
+          <template v-slot:prepend>
+            <v-icon class="bg-primary">mdi-account</v-icon>
+          </template>
 
-    </v-layout>
+          <template v-slot:append>
+            <v-btn
+              icon="mdi-pencil"
+              size="x-small"
+              variant="tonal"
+            ></v-btn>
+          </template>
+        </v-list-item>
+      </template>
+    </v-virtual-scroll>
   </v-card>
 </template>
 
-<style scoped lang="scss">
 
-::v-deep(.v-list-item--nav .v-list-item-title) {
-  font-size: 1rem;
+<style scoped>
+
+.container {
+  display: flex;
+  gap: 16px;
+  margin-top: 10px;
+  justify-content: center;
+  max-width: 100%;
+  overflow-y: auto !important;
+  background-color: red;
 }
 
-.title-router {
-  font-size: 1rem;
-  font-family: "Poppins", sans-serif;
-  font-weight: 500;
+.filter-card {
+  width: 20%;
+  position: sticky;
+  top: 0;
+  padding: 0 5px 0 5px;
 }
 
-::-webkit-scrollbar {
-  width: 5px;
-  background: #F4F4F4;
+.card-list {
+  width: 65%;
+  overflow-y: auto;
+  border-radius: 5px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
-::-webkit-scrollbar-thumb {
-  background: #dad7d7;
+.fab-wrapper {
+  position: fixed;
+  bottom: 25px;
+  right: 22px;
+  z-index: 9999;
 }
+
+.text-disabled {
+  text-decoration: line-through;
+}
+
+@media (max-width: 980px) {
+
+  .container {
+    flex-direction: column;
+    min-height: 100vh; 
+  }
+
+  .filter-card {
+    width: 100%;
+    padding: 0 10px 0 8px;
+    position: sticky;
+    top: 0;
+  }
+
+  .card-list {
+    width: 100%;
+    padding: 0 8px;
+    height: 98%;
+  }
+
+}
+
+
 
 </style>
+

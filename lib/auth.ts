@@ -6,6 +6,11 @@ import { Pool } from "pg"
 
 export const auth = betterAuth({
 
+    session: {
+        expiresIn: 60 * 60,
+        updateAge: 60 * 5
+    },
+
     database: new Pool({
         connectionString: process.env.DATABASE_URL
     }),

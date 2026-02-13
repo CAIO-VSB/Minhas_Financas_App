@@ -8,11 +8,13 @@
   import type { TAccount } from "~/types/account/TAccount.types"
   import { useSelectedBank } from "~/composables/useAccount/useSelectedBank"
   import { useSelectedColor } from "~/composables/useAccount/useSelectedColor"
+  import { useHttpAccounts } from "~/composables/useHttp/useHttpAccounts"
 
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
   const { nameRules, validateSchemaAccount } = useValidateFields()
-  const { currentAvatar, currentBank, dialogAddInstitution, currentUrl } = useSelectedBank()
-  const { currentColor, dialogColorPicker } = useSelectedColor()
+  const { dialogAddInstitution, selectedBank,  resetBank } = useSelectedBank()
+  const { dialogColorPicker, selectedColor, resetColor } = useSelectedColor()
+  const { postAccount } = useHttpAccounts()
 
   const selectRules = ref([
     (val: string) => !!val || "Tipo de conta é obrigatório"
@@ -37,7 +39,8 @@
   ])
 
   const errorMessage = ref("")
-  const teste = ref(false)
+  
+  const activeError = ref(false)
 
   const form = ref()
 
@@ -49,32 +52,51 @@
     name_bank: "",
     color: "",
     url_image: "",
+    name_color: "",
     active: true
   })
 
-  watch(currentBank, (newValue) => {
-    accountForm.value.name_bank = newValue
+
+  function resetForm() {
+    setTimeout(() => {
+      accountForm.value.name_identifier = ""
+      accountForm.value.type_account = ""
+      accountForm.value.name_bank = ""
+      accountForm.value.url_image = ""
+      accountForm.value.color = "",
+      accountForm.value.name_color = ""
+    }, 2);
+
+    modelValue.value = false
+  }
+
+  watch( selectedBank, (bank) => {
+    if (bank !== null) {
+      accountForm.value.name_bank  = bank.name
+      accountForm.value.url_image = bank.url
+    }
   })
 
-  watch(currentColor, (newValue) => {
-    accountForm.value.color = newValue
-  })
-
-  watch(currentUrl, (newValue) => {
-    accountForm.value.url_image = newValue
+  watch (selectedColor, (color) => {
+    if (color !== null) {
+      accountForm.value.color = color.color
+      accountForm.value.name_color = color.name_color
+    }
   })
 
   const  { mutate, isPending  } = useMutation({
-    mutationFn: async (data: TAccount) => $fetch<TAccount>("/api/account", {method: "POST", body: data}),
+    
+    mutationFn: postAccount,
 
     onSuccess: () => {
       notifySuccess("Sucesso", "Conta criada com sucesso", 6000)
       modelValue.value = false
+      resetForm()
     },
 
     onError: (error) => {
       errorMessage.value = `Erro no servidor. Tente novamente mais tarde ou contate o surpote técnico. Erro detalhado: ${error.message}` 
-      teste.value = true
+      activeError.value = true
     },
 
   })
@@ -93,8 +115,7 @@
       }
     } catch (err) {
       console.log("Erro ao criar conta" + err)
-    }
-
+    } 
   }
 
 
@@ -134,7 +155,7 @@
                 </template>
               </v-select>
 
-              <v-text-field  :rules="logoRules" persistent-hint hint="Logo de identifiação *"   color="primary"  v-model="currentBank" readonly variant="underlined">
+              <v-text-field  :rules="logoRules" persistent-hint hint="Logo de identifiação *"   color="primary"  v-model="accountForm.name_bank" readonly variant="underlined">
                 <template v-slot:append>
                     <v-icon @click="dialogAddInstitution = true" class="cursor-pointer icon-add-logo"  icon="mdi-plus" size="large"></v-icon>
                     <v-tooltip
@@ -144,13 +165,13 @@
                     </v-tooltip>
                   </template>
                   <template  #prepend-inner>
-                    <v-avatar :image="currentAvatar"></v-avatar>
+                    <v-avatar :image="accountForm.url_image"></v-avatar>
                   </template>
 
                   <DialogAddFinancialInstitution v-model="dialogAddInstitution" />
               </v-text-field>
 
-              <v-text-field :rules="colorRules" persistent-hint hint="Cor de identifiação" color="primary" v-model="currentColor" readonly variant="underlined">
+              <v-text-field :rules="colorRules" persistent-hint hint="Cor de identifiação" color="primary" v-model="accountForm.name_color" readonly variant="underlined">
                 <template v-slot:append>
                     <v-icon @click="dialogColorPicker = true" class="cursor-pointer icon-add-logo"  icon="mdi-eyedropper-variant" size="large"></v-icon>
                     <v-tooltip
@@ -160,7 +181,7 @@
                     </v-tooltip>
                   </template>
                   <template  #prepend-inner>
-                    <v-avatar style="margin-right: 30px;" :color="currentColor" ></v-avatar>
+                    <v-avatar :color="accountForm.color"  style="margin-right: 30px;" ></v-avatar>
                   </template>
 
                   <DialogAddColor v-model="dialogColorPicker" />
@@ -188,7 +209,7 @@
             <v-btn
               text="Fechar"
               variant="plain"
-              @click="modelValue = false"
+              @click="resetForm"
             ></v-btn>
 
             <v-btn
@@ -202,13 +223,11 @@
         </v-card>
       </v-dialog>
     </v-form>
-    <BaseModal :model-value="teste" title="Error" :text="errorMessage" />
+    <BaseModal :model-value="activeError" title="Error" :text="errorMessage" />
   </div>
 </template>
 
-
 <style lang="scss" scoped>
-
 
 .icon-add-logo:hover {
   background-color: rgba(128, 128, 128, 0.267);
@@ -217,12 +236,10 @@
 
 ::v-deep(.v-field__field) {
   align-items: center;
-  font-family: "Poppins", sans-serif;
 }
 
 ::v-deep(.v-card-title) {
   align-items: center;
-  font-family: "Poppins", sans-serif;
 }
 
 

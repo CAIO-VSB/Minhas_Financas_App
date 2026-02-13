@@ -1,3 +1,9 @@
+<script lang="ts" setup>
+
+  const modelValue = defineModel<boolean>()
+  
+</script>
+
 <template>
   <div class="text-center">
     <v-dialog
@@ -129,8 +135,3 @@
     </v-dialog>
   </div>
 </template>
-<script lang="ts" setup>
-
-  const modelValue = defineModel<boolean>()
-  
-</script>
