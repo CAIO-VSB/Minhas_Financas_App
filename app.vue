@@ -1,4 +1,5 @@
 <script setup>
+  import '@vuepic/vue-datepicker/dist/main.css'
 </script>
 
 <template>

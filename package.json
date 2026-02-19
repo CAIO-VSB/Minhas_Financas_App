@@ -22,6 +22,7 @@
     "@pinia/nuxt": "^0.11.2",
     "@tailwindcss/vite": "^4.1.11",
     "@vee-validate/nuxt": "^4.15.1",
+    "@vuepic/vue-datepicker": "^12.1.0",
     "better-auth": "^1.3.7",
     "dotenv": "^17.2.0",
     "eslint": "^9.31.0",

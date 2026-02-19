@@ -1,41 +1,51 @@
 <script setup lang="ts">
-  import CardAddCartao from "~/components/CardAddCartao.vue"
-
   definePageMeta({
     title: "Cartões de Crédito",
-    layout: "layout-dashboard"
+    layout: "layout-dashboard",
+    middleware: "session"
   })
 
-  const menuItems = [
-    { title: 'Editar Cartão', prependIcon: 'mdi-pencil', code: 'edit' }
+  
+  import CardAddCartao from "~/components/CardAddCartao.vue"
+  import { useHttpAccounts } from "~/composables/useHttp/useHttpAccounts"
+  import { VueDatePicker } from '@vuepic/vue-datepicker';
+  import { ptBR } from 'date-fns/locale';
+
+  const { getAccounts } = useHttpAccounts()
+
+  const { isPending, data, error } = useQuery({
+    queryKey: ['accounts'],
+    queryFn: getAccounts,
+  })
+
+  const items = [
+    { title: 'Editar Cartão', prependIcon: 'mdi-dots-vertical', code: 'edit' }
   ]
 
   const showMenu = ref(false)
-  const menuTarget = ref(null)
-
-  const month = ref({
-    month: new Date().getMonth(),
-    year: new Date().getFullYear()
-  });
-
-
-
-  const cartaoSelecionado = ref("")
   const menu = ref(false)
-  const semprePuxarcartao = ref("Cartão inter")
   const modal = ref(false)
+  const testeCartao = ref("")
+  const logoTeste = ref("")
+  const period = ref({
+    month: new Date().getMonth(),
+    year: new Date().getFullYear(),
+  })
 
-  
-  async function show (evt) {
-    if (showMenu.value) {
-      showMenu.value = false
-      await new Promise(resolve => setTimeout(resolve, 100))
-    }
-    menuTarget.value = evt.target.closest('.v-btn')
-    showMenu.value = true
+  const monthName = computed(() => {
+    const name = new Date(period.value.year, period.value.month, 1)
+    return name.toLocaleString('pt-BR', { month: 'long' })
+  })
+
+
+  function teste(cartao: any) {
+    console.log("Cartão selecionado" + JSON.stringify(cartao))
+    testeCartao.value = cartao.name_bank
+    logoTeste.value = cartao.url_image
+    menu.value = false
   }
 
-  function addCarton() {
+  function handleAddCarton() {
     modal.value = true
   }
 
@@ -58,32 +68,21 @@
                 style="border-bottom: 1px solid black; padding: 3px; "
                 color="black"
                 v-bind="props"
+                :prepend-avatar="logoTeste"
                 >
-
-                {{ cartaoSelecionado || semprePuxarcartao}}
-
+                  {{ testeCartao  }}
                 </v-list-item>
                 </template>
+                
                 <v-card min-width="350"
                   title="Cartões ativos"
                   subtitle="Lista de cartões ativos"
                 >
                   <v-divider></v-divider>
                   <v-list>
-                    <v-list-item  rounded="xl"  value="nu" >
-                      <v-list-item-title>Cartão nubank</v-list-item-title>
-                    </v-list-item>
-                  </v-list>
-
-                  <v-list>
-                    <v-list-item   rounded="xl"  value="inter" >
-                      <v-list-item-title>Cartão inter</v-list-item-title>
-                    </v-list-item>
-                  </v-list>
-
-                  <v-list>
-                    <v-list-item   rounded="xl"  value="brasil" >
-                      <v-list-item-title>Cartão brasil</v-list-item-title>
+                    <v-list-item @click="teste(value)" v-for="value in data" rounded="xl" :prepend-avatar="value.url_image" :value="value" >
+                      <v-list-item-title>{{ value.name_identifier }}</v-list-item-title>
+                      <v-divider style="width: 100% !important; margin: 5px;"></v-divider>
                     </v-list-item>
                   </v-list>
 
@@ -94,41 +93,51 @@
                       prepend-icon="mdi-plus"
                       title="Adicionar novo cartão"
                       value="new"
-                      @click="addCarton"
+                      @click="handleAddCarton"
                     >
                     </v-list-item>
                   </v-list>
                 </v-card>
               </v-menu>
+              <div>
+                <span>Período da fatura: {{ monthName }}</span>
+                <VueDatePicker :teleport="true" :locale="ptBR" v-model="period" month-picker :formats="{ month: 'LLLL' }" />
+              </div>
 
-              <Teleport v-if="modal" to="body">
-                <CardAddCartao v-model="modal"/>
-              </Teleport>
-            
+
+              <CardAddCartao v-model="modal"/>
+
             </div>
         
           <div class="text-center">
-            <v-btn
-            icon="mdi-dots-vertical"
-            variant="text"
-            @click="show"
-            >
-            </v-btn>
-              <v-tooltip
-              activator="parent"
-              location="end"
-              >
-              Opções
-            </v-tooltip>
+            <v-menu>
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  icon="mdi-dots-vertical"
+                  size="30"
+                  variant="text"
+                  v-bind="props"
+                >
+                </v-btn>
+              </template>
+
+              <v-list>
+                <v-list-item
+                  v-for="(item, index) in items"
+                  :key="index"
+                  :value="index"
+                  prepend-icon="mdi-pencil"
+                >
+                  <v-list-item-title>{{ item.title }}</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
             <v-menu
-              v-model="showMenu"
-              :offset="[-8,-12]"
-              :target="menuTarget"
-              location="bottom end"
-              scroll-strategy="close"
+            v-model="showMenu"
+            location="bottom end"
+            scroll-strategy="close"
             >
               <v-list
-                :items="menuItems"
                 class="py-0"
                 density="compact"
                 item-value="code"
@@ -149,7 +158,7 @@
         <v-card
           class="mx-auto"
           prepend-icon="mdi-order-bool-descending-variant"
-          title="Icons"
+          title="Info do cartao"
         >
           <v-card-text>Terá as informações do cartão</v-card-text>
         </v-card>
@@ -162,11 +171,11 @@
       <v-card>
         <v-card-item>
           <v-card-title>
-            Titlo
+            Cards de movimentaces
           </v-card-title>
 
           <v-card-subtitle>
-            sub tituloe se tiver
+            subtitle do card
           </v-card-subtitle>
         </v-card-item>
 
@@ -197,12 +206,11 @@
   height: 100vh;
 }
 
-
-
 @media (max-width: 600px) {
   .main-container {
     display: grid;
-    grid-template-columns: (repeat(auto-fit, minmax(200px, 2fr)));
+    grid-template-columns: (repeat(auto-fit, minmax(350px, 2fr)));
+    padding: 0 6px 0 6px;
   }
 }
 

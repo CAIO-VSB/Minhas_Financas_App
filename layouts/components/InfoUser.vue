@@ -13,7 +13,7 @@
     const authClientStore = useAuthStore()
 
     function handleSignout() {
-        authClientStore.logout()
+      authClientStore.logout()
     }
 
 
@@ -31,7 +31,7 @@
           v-bind="props"
           append-icon="mdi-menu-down"
           class="text-none rounded-xl"
-          variant="outlined"
+          variant="elevated"
           color="primary"
           prepend-icon="mdi-account-settings"
         >
@@ -114,20 +114,20 @@
 <style lang="scss" scoped>
 
 .new-account-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
 }
 
 .title-logged-as {
-    font-size: 0.75rem;
-    display: flex;
-    flex-direction: column;
+  font-size: 0.75rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .subtitle-logged-as {
-    font-size: 0.85rem;
+  font-size: 0.85rem;
 }
 
 .button-singup {
