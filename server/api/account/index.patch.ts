@@ -1,6 +1,6 @@
-import { schemaAccount } from "~/schemas/account.schema"
-import { auth } from "~/lib/auth"
-import client from "../utils/db"
+import { schemaAccount } from "~~/schemas/account.schema"
+import { auth } from "~/plugins/auth"
+import client from "~/utils/db"
 
 export default defineEventHandler( async (event) => {
 
@@ -21,7 +21,7 @@ export default defineEventHandler( async (event) => {
         }
 
         const text = `
-        UPDATE contas
+        UPDATE bank_accounts
         SET
             name_identifier = $1,
             url_image = $2,

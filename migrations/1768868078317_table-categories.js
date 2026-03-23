@@ -1,6 +1,6 @@
 export const up = (pgm) => {
   pgm.sql(`
-    CREATE TABLE "categorias" (
+    CREATE TABLE "categories" (
       "id" INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
       "user_id" TEXT REFERENCES "user"("id") ON DELETE CASCADE,
       "name_identifier" TEXT NOT NULL,
@@ -13,15 +13,13 @@ export const up = (pgm) => {
   `);
 
   pgm.sql(`
-    COMMENT ON COLUMN categorias.id IS 'Id da categoria';
-    COMMENT ON COLUMN categorias.user_id IS 'Id do usuário';
-    COMMENT ON COLUMN categorias.name_identifier IS 'Nome da categoria';
-    COMMENT ON COLUMN categorias.url_icon IS 'Ícone de categoria';
-    COMMENT ON COLUMN categorias.active IS 'True = ativa False = desativada';
-    COMMENT ON COLUMN categorias.type_categorie IS 'Tipo da categoria: Receita ou Despesa';
+    COMMENT ON COLUMN categories.id IS 'Id da categoria';
+    COMMENT ON COLUMN categories.user_id IS 'Id do usuário';
+    COMMENT ON COLUMN categories.name_identifier IS 'Nome da categoria';
+    COMMENT ON COLUMN categories.url_icon IS 'Ícone de categoria';
+    COMMENT ON COLUMN categories.active IS 'True = ativa False = desativada';
+    COMMENT ON COLUMN categories.type_categorie IS 'Tipo da categoria: Receita ou Despesa';
   `);
-
-
 
 };
 

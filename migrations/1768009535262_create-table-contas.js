@@ -1,7 +1,7 @@
 export const up = (pgm) => {
 
   pgm.sql(`
-    CREATE TABLE "contas" (
+    CREATE TABLE "bank_accounts" (
       "id" INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
       "user_id" TEXT NOT NULL REFERENCES "user"("id") ON DELETE CASCADE,
       "name_identifier" TEXT NOT NULL,
@@ -18,23 +18,23 @@ export const up = (pgm) => {
   `);
 
   pgm.sql(`
-    COMMENT ON TABLE contas IS 'Tabela de contas bancárias do usuário';
+    COMMENT ON TABLE bank_accounts IS 'Tabela de contas bancárias do usuário';
 
-    COMMENT ON COLUMN contas.id IS 'Id da conta';
-    COMMENT ON COLUMN contas.user_id IS 'Id do usuário';
-    COMMENT ON COLUMN contas.name_identifier IS 'Nome da conta';
-    COMMENT ON COLUMN contas.url_image IS 'Imagem do banco';
-    COMMENT ON COLUMN contas.name_bank IS 'Nome do banco atrelado a logo';
-    COMMENT ON COLUMN contas.active IS 'True = ativo False = desativado';
-    COMMENT ON COLUMN contas.type_account IS 'Tipo da conta bancária';
-    COMMENT ON COLUMN contas.initial_balance IS 'Valor inicial lançado pelo usuário';
-    COMMENT ON COLUMN contas.name_color IS 'Nome que identifica a cor selecionada';
-    COMMENT ON COLUMN contas.color IS 'Valor hexadecimal da cor';
+    COMMENT ON COLUMN bank_accounts.id IS 'Id da conta';
+    COMMENT ON COLUMN bank_accounts.user_id IS 'Id do usuário';
+    COMMENT ON COLUMN bank_accounts.name_identifier IS 'Nome da conta';
+    COMMENT ON COLUMN bank_accounts.url_image IS 'Imagem do banco';
+    COMMENT ON COLUMN bank_accounts.name_bank IS 'Nome do banco atrelado a logo';
+    COMMENT ON COLUMN bank_accounts.active IS 'True = ativo False = desativado';
+    COMMENT ON COLUMN bank_accounts.type_account IS 'Tipo da conta bancária';
+    COMMENT ON COLUMN bank_accounts.initial_balance IS 'Valor inicial lançado pelo usuário';
+    COMMENT ON COLUMN bank_accounts.name_color IS 'Nome que identifica a cor selecionada';
+    COMMENT ON COLUMN bank_accounts.color IS 'Valor hexadecimal da cor';
   `)
 }
 
 export const down = (pgm) => {
   pgm.sql(`
-    DROP TABLE IF EXISTS contas;
+    DROP TABLE IF EXISTS bank_accounts;
   `);
 };

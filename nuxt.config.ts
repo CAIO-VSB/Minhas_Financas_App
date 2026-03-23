@@ -34,15 +34,13 @@ export default defineNuxtConfig({
   ],
 
   nuxtQuery: {
-    autoImports: ["useQuery", "useMutation"],
+    autoImports: ["useQuery", "useMutation", "useQueryClient"],
     devtools: true,
 
     queryClientOptions: {
       defaultOptions: {
         queries: {
           refetchOnWindowFocus: false,
-
-          refetchInterval: 500
         }
       }
     }

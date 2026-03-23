@@ -1,6 +1,6 @@
-import { auth } from "~/lib/auth"
-import client from "../utils/db"
-import { schemaCategories } from "~/schemas/categories.schema"
+import { auth } from "~/plugins/auth"
+import client from "~/utils/db"
+import { schemaCategories } from "~~/schemas/categories.schema"
 
 export default defineEventHandler( async (event) => {
 
@@ -21,7 +21,7 @@ export default defineEventHandler( async (event) => {
         }
 
         const text = `
-        UPDATE categorias
+        UPDATE categories
         SET
             name_identifier = $1,
             url_icon = $2,

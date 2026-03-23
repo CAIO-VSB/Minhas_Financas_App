@@ -1,5 +1,5 @@
 export type TUser = {
-    id: string,
+    id?: string,
     createdAt?: Date,
     email: string,
     emailVerified?: boolean,

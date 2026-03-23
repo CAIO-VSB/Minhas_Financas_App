@@ -1,5 +1,5 @@
-import { auth } from "~/lib/auth"
-import client from "../utils/db"
+import { auth } from "~/plugins/auth"
+import client from "~/utils/db"
 
 export default defineEventHandler( async (event) => {
 
@@ -15,7 +15,7 @@ export default defineEventHandler( async (event) => {
 
         const userId = session?.session.userId
 
-        const text = "SELECT * FROM categorias WHERE user_id IS NULL OR user_id = $1 ORDER BY user_id IS NULL DESC, name_identifier ASC"
+        const text = "SELECT * FROM categories WHERE user_id IS NULL OR user_id = $1 ORDER BY user_id IS NULL DESC, name_identifier ASC"
 
         const accounts = client.query(text, [userId])
 

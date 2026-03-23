@@ -1,10 +1,10 @@
 import { defineStore } from "pinia"
-import { authClient } from "~/lib/auth-client";
-import type { TUser } from "~/types/auth/Tauth.types";
-import type { TLoginForm, TRegisterForm } from "~/types/user/Tuser.types";
+import type { TUser } from "../../types/auth/Tauth.types";
+import type { TLoginForm, TRegisterForm } from "../../types/user/Tuser.types";
 
 
 export const useAuthStore = defineStore('auth', () => {
+    const { $authClient } = useNuxtApp()
     const user = ref<TUser>()
     const isAuthenticated = ref<boolean>(false)
     const typeMessage = ref<string>("")
@@ -24,7 +24,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     const login = async (data: TLoginForm) => {
         try {
-            const response = await authClient.signIn.email(data, {
+            const response = await $authClient.signIn.email(data, {
                 onError(context) {
                     console.log("O status retorado é esse", context.error.status)
                     if (context.error.status === 403) {
@@ -65,7 +65,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     const loginGoogle = async () => {
 
-        await authClient.signIn.social({
+        await $authClient.signIn.social({
             provider: "google",
             callbackURL: "http://localhost:3000/dashboard"
         })
@@ -79,7 +79,7 @@ export const useAuthStore = defineStore('auth', () => {
 
             activeMessageAlert.value = false
             
-            await authClient.signUp.email(data, {
+            await $authClient.signUp.email(data, {
                 onError(context) {
                     if (context.error.status === 422) {
                         activeMessageAlert.value = true
@@ -102,7 +102,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     const logout  = async () => {
-        await authClient.signOut({
+        await $authClient.signOut({
             fetchOptions: {
                 onSuccess: () => {
                     navigateTo({ path: "/login-page" });

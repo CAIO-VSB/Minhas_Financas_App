@@ -7,6 +7,5 @@ export const schemaAccount = z.object({
     name_bank: z.string().min(3, "Nenhuma logo selecionada"),
     color: z.string().min(3, "Nenhuma cor selecionada"),
     url_image: z.string().min(3, "Campo url vazio"),
-    name_color: z.string().min(3, "Nenhum nome cor selecionado "),
     active: z.boolean().default(true)
 })

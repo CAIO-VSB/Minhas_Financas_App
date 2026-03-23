@@ -1,7 +1,6 @@
-
-import { auth } from "~/lib/auth"
-import client from "../utils/db"
-import { schemaCategories } from "~/schemas/categories.schema"
+import { auth } from "~/plugins/auth"
+import client from "~/utils/db"
+import { schemaCategories } from "~~/schemas/categories.schema"
 
 export default defineEventHandler( async (event) => {
 
@@ -21,7 +20,7 @@ export default defineEventHandler( async (event) => {
             throw new Error("Corpo da requisição inválido")
         }
 
-        const text = "INSERT INTO categorias(user_id, name_identifier, url_icon, active, type_categorie) VALUES($1, $2, $3, $4, $5) RETURNING id, name_identifier, url_icon, active, type_categorie"
+        const text = "INSERT INTO categories(user_id, name_identifier, url_icon, active, type_categorie) VALUES($1, $2, $3, $4, $5) RETURNING id, name_identifier, url_icon, active, type_categorie"
 
         const values = [session.user.id, result.data.name_identifier, result.data.url_icon, result.data.active, result.data.type_categorie]
 

@@ -1,3 +1,9 @@
---Corrigir seleção de categorias por usuário
+Lista de coisas a ser fazer (para não cair no esquecimento)
 
-Atribuir user_id somente no ato do cadastro
+-- Tentar componetizar a sideBar - Prioridade baixa
+
+--Logica de setar no banco o cartao de credito (alta Prioridade)
+
+-- Nova forma de importar plugins
+const { $authClient } = useNuxtApp()
+

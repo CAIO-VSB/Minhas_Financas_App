@@ -4,8 +4,8 @@ export const transporter = nodemailer.createTransport({
     service: "gmail",
     host: "smtp.gmail.com",
     auth: {
-        user: "minhasfinancasapp900@gmail.com", 
-        pass: process.env.APP_API_KEY 
+      user: "minhasfinancasapp900@gmail.com", 
+      pass: process.env.APP_API_KEY 
     },
     secure: false,
     port: 587
