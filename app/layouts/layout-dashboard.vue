@@ -103,7 +103,7 @@
                 prepend-icon="mdi-credit-card-multiple-outline"
                 title="Cartões de crédito"
                 value="cartoes"
-                to="cards"
+                to="credit-card"
             >
                 <v-tooltip
                 activator="parent"
@@ -166,7 +166,7 @@
                 prepend-icon="mdi-file-chart-outline"
                 title="Relatórios"
                 value="relatorios"
-                to="cards"
+                to="rel"
             >
                 <v-tooltip
                 activator="parent"

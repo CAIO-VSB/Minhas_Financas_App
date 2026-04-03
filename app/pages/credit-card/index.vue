@@ -15,6 +15,8 @@
   import CardEditCard from "~/components/forms/CardEditCreditCard.vue";
   import { useInvalidate } from "~/composables/useInvalidate"
   import type { TOptionAction } from "~~/types/option_action/TOptionAction";
+  import CardInfoCreditCard from "~/pages/credit-card/components/CardInfoCreditCard.vue";
+  import CardMovementsCreditCard from "~/pages/credit-card/components/CardMovementsCreditCard.vue";
 
   const { getCreditCardOnlyActive, patchCreditCard, getCreditCardOnlyDisable } = useHttpCreditsCards()
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
@@ -256,37 +258,17 @@
         
       </div>
 
-      <div class="!mt-20">
-        <v-card
-          class="mx-auto"
-          prepend-icon="mdi-order-bool-descending-variant"
-          title="Info do cartao"
-        >
-          <v-card-text>Terá as informações do cartão</v-card-text>
-        </v-card>
+      <div>
+        <CardInfoCreditCard />
       </div>
+    
     </div>
 
 
-    <div class="">
-
-      <v-card>
-        <v-card-item>
-          <v-card-title>
-            Cards de movimentaces
-          </v-card-title>
-
-          <v-card-subtitle>
-            subtitle do card
-          </v-card-subtitle>
-        </v-card-item>
-
-        <v-card-text>
-          Histórico de movimentações
-        </v-card-text>
-      </v-card>
-
+    <div >
+      <CardMovementsCreditCard />
     </div>
+
     <div class="fab-wrapper">
       <v-tooltip text="Nova despesa" location="left">
         <template #activator="{ props }">
