@@ -6,6 +6,10 @@ export function useHttpAccounts() {
         return await $fetch<TAccount []>("/api/account", {method: "GET"})
     }
 
+    const getAccountsOnlyActive = async () => {
+        return await $fetch<TAccount []>("/api/account", {method: "GET", query: {active: true}})
+    }
+
     const postAccount = async (data: TAccount) => {
         return $fetch<TAccount>("/api/account", {method: "POST", body: data})
     }
@@ -18,6 +22,7 @@ export function useHttpAccounts() {
     return {
         postAccount,
         getAccounts,
-        patchAccount
+        patchAccount,
+        getAccountsOnlyActive
     }
 }

@@ -1,4 +1,4 @@
-import { auth } from "~/plugins/auth"
+import { auth } from "~~/auth"
 import client from "~/utils/db"
 
 export default defineEventHandler( async (event) => {
@@ -7,15 +7,21 @@ export default defineEventHandler( async (event) => {
         headers: event.headers
     })
 
+    if (!session?.session.token) {
+        throw createError({
+            status: 401,
+            message: "Unauthorized"
+        })
+    }
+
+    const userId = session?.session.userId
+
+    const text = 
+    `SELECT * FROM categories 
+    WHERE user_id IS NULL OR user_id = $1
+    ORDER BY user_id IS NULL DESC, name_identifier ASC`
+
     try {
-
-        if (!session?.session.token) {
-            throw new Error("Token de usuário ausente")
-        }
-
-        const userId = session?.session.userId
-
-        const text = "SELECT * FROM categories WHERE user_id IS NULL OR user_id = $1 ORDER BY user_id IS NULL DESC, name_identifier ASC"
 
         const accounts = client.query(text, [userId])
 
@@ -27,7 +33,7 @@ export default defineEventHandler( async (event) => {
 
         throw createError({
             status: 500,
-            message: "Erro buscar categorias"
+            statusMessage: "Internal Server Error"
         })
     }
 

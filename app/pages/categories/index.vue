@@ -6,28 +6,21 @@
     middleware: "session"
   })
 
-  /*
-  Tipo das opções disponíveis
-  */
-  type TOptionAction = {
-    title: string,
-    icon: string,
-    value: "edit" | boolean
-  }
-
   //Imports
   import { useHttpCategories } from '~/composables/useHttp/useHttpCategories'
   import type { TCategorie } from '~~/types/categorie/TCategorie'
   import BaseFab from "~/components/ui/BaseFab.vue"
   import CardEditCategorie from '~/components/forms/CardEditCategorie.vue'
   import CardAddCategorie from '~/components/forms/CardAddCategorie.vue'
-  
+  import { useInvalidate } from "~/composables/useInvalidate"
+  import type { TOptionAction } from "~~/types/option_action/TOptionAction"
+
   //Importações composables
   const { getCategories } = useHttpCategories()
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
   const {  patchCategorie } = useHttpCategories() 
+  const { invalidate } = useInvalidate()
 
-  
   const modalEditCategorie = ref(false)
   const modalAddCategorie = ref(false)
   const editDraft = ref<TCategorie | null>(null)
@@ -45,6 +38,7 @@
     mutationFn: (payload: TCategorie) => patchCategorie(payload),
 
     onSuccess: () => {
+      invalidate("categories")
       notifySuccess("Sucesso", "Categoria editada com sucesso", 6000)
     },
 
@@ -178,10 +172,10 @@
    */
   function getOptions(categorie: TCategorie): TOptionAction [] {
     return [
-      {title: "Editar", icon: "mdi-pencil", value: "edit"},
+      {title: "Editar", icon: "mdi-lead-pencil", value: "edit"},
       {
         title: categorie.active ? "Inativar" : "Ativar",
-        icon: categorie.active ? "mdi-block-helper" : "mdi-check-circle",
+        icon: categorie.active ? "mdi-minus-circle-off" : "mdi-check-circle",
         value: categorie.active ? false : true
       }
     ]
@@ -196,7 +190,7 @@
    */
   function handleOptionClick(option: TOptionAction, data: TCategorie) {
 
-    //Abre o modal para edições na categoria selecionada
+    //Abre o modal para edições na categoria selecionada 
     if (option.value === "edit") {
       handleOpenModalEditCategorie(data)
       return
@@ -204,7 +198,11 @@
 
     //Usamos structuredClone + toRaw para evitar mutar o objeto reativo do Vue
     const payload = structuredClone(toRaw(data))
-    payload.active = option.value
+
+    //Caso a opção seja somente de inativar a categoria, passamos somente o valor boleano para à API - usando o verbo HTTP patch
+    if (typeof option.value === "boolean") {
+      payload.active = option.value
+    }
     
     //Passa o valor da cópia do objeto para à API
     mutate(payload)
@@ -294,6 +292,7 @@
                     icon="mdi-dots-vertical"
                     variant="text"
                     :loading="isPending"
+                    title="Opções"
                   >
                   </v-btn>
                 </template>

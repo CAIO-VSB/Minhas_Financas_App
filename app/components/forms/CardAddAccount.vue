@@ -5,21 +5,24 @@
   import { useValidateSchemas } from "~/composables/useValidateSchema"
 
   //Importações components
-  import DialogAddFinancialInstitution from "~/components/forms/DialogAddFinancialInstitution.vue"
   import type { TAccount } from "~~/types/account/TAccount.types"
   import { useSelectedBank } from "~/composables/useAccount/useSelectedBank"
   import { useSelectedColor } from "~/composables/useAccount/useSelectedColor"
   import { useHttpAccounts } from "~/composables/useHttp/useHttpAccounts"
+  import { useInvalidate } from "~/composables/useInvalidate"
   import DialogAddColor from "~/components/forms/DialogAddColor.vue"
   import BaseModal from "~/components/ui/BaseModal.vue"
+  import DialogAddFinancialInstitution from "~/components/forms/DialogAddFinancialInstitution.vue"
+  
 
- 
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
   const { nameRules, } = useValidateFields()
   const { dialogAddInstitution, selectedBank } = useSelectedBank()
   const { dialogColorPicker, selectedColor } = useSelectedColor()
   const { validateSchemaAccount } = useValidateSchemas()
   const { postAccount } = useHttpAccounts()
+  const { invalidate } = useInvalidate()
+  
 
   const selectRules = ref([
     (val: string) => !!val || "Tipo de conta é obrigatório"
@@ -42,10 +45,6 @@
     'Conta Digital',
     'Conta de Investimentos'
   ])
-
-  const errorMessage = ref("")
-  
-  const activeError = ref(false)
 
   const form = ref()
 
@@ -79,18 +78,28 @@
     }
   })
 
+  function resetForm() {
+    accountForm.value.name_identifier = ""
+    accountForm.value.url_image = ""
+    accountForm.value.type_account = ""
+    accountForm.value.url_image = ""
+    accountForm.value.color = ""
+    modelValue.value = false
+  }
+
   const  { mutate, isPending  } = useMutation({
     
     mutationFn: postAccount,
 
     onSuccess: () => {
+      invalidate("accounts")
       notifySuccess("Sucesso", "Conta criada com sucesso", 6000)
+      resetForm()
       modelValue.value = false
     },
 
     onError: (error) => {
-      errorMessage.value = `Ops! Algo deu errado ao salvar a conta. Tente novamente ou entre em contato com o suporte. Detalhes: ${error.name}` 
-      activeError.value = true
+      notifyError("😢", "Ops! Algo deu errado ao salvar a conta. Tente novamente ou entre em contato com o suporte. Detalhes: " + error.message)
     },
 
   })
@@ -207,7 +216,7 @@
             <v-btn
               text="Fechar"
               variant="plain"
-              @click="modelValue = false"
+              @click="resetForm"
             ></v-btn>
 
             <v-btn
@@ -224,7 +233,6 @@
 
     <DialogAddFinancialInstitution v-model="dialogAddInstitution" />
     <DialogAddColor v-model="dialogColorPicker" />
-    <BaseModal :model-value="activeError" title="Error" :text="errorMessage" />
 
   </div>
 </template>

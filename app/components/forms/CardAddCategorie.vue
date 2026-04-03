@@ -6,6 +6,7 @@
   import type { TCategorie } from "~~/types/categorie/TCategorie"
   import CardAddIconCategorie from "~/components/forms/CardAddIconCategorie.vue"
   import { useValidateSchemas } from "~/composables/useValidateSchema"
+  import { useInvalidate } from "~/composables/useInvalidate"
   
 
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
@@ -14,6 +15,7 @@
   const { selectedIcon } = useSelectedIcon()
   const { postCategorie } = useHttpCategories() 
   const { $authClient } = useNuxtApp()
+  const { invalidate } = useInvalidate()
   const { data: session } = await $authClient.getSession()
 
 
@@ -26,8 +28,6 @@
     (val: string) => !!val || "Campo tipo é obrigatório",
   ])
 
-  const errorMessage = ref("")
-  const errorActive = ref(false)
   const modalAddIconCategorie = ref(false)
   const form = ref()
   const modelValue = defineModel<boolean>()
@@ -52,20 +52,19 @@
     modelValue.value = false
   }
 
-
   const  { mutate, isPending  } = useMutation({
 
     mutationFn: (payload: TCategorie) => postCategorie(payload),
 
     onSuccess: () => {
+      invalidate("categories")
       notifySuccess("Sucesso", "Categoria criada com sucesso", 6000)
       modelValue.value = false
       resetForm()
     },
 
     onError: (error) => {
-      errorMessage.value = `Erro no servidor. Tente novamente mais tarde ou contate o surpote técnico. Erro detalhado: ${error.message}`
-      errorActive.value = true 
+      notifyError("😢", "Ops! Algo deu errado ao salvar a categoria. Tente novamente ou entre em contato com o suporte. Detalhes: " + error.message)
     },
 
   })
@@ -167,7 +166,6 @@
         </v-card>
       </v-dialog>
     </v-form>
-    <BaseModal :model-value="errorActive" title="Error" :text="errorMessage" />
     <CardAddIconCategorie v-model="modalAddIconCategorie" />
   </div>
 </template>

@@ -7,8 +7,12 @@ export function useHttpCreditsCards() {
         return $fetch<TCreditCard>("/api/creditCard", {method: "POST", body: data})
     }
 
-    const getCreditCard = async () => {
-        return $fetch<TCreditCard []>("/api/creditCard", {method: "GET"})
+    const getCreditCardOnlyActive = async () => {
+        return $fetch<TCreditCard []>("/api/creditCard", {method: "GET", query: {active: true}})
+    }
+
+    const getCreditCardOnlyDisable = async () => {
+        return $fetch<TCreditCard []>("/api/creditCard", {method: "GET", query: {active: false}})
     }
 
     const patchCreditCard = async (data: TCreditCard) => {
@@ -17,7 +21,8 @@ export function useHttpCreditsCards() {
 
     return {
         postCreditCard,
-        getCreditCard,
-        patchCreditCard
+        getCreditCardOnlyActive,
+        patchCreditCard,
+        getCreditCardOnlyDisable
     }
 }

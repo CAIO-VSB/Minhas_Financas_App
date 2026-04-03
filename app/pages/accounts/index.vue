@@ -27,8 +27,8 @@
   const editDraft = ref<TAccount | null>(null)
 
   const options = [
-    { title: 'Somente contas ativas', icon: 'mdi-toggle-switch', value: true },
-    { title: 'Somente contas desativadas', icon: 'mdi-toggle-switch-off', value: false }
+    { title: 'Somente contas ativas', icon: 'mdi-check-circle-outline', value: true },
+    { title: 'Somente contas desativadas', icon: 'mdi-pause-circle-outline', value: false }
   ]
 
   const { isPending, data, error } = useQuery({
@@ -117,7 +117,7 @@
         <v-list-item
           v-for="(account, index) in filteredAccounts || []"
           :key="account.id"
-          :style="{ boxShadow: `inset 0.1875rem 0 0 ${account.color}`, marginBottom: '10px' }"
+          :style="{ boxShadow: `inset 0.15rem 0 0 ${account.color}`, marginBottom: '10px' }"
         >
 
           <template #title>
@@ -139,7 +139,7 @@
           <template #append>
             <v-btn
               @click="handleOpenModalEditAccount(account)"
-              icon="mdi-pencil"
+              icon="mdi-square-edit-outline"
               variant="plain"
             ></v-btn>
             <v-tooltip activator="parent" location="end">

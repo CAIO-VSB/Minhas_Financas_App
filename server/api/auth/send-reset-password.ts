@@ -83,19 +83,20 @@ export const sendForgotPassword = async (user: User, url: string) => {
   </div>
 `
 
-    try {
-        const info = await transporter.sendMail({
-            from: "Redefinição de Senha <minhasfinancasapp900@gmail.com>", 
-            to: user.email, 
-            subject: "Redefinir Senha",
-            text: "Siga as intruções para fazer a redefinir sua senha", 
-            html: htmlTemplate
-        });
+  try {
+    const info = await transporter.sendMail({
+        from: "Redefinição de Senha <minhasfinancasapp900@gmail.com>", 
+        to: user.email, 
+        subject: "Redefinir Senha",
+        text: "Siga as intruções para fazer a redefinir sua senha", 
+        html: htmlTemplate
+    });
 
-        return info.messageId
-    } catch (error) {
-        console.error("Falha ao enviar o email:", error)
-    }
+    return info.messageId
+
+  } catch (error) {  
+    //console.error("Falha ao enviar o email:", error)
+  }
 }
 
 

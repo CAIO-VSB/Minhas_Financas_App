@@ -12,18 +12,23 @@
   import { ptBR } from 'date-fns/locale';
   import BaseFab from "~/components/ui/BaseFab.vue";
   import type { TCreditCard } from "~~/types/credit_card/TCredit-card"
-  import CardEditCard from "~/components/forms/CardEditCard.vue";
+  import CardEditCard from "~/components/forms/CardEditCreditCard.vue";
+  import { useInvalidate } from "~/composables/useInvalidate"
+  import type { TOptionAction } from "~~/types/option_action/TOptionAction";
 
-  const { getCreditCard } = useHttpCreditsCards()
+  const { getCreditCardOnlyActive, patchCreditCard, getCreditCardOnlyDisable } = useHttpCreditsCards()
+  const { notifyError, notifyInfo, notifySuccess } = useNotify()
+  const { invalidate } = useInvalidate()
 
-  const { isPending, data, error } = useQuery({
+  const { data:allCreditCard } = useQuery({
     queryKey: ['credit-cards'],
-    queryFn: getCreditCard,
+    queryFn: getCreditCardOnlyActive,
   })
 
-  const items = [
-    { title: 'Editar Cartão', prependIcon: 'mdi-dots-vertical', code: 'edit' }
-  ]
+  const { data:allDeactivatedCrediCard } = useQuery({
+    queryKey: ['credit-cards-disable'],
+    queryFn: getCreditCardOnlyDisable,
+  })
 
   const showMenu = ref(false)
   const menu = ref(false)
@@ -43,15 +48,47 @@
     return nameMonth.toLocaleString('pt-BR', { month: 'long' }).charAt(0).toUpperCase() + nameMonth.toLocaleString('pt-BR', {month: 'long'}).slice(1).toLowerCase()
   })
 
+  const  { mutate } = useMutation({
+
+  mutationFn: (payload: TCreditCard) => patchCreditCard(payload),
+
+  onSuccess: () => {
+    invalidate("credit-cards")
+    invalidate("credit-cards-disable")
+    notifySuccess("Sucesso", "Cartão de crédito editado com sucesso", 6000)
+  },
+
+  onError: (error) => {
+    notifyInfo("Atenção", `Erro ao edita cartão de crédito. Tente novamente mais tarde ou contate o surpote técnico. Erro detalhado: ${error.message}`)
+  },
+
+  })
  
-  watch(data, (val) => {
-    if (val?.length && !selectedCard.value) {
-      selectedCard.value = val[0]?.name_identifier ?? "Selecione um cartão"
-      selectdLogo.value = val[0]?.url_logo ?? ""
-      selectedCardData.value = val[0] ?? null
+  /**
+   * Watch responsável por escutar as mudanças nos dados vindo do banco de dados
+   * Sempre que mudar algum dado e existir valor, buscamos pelo id e setamos o novos valores
+   */
+  watch(allCreditCard, (val) => {
+    if (val?.length) {
+      //Sempre atualizar o selectedCardData com os dados mais recentes
+      const current = val.find(item => item.id === selectedCardData.value?.id) ?? val[0]
+      selectedCard.value = current?.name_identifier ?? ""
+      selectdLogo.value = current?.url_logo ?? ""
+      selectedCardData.value = current ?? null
     }
   }, {immediate: true})
 
+  function getOptions(creditCard: TCreditCard): TOptionAction [] {
+    return [
+      {title: "Editar", icon: "mdi-lead-pencil", value: "edit"},
+      {
+        title: creditCard.active ? "Inativar" : "Ativar",
+        icon: creditCard.active ? "mdi-minus-circle-off" : "mdi-check-circle",
+        value: creditCard.active ? false : true
+      },
+      { title: 'Adicionar novo Cartão', icon: 'mdi-plus-circle', value: "new" }
+    ]
+}
 
   function handleSelectedCard(card: TCreditCard) {
     selectedCard.value = card.name_identifier ?? ""
@@ -69,11 +106,35 @@
     modalAddCard.value = true
   }
 
+  function handleOptionClick(option:TOptionAction, data: TCreditCard) {
+
+    if (option.value === "edit") {
+      handleOpenModalEditCardCredit(data)
+      return
+    }
+
+    if (option.value === "new") {
+      handleAddCarton()
+      return
+    }
+
+    const payload = structuredClone(toRaw(data))
+
+    if (typeof option.value === "boolean") {
+      payload.active = option.value
+    }
+
+    mutate(payload)
+   
+  }
+
+
+
 </script>
 
 <template>
  <v-empty-state
-  v-if="data?.length === 0"
+  v-if="allCreditCard?.length === 0"
   title="Adicione um cartão de crédito"
   text="Cadastre um cartão de crédito para começar a visualizar suas faturas e acompanhar seus lançamentos."
   :image="alertImg"
@@ -82,7 +143,7 @@
     Adicionar cartão
   </v-btn>
   </v-empty-state>
-  <div v-if="data" class="main-container">
+  <div v-if="allCreditCard" class="main-container">
     <div class="container-side-left">
       <div>
         <v-card>
@@ -110,14 +171,11 @@
                 >
                   <v-divider></v-divider>
                   <v-list>
-                    <v-list-item @click="handleSelectedCard(card)" v-for="card in data" rounded="xl"  :prepend-avatar="card.url_logo" :value="card" >
+                    <v-list-item @click="handleSelectedCard(card)" v-for="card in allCreditCard" rounded="xl"  :prepend-avatar="card.url_logo" :value="card" >
                       <v-list-item-title>{{ card.name_identifier }}</v-list-item-title>
-                      <v-divider style="width: 100% !important; margin: 5px;"></v-divider>
                     </v-list-item>
                   </v-list>
-
                   <v-divider></v-divider>
-
                   <v-list>
                     <v-list-item
                       prepend-icon="mdi-plus"
@@ -127,6 +185,15 @@
                     >
                     </v-list-item>
                   </v-list>
+                  <v-divider></v-divider>
+                  <v-card v-if="allDeactivatedCrediCard?.length !== 0" subtitle="Lista de cartões desativados">
+                     <v-divider></v-divider>
+                    <v-list>
+                    <v-list-item @click="handleSelectedCard(card)" v-for="card in allDeactivatedCrediCard" rounded="xl" :prepend-avatar="card.url_logo" :value="card" >
+                      <v-list-item-title :class="{'text-disabled': !card.active}">{{ card.name_identifier }}</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                  </v-card>
                 </v-card>
               </v-menu>
               <div>
@@ -143,7 +210,7 @@
             </div>
         
           <div class="text-center">
-            <v-menu>
+            <v-menu v-if="selectedCardData">
               <template v-slot:activator="{ props }">
                 <v-btn
                   icon="mdi-dots-vertical"
@@ -154,15 +221,15 @@
                 </v-btn>
               </template>
 
-              <v-list>
+              <v-list >
                 <v-list-item
-                  v-for="(item, index) in items"
-                  :key="index"
-                  :value="index"
-                  prepend-icon="mdi-pencil"
-                  @click="handleOpenModalEditCardCredit(selectedCardData!)"
+                  v-for="item in getOptions(selectedCardData)"
+                  :key="item.title"
+                  :value="item.title"
+                  :prepend-icon="item.icon"
+                  @click="handleOptionClick(item, selectedCardData)"
                 >
-                  <v-list-item-title>{{ item.title }}</v-list-item-title>
+                  <v-list-item-title >{{ item.title }}</v-list-item-title>
                 </v-list-item>
               </v-list>
             </v-menu>
@@ -254,6 +321,11 @@
   right: 24px;
   z-index: 9999;
 }
+
+.text-disabled {
+  text-decoration: line-through;
+}
+
 
 @media (max-width: 950px) {
   .main-container {

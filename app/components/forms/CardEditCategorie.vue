@@ -8,6 +8,7 @@
   import { useSelectedCategorie } from "~/composables/useCategorie/useSelectedCategorie"
   import CardAddIconCategorie from "~/components/forms/CardAddIconCategorie.vue"
   import { useValidateSchemas } from "~/composables/useValidateSchema"
+  import { useInvalidate } from "~/composables/useInvalidate"
 
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
   const { nameRules } = useValidateFields() 
@@ -15,6 +16,8 @@
   const { selectedIcon } = useSelectedIcon()
   const { selectedCategorie  } = useSelectedCategorie()
   const {  patchCategorie } = useHttpCategories()  
+  const { invalidate } = useInvalidate()
+
 
   const items = ref([
     'Despesa',
@@ -55,13 +58,13 @@
     mutationFn: (payload: TCategorie) => patchCategorie(payload),
 
     onSuccess: () => {
-    notifySuccess("Sucesso", "Categoria editada com sucesso", 6000)
-    modelValue.value = false
+      invalidate("categories")
+      notifySuccess("Sucesso", "Categoria editada com sucesso", 6000)
+      modelValue.value = false
     },
 
     onError: (error) => {
-    errorMessage.value = `Erro no servidor. Tente novamente mais tarde ou contate o surpote técnico. Erro detalhado: ${error.message}`
-    errorActive.value = true 
+      notifyError("😥", "Ops! Algo deu errado ao editar a categoria. Tente novamente ou entre em contato com o suporte. Detalhes: " + error.message)
     },
 
   })
@@ -101,7 +104,7 @@
     v-if="props.draft"
     >
       <v-dialog persistent v-model="modelValue" max-width="600">
-        <v-card prepend-icon="mdi-plus-box" title="Editar categoria">
+        <v-card prepend-icon="mdi-pencil-circle" title="Editar categoria">
           <v-divider></v-divider>
           <v-card-text>
             <form>

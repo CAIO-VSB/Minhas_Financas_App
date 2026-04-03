@@ -7,7 +7,7 @@ export const schemaCreditCard = z.object({
     url_logo: z.string("URL logo ausente").min(3),
     due_day: z.number("Numero do fechamento ausente").min(1),
     closing_day: z.number("Numero do vencimento").min(1),
-    limit_card: z.number("Limite do cartão ausente").optional(),
+    limit_card: z.coerce.number(),
     active: z.boolean().default(true),
     four_digits: z.string("Campo ultimos 4 ditigos faltando").min(4)
 })

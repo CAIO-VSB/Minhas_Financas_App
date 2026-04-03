@@ -7,6 +7,7 @@
   import { useHttpCreditsCards } from "~/composables/useHttp/useHttpCreditCard"
   import { useValidateSchemas } from "~/composables/useValidateSchema"
   import { useValidateFields } from "~/composables/useValidateFields"
+  import { useInvalidate } from "~/composables/useInvalidate"
 
 
   const { getAccounts } = useHttpAccounts()
@@ -23,7 +24,7 @@
   const modelLogos = ref<string | null>("")
   const menuLogos = ref(false)
   const modelValue = defineModel<boolean>()
-  const queryClient = useQueryClient()
+  const { invalidate } = useInvalidate()
 
   const props = defineProps<{
     draft: TCreditCard | null
@@ -92,7 +93,7 @@
     mutationFn: patchCreditCard,
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['credit-cards'] })
+      invalidate("credit-cards")
       notifySuccess("Sucesso", "Cartão de crédito editado com sucesso", 6000)
       modelValue.value = false
     },
@@ -148,8 +149,8 @@
 
     >
       <v-card
-        prepend-icon="mdi-plus-circle"
-        title="Novo cartão de crédito"
+        prepend-icon="mdi-pencil-circle"
+        title="Editar cartão de crédito"
       >
         <v-card-text>
           <v-row dense>

@@ -45,6 +45,14 @@ export default defineNuxtConfig({
       }
     }
   },
+
+  app: {
+    head: {
+      meta: [
+        {name: "referrer", content: "no-referrer"}
+      ]
+    }
+  },
   
   vite: {
     vue: {

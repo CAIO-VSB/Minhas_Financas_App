@@ -11,6 +11,7 @@
   import { useSelectedColor } from "~/composables/useAccount/useSelectedColor"
   import { useHttpAccounts } from "~/composables/useHttp/useHttpAccounts"
   import { useValidateSchemas } from "~/composables/useValidateSchema"
+  import { useInvalidate } from "~/composables/useInvalidate"
 
   const { patchAccount } = useHttpAccounts()
   
@@ -25,6 +26,7 @@
   const { validateSchemaAccount  } = useValidateSchemas()
   const { dialogAddInstitution, selectedBank } = useSelectedBank()
   const { dialogColorPicker, selectedColor } = useSelectedColor()
+  const { invalidate } = useInvalidate()
   
 
   const selectRules = ref([
@@ -52,27 +54,25 @@
   const form = ref()
   const errorMessage = ref("")
   const showMessage = ref(false)
-  const queryClient = useQueryClient()
+ 
   
-
   const  { mutate, isPending } = useMutation({
 
     mutationFn: patchAccount,
 
     onSuccess: () => {
       notifySuccess("Sucesso", "Conta editada com sucesso", 6000)
-      queryClient.invalidateQueries({ queryKey: ['accounts'] })
+      invalidate("accounts")
       modelValue.value = false
     },
 
     onError: (error) => {
-      errorMessage.value = `Erro no servidor. Tente novamente mais tarde ou contate o surpote técnico. Erro detalhado: ${error.message}` 
-      showMessage.value = true
+      notifyError("😢", "Ops! Algo deu errado ao editar a conta. Tente novamente ou entre em contato com o suporte. Detalhes: " + error.message)
     },
 
   })
 
-  watch( selectedBank, (bank) => {
+  watch(selectedBank, (bank) => {
     if (props.draft !== null && bank !== null) {
       props.draft.name_bank = bank.name
       props.draft.url_image = bank.url

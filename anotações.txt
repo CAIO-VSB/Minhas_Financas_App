@@ -1,9 +1,13 @@
-Lista de coisas a ser fazer (para não cair no esquecimento)
-
--- Tentar componetizar a sideBar - Prioridade baixa
-
---Logica de setar no banco o cartao de credito (alta Prioridade)
 
 -- Nova forma de importar plugins
 const { $authClient } = useNuxtApp()
 
+-- comando para criar uma migration em sql puro
+npm run migrate create -- create_table_ banks_accounts --migration-file-linguage sql
+
+import { useInvalidate } from "~/composables/useInvalidate"
+const { invalidate } = useInvalidate()
+
+Lista de coisas a ser fazer (para não cair no esquecimento)
+
+-- Tentar componetizar a sideBar - Prioridade baixa

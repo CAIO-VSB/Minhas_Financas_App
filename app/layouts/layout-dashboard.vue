@@ -1,10 +1,15 @@
 <script lang="ts" setup>
 
-  import { ref } from 'vue'
+  type TOptions = {
+    prependIcon: string,
+    icon: string,
+    title: string
+  }
  
   import defaultUser from "@/assets/default-user.webp"
   import InfoUser from './components/InfoUser.vue'
-
+  import ButtonActions from './components/buttonActions.vue'
+  
   const { $authClient } = useNuxtApp()
  
   const { data: session } = await $authClient.getSession()
@@ -17,6 +22,8 @@
   watch(rail, () => {
     openedGroups.value = []
   })
+  
+  
 
 </script>
 
@@ -29,11 +36,16 @@
         @click="rail = false"
         style="height: 100vh;"
         :width="350"
+    
       >
-        <v-list>
-
+        <v-list >
           <v-list-item
           >
+            <template #prepend>
+              <client-only>
+               <v-avatar :image="session?.user.image || defaultUser"></v-avatar>
+              </client-only>
+            </template>
             <template #title>
               <client-only>
                 {{ session?.user.name }}
@@ -43,12 +55,6 @@
             <template #subtitle>
               <client-only>
                 {{ session?.user.email }}
-              </client-only>
-            </template>
-
-            <template #prepend>
-              <client-only>
-               <v-avatar :image="session?.user.image || defaultUser"></v-avatar>
               </client-only>
             </template>
 
@@ -62,7 +68,9 @@
           </v-list-item>
         </v-list>
 
-        <v-divider></v-divider>
+        <v-divider ></v-divider>
+
+        <ButtonActions style="margin-top: 10px; margin-bottom: 10px;"  :rail="rail"/>
 
         <v-list density="compact" nav v-model:opened="openedGroups">
             <v-list-item
@@ -77,45 +85,19 @@
                 >Visão geral</v-tooltip>
             </v-list-item>
 
-            <v-list-group value="Movimentacoes">
-            <template v-slot:activator="{ props }">
-                <v-list-item
-                v-bind="props"
-                title="Movimentações e caixa"
+
+            <v-list-item
                 prepend-icon="mdi-swap-horizontal-bold"
-                >
+                title="Transações"
+                value="transacoes"
+                to="tes"
+            >
                 <v-tooltip
                 activator="parent"
                 location="start"
-                >Movimentações e caixa</v-tooltip>
-                </v-list-item>
-            </template>
+                >Transações</v-tooltip>   
+            </v-list-item>
 
-            <v-list-item
-            prepend-icon="mdi-view-list"
-            title="Lançamentos"
-            value="lancamentos"
-            ></v-list-item>
-
-            <v-list-item
-            prepend-icon="mdi-finance"
-            title="Fluxo"
-            value="fluxo"
-            ></v-list-item>
-
-            <v-list-item
-            prepend-icon="mdi-format-list-checks"
-            title="A pagar e receber"
-            value="a pagar e receber"
-            ></v-list-item>
-
-            <v-list-item
-            prepend-icon="mdi-clipboard-check"
-            title="Pagas e recebidas"
-            value="pagas e recebidas"
-            ></v-list-item>
-
-            </v-list-group>
 
             <v-list-item
                 prepend-icon="mdi-credit-card-multiple-outline"
@@ -129,18 +111,27 @@
                 >Cartões de crédito</v-tooltip>   
             </v-list-item>
 
-
             <v-list-item
             prepend-icon="mdi-chart-pie"
             title="Orçamento"
             value="orçamento"
-            ></v-list-item>
+            >
+              <v-tooltip
+                activator="parent"
+                location="start"
+              >Orçamento</v-tooltip>   
+          </v-list-item>
 
             <v-list-item
             prepend-icon="mdi-piggy-bank-outline"
             title="Economia"
             value="economia"
-            ></v-list-item>
+            >
+              <v-tooltip
+                activator="parent"
+                location="start"
+              >Economia</v-tooltip>   
+          </v-list-item>
 
             <v-list-group value="Cadastros" >
               <template v-slot:activator="{ props }">
@@ -171,6 +162,18 @@
             ></v-list-item>
 
             </v-list-group>
+              <v-list-item
+                prepend-icon="mdi-file-chart-outline"
+                title="Relatórios"
+                value="relatorios"
+                to="cards"
+            >
+                <v-tooltip
+                activator="parent"
+                location="start"
+                >Relatórios</v-tooltip>   
+            </v-list-item>
+
 
             <v-divider></v-divider>
 

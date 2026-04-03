@@ -7,8 +7,8 @@ import { Pool } from "pg"
 export const auth = betterAuth({
 
     session: {
-        expiresIn: 60 * 60,
-        updateAge: 60 * 5
+        expiresIn: 60 * 60 * 24 * 7,
+        updateAge: 60 * 60 * 24
     },
 
     database: new Pool({

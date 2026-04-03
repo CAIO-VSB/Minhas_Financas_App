@@ -93,7 +93,7 @@ export const sendUserEmail = async (user: User, url: string) => {
         console.log("E-mail enviado com sucesso", info.response)
         return info.messageId
     } catch (error) {
-        console.error("Falha ao enviar o email:", error)
+        //console.error("Falha ao enviar o email:", error)
     }
 }
 

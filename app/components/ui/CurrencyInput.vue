@@ -1,24 +1,23 @@
 <script setup lang="ts">
-    import { useCurrencyInput } from "vue-currency-input"
+    import { useCurrencyInput } from 'vue-currency-input'
 
-    const props = defineProps<{
-        label?: string
-    }>()
+    const props = defineProps({ modelValue: Number })
 
-    const model = defineModel<number | null>()
-
-    const { inputRef, formattedValue } = useCurrencyInput({
-      currency: "BRL",
-      locale: "pt-BR"
+    const { inputRef, formattedValue, numberValue, setValue } = useCurrencyInput({
+        currency: "BRL",
+        precision: 2,
     })
-    
+
+    watch(() => props.modelValue, (value) => {setValue(value || null)})
+
 </script>
 
 <template>
-    <v-text-field
-        ref="inputRef"
-        :label="label"
-        variant="underlined"
-        :model-value="model"
-    />
+    <v-text-field 
+    label="Limite"
+    v-model="formattedValue"
+    variant="underlined"
+    ref="inputRef"
+    >
+    </v-text-field>
 </template>

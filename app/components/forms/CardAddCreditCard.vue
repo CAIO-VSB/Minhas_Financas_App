@@ -7,16 +7,17 @@
   import { useHttpCreditsCards } from "~/composables/useHttp/useHttpCreditCard"
   import { useValidateSchemas } from "~/composables/useValidateSchema"
   import { useValidateFields } from "~/composables/useValidateFields"
+  import { useInvalidate } from "~/composables/useInvalidate"
 
-  const { getAccounts } = useHttpAccounts()
+  const { getAccountsOnlyActive } = useHttpAccounts()
   const { postCreditCard } = useHttpCreditsCards()
   const { validateShemaCrediCard } = useValidateSchemas()
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
   const { nameRules } = useValidateFields()
+  const { invalidate } = useInvalidate()
 
-  const errorMessage = ref("")
+
   const form = ref()
-  const activeError = ref(false)
   const searchAccounts = ref("")
   const searchLogos = ref("")
   const modelAccounts = ref<number | null>(null)
@@ -26,7 +27,7 @@
   const modelValue = defineModel<boolean>()
   const cardCredit = ref<TCreditCard>({
     name_identifier: "",
-    limit_card: 0,
+    limit_card: null,
     due_day: null,
     closing_day: null,
     accounts_id: 0,
@@ -37,7 +38,7 @@
 
   const { data, error } = useQuery({
     queryKey: ['accounts'],
-    queryFn: getAccounts,
+    queryFn: getAccountsOnlyActive,
   })
 
   const fourDigitsRules = ref([
@@ -61,6 +62,14 @@
   const logoCreditCardRules = ref([
     (val: string) => !!val || "Campo obrigatório"
   ])
+
+  // onMounted(() => {
+    
+  // })
+
+  watch(cardCredit, (val) => {
+    if (val) return val.name_identifier = ""
+  })
 
   /**
    * Observa a mudança do menu, e com base no status, ele limpa o campo de pesquisa
@@ -86,33 +95,43 @@
     return banks.filter(item => item.text.toLowerCase().includes(searchLogos.value.toLowerCase()))
   })
 
+  function resetForm() {
+    cardCredit.value.closing_day = null
+    cardCredit.value.due_day = null
+    cardCredit.value.four_digits = ""
+    cardCredit.value.limit_card = null
+    cardCredit.value.name_identifier = ""
+    modelAccounts.value = 0
+    modelLogos.value = ""
+  }
+
   const  { mutate, isPending  } = useMutation({
     
     mutationFn: postCreditCard,
 
     onSuccess: () => {
+      resetForm()
+      invalidate("credit-cards")
       notifySuccess("Sucesso", "Cartão de crédito criado com sucesso", 6000)
       modelValue.value = false
     },
 
     onError: (error) => {
-      errorMessage.value = `Ops! Algo deu errado ao salvar a conta. Tente novamente ou entre em contato com o suporte. Detalhes: ${error.name}` 
-      activeError.value = true
+      notifyError("😢", "Ops! Algo deu errado ao salvar o cartão de crédito. Tente novamente ou entre em contato com o suporte. Detalhes: " + error.message)
     },
 
   })
 
   async function handleAddCreditCard() {
 
+    cardCredit.value.accounts_id = toRaw(modelAccounts.value ?? -1)
+    cardCredit.value.url_logo = toRaw(modelLogos.value ?? "")
+
+    const formValid = await form.value.validate()
+    const resultSchema = validateShemaCrediCard(cardCredit.value)
+
     try {
-      cardCredit.value.accounts_id = toRaw(modelAccounts.value ?? -1)
-      cardCredit.value.url_logo = toRaw(modelLogos.value ?? "")
-
-      console.log("Obejto a ser enviado " + JSON.stringify(cardCredit.value))
-
-      const formValid = await form.value.validate()
-      const resultSchema = validateShemaCrediCard(cardCredit.value)
-
+      
       if (formValid) {
         if (!cardCredit.value.four_digits || cardCredit.value.four_digits?.length < 4 ) {
           notifyInfo("Atenção", "Digite os 4 últimos dígitos do cartão.", 5000)
@@ -167,7 +186,8 @@
               md="6"
               sm="6"
             >
-              <CurrencyInput autocomplete="limite" name="limite" v-model="cardCredit.limit_card" label="Limite" />
+              <CurrencyInput autocomplete="limite" name="limite" v-model="cardCredit.limit_card!" label="Limite*" />
+
             </v-col>
             <v-col
               cols="12"
