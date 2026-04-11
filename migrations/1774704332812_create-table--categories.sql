@@ -1,13 +1,13 @@
 -- Up Migration
 CREATE TABLE categories (
     ID SERIAL PRIMARY KEY,
-    user_id VARCHAR(255) REFERENCES "user"(id),
-    name_identifier VARCHAR(255) NOT NULL,
-    url_icon VARCHAR(255) NOT NULL,
+    user_id VARCHAR(100) REFERENCES "user"(id),
+    name_identifier VARCHAR(50) NOT NULL,
+    url_icon VARCHAR(30) NOT NULL,
     active BOOLEAN NOT NULL,
-    type_categorie VARCHAR(255) NOT NULL,
+    type_categorie VARCHAR(30) NOT NULL,
     create_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    update_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    update_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 COMMENT ON TABLE categories is 'Tabela de categorias';

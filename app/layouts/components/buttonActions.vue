@@ -1,17 +1,35 @@
 <script setup lang="ts">
 
   import { mergeProps } from 'vue'
+  import CardAddMoviments from '~/components/forms/CardAddMoviments.vue';
 
   const props = defineProps<{
     rail: boolean
   }>()
 
+  
+  const modalAddRevenue = ref(false)
+
   const items = [
-    { title: 'Receita', icon: "mdi-arrow-up-circle-outline" },
-    { title: 'Despesa', icon: "mdi-arrow-down-circle-outline" },
-    { title: 'Despesa Cartão', icon: "mdi-credit-card-outline" },
-    { title: 'Transferência', icon: "mdi-swap-horizontal" }
+    { title: 'Receita', icon: "mdi-arrow-up-circle-outline", value: "receita" },
+    { title: 'Despesa', icon: "mdi-arrow-down-circle-outline", value: "despesa" },
+    { title: 'Despesa Cartão', icon: "mdi-credit-card-outline", value: "despesaCartao" },
+    { title: 'Transferência', icon: "mdi-swap-horizontal", value: "transfer" }
   ]
+
+  function getOption(option: any) : any {
+    
+    if (option === "receita") {
+      handleOpenModalAddRevenue()
+      return
+    }
+
+  }
+
+  function handleOpenModalAddRevenue() {
+    modalAddRevenue.value = true
+  }
+
 </script>
 
 
@@ -54,10 +72,12 @@
           :key="index"
           :value="index"
           :prepend-icon="item.icon"
+          @click="getOption(item.value)"
         >
           <v-list-item-title>{{ item.title }}</v-list-item-title>
         </v-list-item>
       </v-list>
     </v-menu>
+    <CardAddMoviments v-model="modalAddRevenue" />
   </div>
 </template>

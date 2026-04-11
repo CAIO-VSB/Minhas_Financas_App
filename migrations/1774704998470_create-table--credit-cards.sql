@@ -1,17 +1,17 @@
 -- Up Migration
 CREATE TABLE credit_cards (
     id SERIAL PRIMARY KEY,
-    user_id VARCHAR(255) REFERENCES "user"(id),
+    user_id VARCHAR(100) REFERENCES "user"(id),
     accounts_id INTEGER REFERENCES "banks_accounts"(id),
-    name_identifier VARCHAR(255) NOT NULL,
-    url_logo VARCHAR(255) NOT NULL,
+    name_identifier VARCHAR(50) NOT NULL,
+    url_logo VARCHAR(100) NOT NULL,
     due_day INTEGER NOT NULL,
     closing_day INTEGER NOT NULL,
     limit_card NUMERIC(10, 2),
     active BOOLEAN NOT NULL,
-    four_digits VARCHAR(255) NOT NULL,
+    four_digits CHAR(4) NOT NULL,
     create_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    update_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    update_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 

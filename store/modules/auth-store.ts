@@ -7,10 +7,6 @@ export const useAuthStore = defineStore('auth', () => {
     const { $authClient } = useNuxtApp()
     const user = ref<TUser>()
     const isAuthenticated = ref<boolean>(false)
-    const typeMessage = ref<string>("")
-    const dialog= ref<boolean>(false)
-    const activeMessageError = ref<boolean>(false)
-    const activeMessageAlert = ref<boolean>(false)
 
     const setUser = async (userData: TUser): Promise<void> => {
         user.value = userData
@@ -28,14 +24,10 @@ export const useAuthStore = defineStore('auth', () => {
                 onError(context) {
                     console.log("O status retorado é esse", context.error.status)
                     if (context.error.status === 403) {
-                        typeMessage.value = "E-mail não verificado. Verifique sua caixa de entrada."
-                        activeMessageAlert.value = true
                         return 
                     }
 
                     if (context.error.status === 401) {
-                        typeMessage.value = "Credenciais inválidas. Tente novamente."
-                        activeMessageError.value = true
                         return
                     }
 
@@ -77,17 +69,12 @@ export const useAuthStore = defineStore('auth', () => {
 
         try {
 
-            activeMessageAlert.value = false
-            
             await $authClient.signUp.email(data, {
                 onError(context) {
                     if (context.error.status === 422) {
-                        activeMessageAlert.value = true
-                        typeMessage.value = "E-mail já existe. Use outro e-mail"
                     }
                 },
                 onSuccess() {
-                    dialog.value = true
                 }
             })
 
@@ -96,7 +83,6 @@ export const useAuthStore = defineStore('auth', () => {
         } catch (error) {
 
             console.log("Erro ao criar conta", error)
-            dialog.value = true
             
         }
     }
@@ -111,10 +97,6 @@ export const useAuthStore = defineStore('auth', () => {
         })
     }
 
-    return { login, loginGoogle, register, logout, dialog, isAuthenticated, activeMessageAlert, activeMessageError, typeMessage, user }
+    return { login, loginGoogle, register, logout, isAuthenticated, user }
 
-}, {
-    persist:{
-        storage: piniaPluginPersistedstate.sessionStorage()
-    }
 })

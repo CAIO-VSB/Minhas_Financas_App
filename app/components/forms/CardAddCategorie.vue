@@ -18,10 +18,9 @@
   const { invalidate } = useInvalidate()
   const { data: session } = await $authClient.getSession()
 
-
   const items = ref([
-  'Despesa',
-  'Receita',
+    'Despesa',
+    'Receita',
   ])
 
   const selectRules = ref([

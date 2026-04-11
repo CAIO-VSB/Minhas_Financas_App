@@ -99,7 +99,7 @@
                 @click="handleSignout"
                 >
                 <v-icon color="red">
-                    mdi-power
+                  mdi-power
                 </v-icon>
                 </v-btn>
             </template>

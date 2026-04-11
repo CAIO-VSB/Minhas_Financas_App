@@ -23,7 +23,6 @@
     openedGroups.value = []
   })
   
-  
 
 </script>
 
@@ -112,17 +111,6 @@
             </v-list-item>
 
             <v-list-item
-            prepend-icon="mdi-chart-pie"
-            title="Orçamento"
-            value="orçamento"
-            >
-              <v-tooltip
-                activator="parent"
-                location="start"
-              >Orçamento</v-tooltip>   
-          </v-list-item>
-
-            <v-list-item
             prepend-icon="mdi-piggy-bank-outline"
             title="Economia"
             value="economia"
@@ -166,7 +154,6 @@
                 prepend-icon="mdi-file-chart-outline"
                 title="Relatórios"
                 value="relatorios"
-                to="rel"
             >
                 <v-tooltip
                 activator="parent"

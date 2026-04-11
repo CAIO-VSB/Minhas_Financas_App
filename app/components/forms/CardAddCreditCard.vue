@@ -22,7 +22,7 @@
   const searchLogos = ref("")
   const modelAccounts = ref<number | null>(null)
   const menuAccounts = ref(false)
-  const modelLogos = ref<string | null>("")
+  const modelLogos = ref<number | null>(null)
   const menuLogos = ref(false)
   const modelValue = defineModel<boolean>()
   const cardCredit = ref<TCreditCard>({
