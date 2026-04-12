@@ -16,7 +16,7 @@
   import { useSelectedColor } from "~/composables/useAccount/useSelectedColor"
   import { useSelectedBank } from "~/composables/useAccount/useSelectedBank"
 
-  const { getAccounts } = useHttpAccounts()
+  const { getAllAccounts } = useHttpAccounts()
   const { resetColor } = useSelectedColor()
   const { resetBank } = useSelectedBank()
 
@@ -33,7 +33,7 @@
 
   const { isPending, data, error } = useQuery({
     queryKey: ['accounts'],
-    queryFn: getAccounts,
+    queryFn: getAllAccounts,
   })
 
   function handleOpenModalAddAccount() {

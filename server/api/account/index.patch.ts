@@ -32,8 +32,7 @@ export default defineEventHandler( async (event) => {
         name_bank = $3,
         type_account = $4,
         color = $5,
-        active = $6,
-        update_at = NOW()
+        active = $6
     WHERE id = $7
     RETURNING *
     `

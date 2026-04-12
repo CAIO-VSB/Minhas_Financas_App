@@ -23,6 +23,7 @@ export default defineEventHandler( async (event) => {
             statusMessage: "Unprocessable Entity"
         })
     }
+    
 
     const text = `
     UPDATE categories
@@ -30,8 +31,7 @@ export default defineEventHandler( async (event) => {
         name_identifier = $1,
         url_icon = $2,
         active = $3,
-        type_categorie = $4,
-        update_at = NOW()
+        type_categorie = $4
     WHERE id = $5
     RETURNING *
     `

@@ -2,7 +2,7 @@ import type { TAccount } from "~~/types/account/TAccount.types"
 
 export function useHttpAccounts() {
 
-    const getAccounts = async () => {
+    const getAllAccounts = async () => {
         return await $fetch<TAccount []>("/api/account", {method: "GET"})
     }
 
@@ -21,7 +21,7 @@ export function useHttpAccounts() {
 
     return {
         postAccount,
-        getAccounts,
+        getAllAccounts,
         patchAccount,
         getAccountsOnlyActive
     }

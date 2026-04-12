@@ -35,8 +35,7 @@ export default defineEventHandler( async (event) => {
         closing_day = $5,
         limit_card = $6,
         active = $7,
-        four_digits = $8,
-        update_at = NOW()
+        four_digits = $8
     WHERE id = $9
     RETURNING *
     `

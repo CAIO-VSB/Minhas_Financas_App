@@ -1,7 +1,7 @@
 export type TCreditCard = {
     id?: number,
     name_identifier: string,
-    limit_card?: number | null ,
+    limit_card?: number | null | undefined ,
     four_digits?: string | null,
     due_day: number | null,
     closing_day: number | null,

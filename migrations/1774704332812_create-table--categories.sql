@@ -2,12 +2,12 @@
 CREATE TABLE categories (
     ID SERIAL PRIMARY KEY,
     user_id VARCHAR(100) REFERENCES "user"(id),
-    name_identifier VARCHAR(50) NOT NULL,
+    name_identifier VARCHAR(45) NOT NULL,
     url_icon VARCHAR(30) NOT NULL,
     active BOOLEAN NOT NULL,
     type_categorie VARCHAR(30) NOT NULL,
     create_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    update_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    update_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 COMMENT ON TABLE categories is 'Tabela de categorias';

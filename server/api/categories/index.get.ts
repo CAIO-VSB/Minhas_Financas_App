@@ -16,14 +16,19 @@ export default defineEventHandler( async (event) => {
 
     const userId = session?.session.userId
 
-    const text = 
-    `SELECT * FROM categories 
-    WHERE user_id IS NULL OR user_id = $1
-    ORDER BY user_id IS NULL DESC, name_identifier ASC`
+    const { active } = getQuery(event)
+
+    const text = active !== undefined
+    ? `SELECT * FROM categories WHERE (user_id IS NULL OR user_id = $1) AND active = $2 ORDER BY user_id IS NULL, name_identifier ASC`
+    : `SELECT * FROM categories WHERE (user_id IS NULL OR user_id = $1) ORDER BY user_id IS NULL, name_identifier ASC`
+
+    const params = active !== undefined
+    ? [userId, active === "true"]
+    : [userId]
 
     try {
 
-        const accounts = client.query(text, [userId])
+        const accounts = client.query(text, params)
 
         return (await accounts).rows 
 

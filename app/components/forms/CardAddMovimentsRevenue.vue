@@ -6,13 +6,20 @@
   import { useHttpCategories } from '~/composables/useHttp/useHttpCategories'
   import { useHttpAccounts } from "~/composables/useHttp/useHttpAccounts"
 
+  import { useValidateSchemas } from "~/composables/useValidateSchema"
+  import { useValidateFields } from "~/composables/useValidateFields"
+
+  import type { TMoviments } from "~~/types/moviments/TMoviments"
+
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
-  const { getCategories } = useHttpCategories()
+  const { getCategoriesOnlyActive } = useHttpCategories()
   const { getAccountsOnlyActive } = useHttpAccounts()
+  const { validateSchemaMoviments } = useValidateSchemas()
+  const { nameRules, selectRules, currencyRules, dateRules } = useValidateFields()
 
   const { isPending, data:categories } = useQuery({
     queryKey: ['categories'],
-    queryFn: getCategories,
+    queryFn: getCategoriesOnlyActive,
   })
 
   const { data:accounts } = useQuery({
@@ -20,16 +27,8 @@
     queryFn: getAccountsOnlyActive,
   })
 
-  const trip = ref({
-    name: '',
-    location: null,
-    start: null,
-    end: null,
-  })
-
   const form = ref()
   const modelValue = defineModel<boolean>()
-  const money = ref(null)
   const menuCategorias = ref(false)
   const modelCategorias = ref<number | null>(null)
   const searchCategorias = ref("")
@@ -37,19 +36,14 @@
   const modelAccounts = ref<number | null>(null)
   const menuAccounts = ref(false)
 
-  
-  const fav = ref(true)
-  const menu = ref(false)
-  const message = ref(false)
-  const hints = ref(true)
-
-  const accountForm = ref<TAccount>({
-    name_identifier: "",
-    type_account: "",
-    name_bank: "",
-    color: "",
-    url_image: "",
-    active: true
+  const movimentsForm = ref<TMoviments>({
+    type_transaction: null,
+    value_transaction: null,
+    date_transaction: null,
+    description_transaction: "",
+    categorie_id: null,
+    accounts_id: null,
+    status_transaction: "recebido"
   })
 
   watch(modelCategorias, (val) => {
@@ -68,17 +62,29 @@
     return accounts.value?.filter(item => item.name_identifier.toLowerCase().includes(searchAccounts.value?.toLowerCase() ?? ''))
   })
 
-  async function handleAddAccount() {
+  function resetForm() {
+    movimentsForm.value.accounts_id = null
+    movimentsForm.value.categorie_id = null
+    movimentsForm.value.date_transaction = null
+    movimentsForm.value.description_transaction = ""
+    movimentsForm.value.observation = ""
+    movimentsForm.value.value_transaction = null
+    movimentsForm.value.url_recibo = ""
+    
+    modelValue.value = false
+  }
+
+  async function handleAddMovimentRevenue() {
     
     try {
       const formValid = await form.value.validate()
-      const resultSchema = validateSchemaAccount(accountForm.value)
+      const resultSchema = validateSchemaMoviments(movimentsForm.value)
 
-      console.log("Objeto a ser envidado" + JSON.stringify(accountForm.value))
+      console.log("Objeto a ser envidado" + JSON.stringify(movimentsForm))
       
       if (formValid) {
         if (resultSchema.success) {  
-          mutate(accountForm.value)
+          //mutate(accountForm.value)
         }
       }
     } catch (err) {
@@ -100,11 +106,11 @@
           <v-divider></v-divider>
           <v-card-text>
 
-            <CurrencyInput text-color="green" autocomplete="off" color="green" label="Valor*" />
+            <CurrencyInput :rules="currencyRules" text-color="green" autocomplete="off" color="green" label="Valor*" />
 
-            <v-date-input  autocomplete="off" name="date" prepend-icon="" label="Data*" variant="underlined"></v-date-input>
+            <v-date-input :rules="dateRules" autocomplete="off" name="date" prepend-icon="" label="Data*" variant="underlined"></v-date-input>
 
-            <v-text-field autocomplete="name" name="name" label="Descrição*" variant="underlined"></v-text-field>
+            <v-text-field :rules="nameRules" :counter="45" maxlength="45"  autocomplete="name" name="name" label="Descrição*" variant="underlined"></v-text-field>
 
             <v-select
               autocomplete="off"
@@ -114,11 +120,10 @@
               :items="filterCategorias"
               item-title="name_identifier"
               item-value="id"
-              clearable
               variant="underlined"
               label="Categoria*"
               persistent-hint
-              :rules="logoCreditCardRules"
+              :rules="selectRules"
               >
                 <template v-slot:selection="{item}">
                   <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
@@ -144,7 +149,6 @@
                       placeholder="Buscar..."
                       prepend-inner-icon="mdi-magnify"
                       variant="outlined"
-                      clearable
                       @click.stop
                       @keydown.stop
                       @mousedown.stop
@@ -159,10 +163,9 @@
                   v-model="modelAccounts"
                   v-model:menu="menuAccounts"
                   :items="filterAccounts"
-                  :rules="accountDebitRules"
+                  :rules="selectRules"
                   item-title="name_identifier"
                   item-value="id"
-                  clearable
                   variant="underlined"
                   label="Conta*"
                   hint="O valor será creditado nesta conta"
@@ -195,7 +198,6 @@
                         placeholder="Buscar..."
                         prepend-inner-icon="mdi-magnify"
                         variant="outlined"
-                        clearable
                         @click.stop
                         @keydown.stop
                         @mousedown.stop
@@ -206,46 +208,18 @@
                   </template>
                 </v-select>
 
-                <div style="margin-top: 14px;">
-                    <div>
-                      <v-menu
-                        v-model="menu"
-                        :close-on-content-click="false"
-                        location="end"
-                      >
-                        <template v-slot:activator="{ props }">
-                          <v-btn
-                            color="primary"
-                            v-bind="props"
-                            class="text-none rounded-xl"
-                            append-icon="mdi-arrow-right-thin"
-                          >
-                            Mais detalhes
-                          </v-btn>
-                        </template>
+                <v-text-field :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="underlined"></v-text-field >
 
-                        <v-card min-width="300">
-            
-                          <v-list>
-                            <v-list-item>
-                              <v-text-field variant="underlined" label="Observação"></v-text-field>
-                            </v-list-item>
-
-                            <v-list-item>
-                              <v-file-input variant="underlined" label="Anexar comprovante"></v-file-input>
-                            </v-list-item>
-                          </v-list>
-                        </v-card>
-                      </v-menu>
-                    </div>
-                </div>
+                <v-file-input prepend-icon="" prepend-inner-icon="mdi-paperclip" clearable label="Anexar comprovante" variant="underlined"></v-file-input>
 
               <v-switch
-                v-model="accountForm.active"
+                v-model="movimentsForm.status_transaction"
                 color="success"
                 label="Receita já recebida"
                 hide-details
-              ></v-switch>
+                false-value="pendente"
+                true-value="recebido"
+              ></v-switch> 
 
             <small class="text-caption text-medium-emphasis"
               >* Indica campos obrigatórios</small
@@ -268,15 +242,12 @@
               text="Lançar"
               variant="tonal"
               :loading="isPending"
-              @click="handleAddAccount"
+              @click="handleAddMovimentRevenue"
             ></v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
     </v-form>
-
-    <DialogAddFinancialInstitution v-model="dialogAddInstitution" />
-    <DialogAddColor v-model="dialogColorPicker" />
 
   </div>
 </template>

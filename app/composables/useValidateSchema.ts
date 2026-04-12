@@ -1,12 +1,14 @@
 import { schemaAccount } from "~~/schemas/account.schema"
 import { singIn, singUp, passwordValidate, emailValidate } from "~~/schemas/auth.schema"
 import { schemaCategories } from "~~/schemas/categories.schema"
+import { schemaCreditCard } from "~~/schemas/creditCard.schema"
+import { schemaMoviments } from "~~/schemas/moviments.schema"
 import type { TAccount } from "~~/types/account/TAccount.types"
 import type { TUser } from "~~/types/auth/Tauth.types"
 import type { TCategorie } from "~~/types/categorie/TCategorie"
 import type { TCreditCard } from "~~/types/credit_card/TCredit-card"
 import type { TRecoveryForm, TLoginForm, TResetForm } from "~~/types/user/Tuser.types"
-import { schemaCreditCard } from "~~/schemas/creditCard.schema"
+import type { TMoviments } from "~~/types/moviments/TMoviments"
 
 //Tipo para validar o retorno de cada função
 type ValidateResult<T> = 
@@ -93,8 +95,6 @@ export function useValidateSchemas() {
 
     const validateShemaCrediCard = (data: TCreditCard):ValidateResult<TCreditCard> => {
 
-        console.log("Objeto que chegou na composable", toRaw(data))
-
         const result = schemaCreditCard.safeParse(data)
 
         if (!result.success) {
@@ -105,6 +105,17 @@ export function useValidateSchemas() {
         return {success: true, data: result.data}
     }
 
+    const validateSchemaMoviments = (data: TMoviments):ValidateResult<TMoviments> => {
+        
+        const result = schemaMoviments.safeParse(data)
+
+        if (!result.success) {
+            console.log("Erro ao validar o formato de movimentaçãos")
+            return {success: false}
+        }
+
+        return {success: true, data: result.data}
+    }
 
     return {
         validateSchemaAccount,
@@ -113,7 +124,8 @@ export function useValidateSchemas() {
         validateSchemaPassword,
         validateSchemaSignIn,
         validateSchemaSignUp,
-        validateShemaCrediCard
+        validateShemaCrediCard,
+        validateSchemaMoviments
     }
 
 }

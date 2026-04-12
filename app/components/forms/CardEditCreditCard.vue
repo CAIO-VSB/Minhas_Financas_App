@@ -10,11 +10,11 @@
   import { useInvalidate } from "~/composables/useInvalidate"
 
 
-  const { getAccounts } = useHttpAccounts()
+  const { getAllAccounts } = useHttpAccounts()
   const { patchCreditCard } = useHttpCreditsCards()
   const { validateShemaCrediCard } = useValidateSchemas()
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
-  const { nameRules } = useValidateFields()
+  const { nameRules, selectRules } = useValidateFields()
 
   const form = ref()
   const searchAccounts = ref("")
@@ -32,7 +32,7 @@
 
   const { data, error } = useQuery({
     queryKey: ['accounts'],
-    queryFn: getAccounts,
+    queryFn: getAllAccounts,
   })
 
   const fourDigitsRules = ref([
@@ -49,13 +49,7 @@
     (val: number) => !!val || "Campo obrigatório"
   ])
 
-  const accountDebitRules = ref([
-    (val: string) => !!val || "Campo obrigatório"
-  ])
 
-  const logoCreditCardRules = ref([
-    (val: string) => !!val || "Campo obrigatório"
-  ])
 
   /**
    * Observa a mudança do menu, e com base no status, ele limpa o campo de pesquisa
@@ -172,7 +166,7 @@
               md="6"
               sm="6"
             >
-              <CurrencyInput v-model="props.draft.limit_card" label="Limite" />
+              <CurrencyInput v-model="props.draft.limit_card!" label="Limite" />
             </v-col>
             <v-col
               cols="12"
@@ -233,7 +227,7 @@
                 v-model="props.draft.accounts_id"
                 v-model:menu="menuAccounts"
                 :items="filterAccounts"
-                :rules="accountDebitRules"
+                :rules="selectRules"
                 item-title="name_identifier"
                 item-value="id"
                 clearable
@@ -303,7 +297,7 @@
                 label="Logo*"
                 hint="Logo de identificação"
                 persistent-hint
-                :rules="logoCreditCardRules"
+                :rules="selectRules"
               >
                 <template v-slot:selection="{item}">
                   <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 

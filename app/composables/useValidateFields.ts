@@ -19,10 +19,26 @@ export function useValidateFields() {
         (val: string) => (val && val.length >= 8) || "A senha deve conter no minímo 8 caracteres"
     ])
 
+    const selectRules = ref([
+        (val: string) => !!val || "Campo obrigatório"
+    ])
+
+    const currencyRules = ref([
+        (val: number) => !!val || "Campo obrigatório",
+        (val: number) => val < 0 || "O valor não pode ser menor que zero"
+    ])
+
+    const dateRules = ref([
+        (val: string) => !!val || "Campo obrigatório"
+    ])
+
     return {
         nameRules,
         emailRules,
         passwordRules,
+        selectRules,
+        currencyRules,
+        dateRules
     }
 
 }

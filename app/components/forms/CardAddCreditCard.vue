@@ -22,12 +22,12 @@
   const searchLogos = ref("")
   const modelAccounts = ref<number | null>(null)
   const menuAccounts = ref(false)
-  const modelLogos = ref<number | null>(null)
+  const modelLogos = ref<string | null>(null)
   const menuLogos = ref(false)
   const modelValue = defineModel<boolean>()
   const cardCredit = ref<TCreditCard>({
     name_identifier: "",
-    limit_card: null,
+    limit_card: 0,
     due_day: null,
     closing_day: null,
     accounts_id: 0,
@@ -186,7 +186,8 @@
               md="6"
               sm="6"
             >
-              <CurrencyInput autocomplete="limite" name="limite" v-model="cardCredit.limit_card!" label="Limite*" />
+            
+            <CurrencyInput autocomplete="limite" name="limite" v-model="cardCredit.limit_card!" label="Limite" />
 
             </v-col>
             <v-col
@@ -199,10 +200,10 @@
                 variant="underlined"
                 hint="Ajuda a diferenciar este cartão quando você possui vários cadastrados"
                 persistent-hint
-                autocomplete="cc-number"
-                name="cc-number"
+                autocomplete="off"
                 isent
-                counter
+                :counter="4"
+                maxlength="4"
                 :rules="fourDigitsRules"
                 v-model="cardCredit.four_digits"
               ></v-text-field>

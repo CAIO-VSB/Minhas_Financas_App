@@ -1,13 +1,13 @@
 <script setup lang="ts">
 
+
   import { mergeProps } from 'vue'
-  import CardAddMoviments from '~/components/forms/CardAddMoviments.vue';
+  import CardAddMovimentsRevenue  from '~/components/forms/CardAddMovimentsRevenue.vue';
 
   const props = defineProps<{
     rail: boolean
   }>()
 
-  
   const modalAddRevenue = ref(false)
 
   const items = [
@@ -17,9 +17,9 @@
     { title: 'Transferência', icon: "mdi-swap-horizontal", value: "transfer" }
   ]
 
-  function getOption(option: any) : any {
+  function getOption(data: string)  {
     
-    if (option === "receita") {
+    if (data === "receita") {
       handleOpenModalAddRevenue()
       return
     }
@@ -78,6 +78,6 @@
         </v-list-item>
       </v-list>
     </v-menu>
-    <CardAddMoviments v-model="modalAddRevenue" />
+    <CardAddMovimentsRevenue v-model="modalAddRevenue" />
   </div>
 </template>

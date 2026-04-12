@@ -16,7 +16,7 @@
   import type { TOptionAction } from "~~/types/option_action/TOptionAction"
 
   //Importações composables
-  const { getCategories } = useHttpCategories()
+  const { getAllCategories } = useHttpCategories()
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
   const {  patchCategorie } = useHttpCategories() 
   const { invalidate } = useInvalidate()
@@ -30,7 +30,7 @@
   
   const {isPending, data, error } = useQuery({
     queryKey: ['categories'],
-    queryFn: getCategories,
+    queryFn: getAllCategories,
   })
   
   const  { mutate } = useMutation({
@@ -357,8 +357,7 @@
   margin-top: 10px;
   justify-content: center;
   max-width: 100%;
-  height: calc(100vh - 70px);
-
+  min-height: calc(100vh - 80px);
 }
 
 .filter-card {
@@ -371,9 +370,11 @@
 .card-list {
   width: 65%;
   overflow-y: auto;
-  height: 100%;
+  max-height: calc(100vh - 70px);
+  height: fit-content;
   border-radius: 5px;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  align-self: flex-start;
 }
 
 .fab-wrapper {
