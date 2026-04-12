@@ -9,21 +9,24 @@
   import { useValidateSchemas } from "~/composables/useValidateSchema"
   import { useValidateFields } from "~/composables/useValidateFields"
 
+  import CardAddCategorie from '~/components/forms/CardAddCategorie.vue'
+  import CardAddAccount from "~/components/forms/CardAddAccount.vue"
+
   import type { TMoviments } from "~~/types/moviments/TMoviments"
 
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
   const { getCategoriesOnlyActive } = useHttpCategories()
   const { getAccountsOnlyActive } = useHttpAccounts()
   const { validateSchemaMoviments } = useValidateSchemas()
-  const { nameRules, selectRules, currencyRules, dateRules } = useValidateFields()
+  const { nameRules, selectRules, dateRules } = useValidateFields()
 
   const { isPending, data:categories } = useQuery({
-    queryKey: ['categories'],
+    queryKey: QUERY_KEYS.categories.active,
     queryFn: getCategoriesOnlyActive,
   })
 
   const { data:accounts } = useQuery({
-    queryKey: ['accounts'],
+    queryKey: QUERY_KEYS.accounts.active,
     queryFn: getAccountsOnlyActive,
   })
 
@@ -35,6 +38,8 @@
   const searchAccounts = ref("")
   const modelAccounts = ref<number | null>(null)
   const menuAccounts = ref(false)
+  const modalAddCategorie = ref(false)
+  const modalAddAccount = ref(false)
 
   const movimentsForm = ref<TMoviments>({
     type_transaction: null,
@@ -63,6 +68,8 @@
   })
 
   function resetForm() {
+    modelAccounts.value = null
+    modelCategorias.value = null
     movimentsForm.value.accounts_id = null
     movimentsForm.value.categorie_id = null
     movimentsForm.value.date_transaction = null
@@ -72,6 +79,14 @@
     movimentsForm.value.url_recibo = ""
     
     modelValue.value = false
+  }
+
+  function handleOpenModalAddCategorie() {
+    modalAddCategorie.value = true
+  }
+
+  function handleOpenModalAddAccount() {
+    modalAddAccount.value = true
   }
 
   async function handleAddMovimentRevenue() {
@@ -106,7 +121,7 @@
           <v-divider></v-divider>
           <v-card-text>
 
-            <CurrencyInput :rules="currencyRules" text-color="green" autocomplete="off" color="green" label="Valor*" />
+            <CurrencyInput  text-color="green" autocomplete="off" color="green" label="Valor*" />
 
             <v-date-input :rules="dateRules" autocomplete="off" name="date" prepend-icon="" label="Data*" variant="underlined"></v-date-input>
 
@@ -125,6 +140,14 @@
               persistent-hint
               :rules="selectRules"
               >
+                <template #append-inner>
+                  <v-tooltip
+                  activator="parent"
+                  location="top"
+                  >Nova categoria</v-tooltip>
+                  <v-icon @click.stop="handleOpenModalAddCategorie" class="button-hover" icon="mdi-plus-box"></v-icon>
+                </template>
+                
                 <template v-slot:selection="{item}">
                   <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
                     <v-avatar :icon="item.raw.url_icon"></v-avatar>
@@ -172,6 +195,14 @@
                   persistent-hint
                   autocomplete="off"
                 >
+                  <template #append-inner>
+                    <v-tooltip
+                    activator="parent"
+                    location="top"
+                    >Nova conta</v-tooltip>
+                    <v-icon @click.stop="handleOpenModalAddAccount"  class="button-hover" icon="mdi-plus-box"></v-icon>
+                  </template>
+
                   <template v-slot:selection="{item}">
                     <v-avatar  style="width: 30px; height: 30px; margin-right: 12px;"> 
                       <v-img  :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
@@ -249,13 +280,18 @@
       </v-dialog>
     </v-form>
 
+    <div style="position: absolute;">
+      <CardAddCategorie v-model="modalAddCategorie"/>
+      <CardAddAccount v-model="modalAddAccount"/>
+    </div>
+
   </div>
 </template>
 
 <style lang="scss" scoped>
 
 .icon-add-logo:hover {
-  background-color: rgba(128, 128, 128, 0.267);
+  background-color: rgba(128, 128, 128, 0.562);
   border-radius: 60%;
 }
 
@@ -265,6 +301,12 @@
 
 ::v-deep(.v-card-title) {
   align-items: center;
+}
+
+.button-hover:hover {
+  background-color: rgba(255, 255, 255, 0.418);
+  transform: scale(1.1); /* Efeito de zoom */
+  transition: 0.3s; /* Transição suave */
 }
 
 

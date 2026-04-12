@@ -32,7 +32,7 @@
   ]
 
   const { isPending, data, error } = useQuery({
-    queryKey: ['accounts'],
+    queryKey: QUERY_KEYS.accounts.all,
     queryFn: getAllAccounts,
   })
 

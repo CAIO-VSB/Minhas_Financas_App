@@ -28,8 +28,8 @@
   const selectedTypeCategorie = ref("")
 
   
-  const {isPending, data, error } = useQuery({
-    queryKey: ['categories'],
+  const {isPending, data } = useQuery({
+    queryKey: QUERY_KEYS.categories.all,
     queryFn: getAllCategories,
   })
   

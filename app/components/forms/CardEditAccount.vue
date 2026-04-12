@@ -52,17 +52,14 @@
   ])
 
   const form = ref()
-  const errorMessage = ref("")
-  const showMessage = ref(false)
- 
-  
+
   const  { mutate, isPending } = useMutation({
 
     mutationFn: patchAccount,
 
     onSuccess: () => {
       notifySuccess("Sucesso", "Conta editada com sucesso", 6000)
-      invalidate("accounts")
+      invalidate(QUERY_KEYS.accounts.all)
       modelValue.value = false
     },
 

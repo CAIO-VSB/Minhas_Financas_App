@@ -23,10 +23,6 @@ export function useValidateFields() {
         (val: string) => !!val || "Campo obrigatório"
     ])
 
-    const currencyRules = ref([
-        (val: number) => !!val || "Campo obrigatório",
-        (val: number) => val < 0 || "O valor não pode ser menor que zero"
-    ])
 
     const dateRules = ref([
         (val: string) => !!val || "Campo obrigatório"
@@ -37,7 +33,6 @@ export function useValidateFields() {
         emailRules,
         passwordRules,
         selectRules,
-        currencyRules,
         dateRules
     }
 

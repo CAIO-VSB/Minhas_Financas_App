@@ -87,7 +87,7 @@
     mutationFn: patchCreditCard,
 
     onSuccess: () => {
-      invalidate("credit-cards")
+      invalidate(QUERY_KEYS.creditCards.all)
       notifySuccess("Sucesso", "Cartão de crédito editado com sucesso", 6000)
       modelValue.value = false
     },

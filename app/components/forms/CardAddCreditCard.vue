@@ -37,7 +37,7 @@
   })
 
   const { data, error } = useQuery({
-    queryKey: ['accounts'],
+    queryKey: QUERY_KEYS.accounts.all,
     queryFn: getAccountsOnlyActive,
   })
 
@@ -111,7 +111,7 @@
 
     onSuccess: () => {
       resetForm()
-      invalidate("credit-cards")
+      invalidate(QUERY_KEYS.accounts.all)
       notifySuccess("Sucesso", "Cartão de crédito criado com sucesso", 6000)
       modelValue.value = false
     },

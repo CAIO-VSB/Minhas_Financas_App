@@ -23,12 +23,12 @@
   const { invalidate } = useInvalidate()
 
   const { data:allCreditCard } = useQuery({
-    queryKey: ['credit-cards'],
+    queryKey: QUERY_KEYS.creditCards.all,
     queryFn: getCreditCardOnlyActive,
   })
 
   const { data:allDeactivatedCrediCard } = useQuery({
-    queryKey: ['credit-cards-disable'],
+    queryKey: QUERY_KEYS.creditCards.disable,
     queryFn: getCreditCardOnlyDisable,
   })
 
@@ -55,8 +55,8 @@
   mutationFn: (payload: TCreditCard) => patchCreditCard(payload),
 
   onSuccess: () => {
-    invalidate("credit-cards")
-    invalidate("credit-cards-disable")
+    invalidate(QUERY_KEYS.creditCards.all)
+    invalidate(QUERY_KEYS.creditCards.disable)
     notifySuccess("Sucesso", "Cartão de crédito editado com sucesso", 6000)
   },
 

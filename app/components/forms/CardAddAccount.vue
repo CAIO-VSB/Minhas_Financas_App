@@ -11,7 +11,6 @@
   import { useHttpAccounts } from "~/composables/useHttp/useHttpAccounts"
   import { useInvalidate } from "~/composables/useInvalidate"
   import DialogAddColor from "~/components/forms/DialogAddColor.vue"
-  import BaseModal from "~/components/ui/BaseModal.vue"
   import DialogAddFinancialInstitution from "~/components/forms/DialogAddFinancialInstitution.vue"
   
 
@@ -92,7 +91,7 @@
     mutationFn: postAccount,
 
     onSuccess: () => {
-      invalidate("accounts")
+      invalidate(QUERY_KEYS.accounts.all)
       notifySuccess("Sucesso", "Conta criada com sucesso", 6000)
       resetForm()
       modelValue.value = false

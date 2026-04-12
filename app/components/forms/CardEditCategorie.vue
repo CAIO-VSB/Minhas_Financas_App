@@ -58,7 +58,7 @@
     mutationFn: (payload: TCategorie) => patchCategorie(payload),
 
     onSuccess: () => {
-      invalidate("categories")
+      invalidate(QUERY_KEYS.categories.all)
       notifySuccess("Sucesso", "Categoria editada com sucesso", 6000)
       modelValue.value = false
     },
