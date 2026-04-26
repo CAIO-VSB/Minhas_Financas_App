@@ -1,6 +1,7 @@
 import { schemaAccount } from "~~/schemas/account.schema"
 import { auth } from "~~/auth"
 import client from "~/utils/db"
+import { accountsRepository } from "~~/server/repositories/account.respository"
 
 export default defineEventHandler( async (event) => {
 
@@ -24,18 +25,9 @@ export default defineEventHandler( async (event) => {
         })
     }
 
-    const text = 
-    `INSERT INTO banks_accounts(user_id, name_identifier, url_image, name_bank, type_account, active, color)
-    VALUES($1, $2, $3, $4, $5, $6, $7)
-    RETURNING id, name_identifier, type_account, user_id, url_image`
-
-    const values = [session.user.id, result.data.name_identifier, result.data.url_image, result.data.name_bank, result.data.type_account, result.data.active, result.data.color]
-
     try {
 
-        const account = client.query(text, values)
-
-        return {message:"Conta criada com sucesso", status: 200, data: (await account).rows[0]}
+        return await accountsRepository.create(session.session.userId, result.data)
 
     } catch (error) {
 

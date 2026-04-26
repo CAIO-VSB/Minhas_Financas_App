@@ -11,7 +11,6 @@
     watch(() => props.modelValue, (value) => {setValue(value || null)})
 
     const rules = computed(() =>[
-        () => !!numberValue.value || "Campo obrigatório",
         () => (numberValue.value!) >= 0 || "O valor não pode ser menor que zero"
     ])
     

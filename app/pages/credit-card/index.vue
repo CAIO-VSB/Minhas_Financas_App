@@ -22,12 +22,12 @@
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
   const { invalidate } = useInvalidate()
 
-  const { data:allCreditCard } = useQuery({
+  const { data:allCreditCard, isPending } = useQuery({
     queryKey: QUERY_KEYS.creditCards.all,
     queryFn: getCreditCardOnlyActive,
   })
 
-  const { data:allDeactivatedCrediCard } = useQuery({
+  const { data:allDeactivatedCrediCard, isPending: isPendingDisable } = useQuery({
     queryKey: QUERY_KEYS.creditCards.disable,
     queryFn: getCreditCardOnlyDisable,
   })
@@ -136,7 +136,7 @@
 
 <template>
  <v-empty-state
-  v-if="allCreditCard?.length === 0"
+  v-if="!isPending && !isPendingDisable && !allCreditCard?.length && !allDeactivatedCrediCard?.length"
   title="Adicione um cartão de crédito"
   text="Cadastre um cartão de crédito para começar a visualizar suas faturas e acompanhar seus lançamentos."
   :image="alertImg"
@@ -144,11 +144,13 @@
   <v-btn @click="modalAddCard = true" color="primary" prepend-icon="mdi-plus">
     Adicionar cartão
   </v-btn>
+
   </v-empty-state>
-  <div v-if="allCreditCard" class="main-container">
+
+  <div v-if=" !isPending && !isPendingDisable && (allCreditCard?.length || allDeactivatedCrediCard?.length)" class="main-container">
     <div class="container-side-left">
       <div>
-        <v-card>
+        <v-card :loading="isPending">
           <div class="flex align-baseline w-full !p-1">
             <div class=" flex flex-col gap-5 text-center w-full mt-5 mb-3">
               <v-menu
@@ -203,11 +205,6 @@
                 <VueDatePicker :teleport="true" :locale="ptBR" v-model="period" month-picker :formats="{ month: 'LLLL' }" />
               </div>
 
-              <CardAddCartao v-model="modalAddCard"/>
-
-              <CardEditCard
-              :draft="editDraft"
-              v-model="modalEditCard" />
 
             </div>
         
@@ -264,7 +261,6 @@
     
     </div>
 
-
     <div >
       <CardMovementsCreditCard />
     </div>
@@ -281,6 +277,16 @@
         </template>
       </v-tooltip>
     </div>
+    </div>
+
+    <div>
+      
+      <CardAddCartao v-model="modalAddCard"/>
+
+      <CardEditCard
+      :draft="editDraft"
+      v-model="modalEditCard" />
+      
     </div>
     
 </template>

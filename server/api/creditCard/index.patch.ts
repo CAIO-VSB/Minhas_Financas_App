@@ -1,6 +1,6 @@
 import { auth } from "~~/auth"
-import client from "~/utils/db"
 import { schemaCreditCard } from "~~/schemas/creditCard.schema"
+import { creditCardRespository } from "~~/server/repositories/creditCard.respository"
 
 export default defineEventHandler( async (event) => {
 
@@ -25,28 +25,10 @@ export default defineEventHandler( async (event) => {
         })
     }
 
-    const text = `
-    UPDATE credit_cards
-    SET
-        accounts_id = $1,
-        name_identifier = $2,
-        url_logo = $3,
-        due_day = $4,
-        closing_day = $5,
-        limit_card = $6,
-        active = $7,
-        four_digits = $8
-    WHERE id = $9
-    RETURNING *
-    `
-
-    const values = [result.data.accounts_id, result.data.name_identifier, result.data.url_logo, result.data.due_day, result.data.closing_day, result.data.limit_card, result.data.active, result.data.four_digits, result.data.id]
 
     try {
 
-        const newCategorie = client.query(text, values)
-
-        return (await newCategorie).rows
+       return await creditCardRespository.update(result.data)
 
     } catch (error) {
         console.log("Erro ao modificar cartão de crédito ", error)

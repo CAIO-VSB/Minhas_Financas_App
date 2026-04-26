@@ -111,7 +111,7 @@
 
     onSuccess: () => {
       resetForm()
-      invalidate(QUERY_KEYS.accounts.all)
+      invalidate(QUERY_KEYS.creditCards.all)
       notifySuccess("Sucesso", "Cartão de crédito criado com sucesso", 6000)
       modelValue.value = false
     },

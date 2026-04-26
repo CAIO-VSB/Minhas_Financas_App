@@ -1,5 +1,5 @@
 import { auth } from "~~/auth"
-import client from "~/utils/db"
+import { categoriesRepository } from "~~/server/repositories/categories.respository"
 
 export default defineEventHandler( async (event) => {
 
@@ -14,23 +14,14 @@ export default defineEventHandler( async (event) => {
         })
     }
 
-    const userId = session?.session.userId
-
     const { active } = getQuery(event)
-
-    const text = active !== undefined
-    ? `SELECT * FROM categories WHERE (user_id IS NULL OR user_id = $1) AND active = $2 ORDER BY user_id IS NULL, name_identifier ASC`
-    : `SELECT * FROM categories WHERE (user_id IS NULL OR user_id = $1) ORDER BY user_id IS NULL, name_identifier ASC`
-
-    const params = active !== undefined
-    ? [userId, active === "true"]
-    : [userId]
 
     try {
 
-        const accounts = client.query(text, params)
-
-        return (await accounts).rows 
+        return await categoriesRepository.findAll(
+            session.session.userId,
+            active !== undefined ? active === "true" : undefined
+        )
 
     } catch (error) {
 

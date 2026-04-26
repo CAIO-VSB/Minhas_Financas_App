@@ -1,6 +1,6 @@
 import { schemaAccount } from "~~/schemas/account.schema"
 import { auth } from "~~/auth"
-import client from "~/utils/db"
+import { accountsRepository } from "~~/server/repositories/account.respository"
 
 export default defineEventHandler( async (event) => {
 
@@ -24,27 +24,10 @@ export default defineEventHandler( async (event) => {
         })
     }
 
-    const text = `
-    UPDATE banks_accounts
-    SET
-        name_identifier = $1,
-        url_image = $2,
-        name_bank = $3,
-        type_account = $4,
-        color = $5,
-        active = $6
-    WHERE id = $7
-    RETURNING *
-    `
-
-    const values = [result.data.name_identifier, result.data.url_image, result.data.name_bank, result.data.type_account, result.data.color, result.data.active, result.data.id]
-
 
     try {
 
-        const newAccount = client.query(text, values)
-
-        return (await newAccount).rows
+        return await accountsRepository.update(result.data)
 
     } catch (error) {
         

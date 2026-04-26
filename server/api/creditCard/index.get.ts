@@ -1,5 +1,6 @@
 import { auth } from "~~/auth"
 import client from "~/utils/db"
+import { creditCardRespository } from "~~/server/repositories/creditCard.respository"
 
 export default defineEventHandler( async (event) => {
 
@@ -14,23 +15,14 @@ export default defineEventHandler( async (event) => {
         })
     }
 
-    const userId = session?.session.userId
-
     const { active } = getQuery(event)
-
-    const text = active !== undefined
-    ? `SELECT * FROM credit_cards WHERE user_id = $1 AND active = $2 ORDER BY id ASC`
-    : `SELECT * FROM credit_cards WHERE user_id = $1 ORDER BY id ASC`
-
-    const params = active !== undefined
-    ? [userId, active === "true"]
-    : [userId]
 
     try {
 
-        const accounts = client.query(text, params)
-
-        return (await accounts).rows 
+        return await creditCardRespository.findAll(
+            session.session.userId,
+            active !== undefined ? active === "true" : undefined 
+        )
 
     } catch (error) {
 

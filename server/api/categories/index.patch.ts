@@ -1,6 +1,7 @@
 import { auth } from "~~/auth"
 import client from "~/utils/db"
 import { schemaCategories } from "~~/schemas/categories.schema"
+import { categoriesRepository } from "~~/server/repositories/categories.respository"
 
 export default defineEventHandler( async (event) => {
 
@@ -25,24 +26,9 @@ export default defineEventHandler( async (event) => {
     }
     
 
-    const text = `
-    UPDATE categories
-    SET
-        name_identifier = $1,
-        url_icon = $2,
-        active = $3,
-        type_categorie = $4
-    WHERE id = $5
-    RETURNING *
-    `
-
-    const values = [result.data.name_identifier, result.data.url_icon, result.data.active, result.data.type_categorie, result.data.id]
-
     try {
 
-        const newCategorie = client.query(text, values)
-
-        return (await newCategorie).rows
+        return await categoriesRepository.update(result.data)
 
     } catch (error) {
 

@@ -113,6 +113,8 @@
                 :rules="nameRules"
                 hint="Adicione um ícone clicando no botão ao lado"
                 persistent-hint
+                :counter="45" 
+                maxlength="45"
               >
 
                <template v-slot:append>
