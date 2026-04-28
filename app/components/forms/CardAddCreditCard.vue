@@ -13,7 +13,7 @@
   const { postCreditCard } = useHttpCreditsCards()
   const { validateShemaCrediCard } = useValidateSchemas()
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
-  const { nameRules } = useValidateFields()
+  const { nameRules, currencyRules } = useValidateFields()
   const { invalidate } = useInvalidate()
 
 
@@ -27,7 +27,7 @@
   const modelValue = defineModel<boolean>()
   const cardCredit = ref<TCreditCard>({
     name_identifier: "",
-    limit_card: 0,
+    limit_card: null,
     due_day: null,
     closing_day: null,
     accounts_id: 0,
@@ -187,7 +187,7 @@
               sm="6"
             >
             
-            <CurrencyInput autocomplete="limite" name="limite" v-model="cardCredit.limit_card!" label="Limite" />
+            <CurrencyInput :rules="currencyRules" autocomplete="limite" name="limite" v-model="cardCredit.limit_card!" label="Limite" />
 
             </v-col>
             <v-col

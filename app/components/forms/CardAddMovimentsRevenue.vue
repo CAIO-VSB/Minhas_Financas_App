@@ -5,9 +5,11 @@
 
   import { useHttpCategories } from '~/composables/useHttp/useHttpCategories'
   import { useHttpAccounts } from "~/composables/useHttp/useHttpAccounts"
+  import { useHttpMoviments } from "~/composables/useHttp/useHttpMoviments"
 
   import { useValidateSchemas } from "~/composables/useValidateSchema"
   import { useValidateFields } from "~/composables/useValidateFields"
+  import { useInvalidate } from "~/composables/useInvalidate"
 
   import CardAddCategorie from '~/components/forms/CardAddCategorie.vue'
   import CardAddAccount from "~/components/forms/CardAddAccount.vue"
@@ -18,9 +20,11 @@
   const { getCategoriesOnlyActive } = useHttpCategories()
   const { getAccountsOnlyActive } = useHttpAccounts()
   const { validateSchemaMoviments } = useValidateSchemas()
-  const { nameRules, selectRules, dateRules } = useValidateFields()
+  const { postMoviments } = useHttpMoviments()
+  const { invalidate } = useInvalidate()
+  const { nameRules, selectRules, dateRules, currencyRules } = useValidateFields()
 
-  const { isPending, data:categories } = useQuery({
+  const { data:categories } = useQuery({
     queryKey: QUERY_KEYS.categories.active,
     queryFn: getCategoriesOnlyActive,
   })
@@ -42,7 +46,7 @@
   const modalAddAccount = ref(false)
 
   const movimentsForm = ref<TMoviments>({
-    type_transaction: null,
+    type_transaction: "Receita",
     value_transaction: null,
     date_transaction: null,
     description_transaction: "",
@@ -51,8 +55,18 @@
     status_transaction: "recebido"
   })
 
-  watch(modelCategorias, (val) => {
+  watch(menuCategorias, (val) => {
     if (!val) searchCategorias.value = ""
+  })
+
+  watch(modelAccounts, (val) => {
+    if (!val) searchAccounts.value = ""
+    movimentsForm.value.accounts_id = val
+  })
+
+  watch(modelCategorias, (val) => {
+    if (!val) searchAccounts.value = ""
+    movimentsForm.value.categorie_id = val
   })
 
   watch(menuAccounts, (val) => {
@@ -89,17 +103,35 @@
     modalAddAccount.value = true
   }
 
+  const  { mutate, isPending  } = useMutation({
+    
+    mutationFn: postMoviments,
+
+    onSuccess: () => {
+      invalidate(QUERY_KEYS.accounts.all)
+      notifySuccess("Sucesso", "Receita lançada com sucesso", 6000)
+      resetForm()
+      modelValue.value = false
+    },
+
+    onError: (error) => {
+      notifyError("😢", "Ops! Algo deu errado ao salvar a receita. Tente novamente ou entre em contato com o suporte. Detalhes: " + error.message)
+    },
+
+  })
+
   async function handleAddMovimentRevenue() {
     
     try {
+
       const formValid = await form.value.validate()
       const resultSchema = validateSchemaMoviments(movimentsForm.value)
-
-      console.log("Objeto a ser envidado" + JSON.stringify(movimentsForm))
+      
+      console.log("Objeto a ser envidado" + JSON.stringify(movimentsForm.value))
       
       if (formValid) {
         if (resultSchema.success) {  
-          //mutate(accountForm.value)
+          mutate(movimentsForm.value)
         }
       }
     } catch (err) {
@@ -115,17 +147,18 @@
     <v-form
     @submit.prevent
     ref="form"
+    validate-on="lazy blur"
     >
       <v-dialog v-model="modelValue" max-width="600">
         <v-card prepend-icon="mdi-bank-plus" title="Nova receita">
           <v-divider></v-divider>
           <v-card-text>
 
-            <CurrencyInput  text-color="green" autocomplete="off" color="green" label="Valor*" />
+            <CurrencyInput input-color="#2E7D32" base-color="#2E7D32" color="#2E7D32" :rules="currencyRules"  text-color="green" autocomplete="off" label="Valor*" v-model="movimentsForm.value_transaction" />
 
-            <v-date-input :rules="dateRules" autocomplete="off" name="date" prepend-icon="" label="Data*" variant="underlined"></v-date-input>
+            <v-date-input :rules="dateRules" autocomplete="off" name="date" prepend-icon="" label="Data*" variant="underlined" v-model="movimentsForm.date_transaction"></v-date-input>
 
-            <v-text-field :rules="nameRules" :counter="45" maxlength="45"  autocomplete="name" name="name" label="Descrição*" variant="underlined"></v-text-field>
+            <v-text-field :rules="nameRules" :counter="45" maxlength="45"  autocomplete="name" name="name" label="Descrição*" variant="underlined" v-model="movimentsForm.description_transaction"></v-text-field>
 
             <v-select
               autocomplete="off"
@@ -204,10 +237,10 @@
                   </template>
 
                   <template v-slot:selection="{item}">
-                    <v-avatar  style="width: 30px; height: 30px; margin-right: 12px;"> 
+                    <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
                       <v-img  :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
                     </v-avatar>
-                    <span>{{ item.raw.name_identifier }}</span>
+                    <span >{{ item.raw.name_identifier }}</span>
                   </template>
 
                   <template v-slot:item="{props, item}">
@@ -239,9 +272,9 @@
                   </template>
                 </v-select>
 
-                <v-text-field :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="underlined"></v-text-field >
+                <v-text-field v-model="movimentsForm.observation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="underlined"></v-text-field >
 
-                <v-file-input prepend-icon="" prepend-inner-icon="mdi-paperclip" clearable label="Anexar comprovante" variant="underlined"></v-file-input>
+                <v-file-input prepend-icon=""  prepend-inner-icon="mdi-paperclip" clearable label="Anexar comprovante" variant="underlined"></v-file-input>
 
               <v-switch
                 v-model="movimentsForm.status_transaction"

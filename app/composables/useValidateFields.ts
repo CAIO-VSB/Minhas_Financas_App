@@ -23,9 +23,15 @@ export function useValidateFields() {
         (val: string) => !!val || "Campo obrigatório"
     ])
 
-
     const dateRules = ref([
         (val: string) => !!val || "Campo obrigatório"
+    ])
+
+    const currencyRules = ref([
+        (val: string) => !!val || "Campo obrigatório",
+        (val: string) => {const num = parseFloat(val.replace(/[^0-9,.-]/g, "").replace(",", ".")) 
+            return (!isNaN(num) && num >= 0) || "O valor não pode ser negativo"
+        }
     ])
 
     return {
@@ -33,7 +39,8 @@ export function useValidateFields() {
         emailRules,
         passwordRules,
         selectRules,
-        dateRules
+        dateRules,
+        currencyRules
     }
 
 }

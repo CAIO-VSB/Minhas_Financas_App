@@ -110,7 +110,7 @@ export function useValidateSchemas() {
         const result = schemaMoviments.safeParse(data)
 
         if (!result.success) {
-            console.log("Erro ao validar o formato de movimentaçãos")
+            console.log("Erro ao validar o formato de movimentaçãos", result.error)
             return {success: false}
         }
 
