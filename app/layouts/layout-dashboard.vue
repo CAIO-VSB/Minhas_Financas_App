@@ -45,6 +45,7 @@
                <v-avatar :image="session?.user.image || defaultUser"></v-avatar>
               </client-only>
             </template>
+            
             <template #title>
               <client-only>
                 {{ session?.user.name }}
@@ -76,7 +77,7 @@
                 prepend-icon="mdi-home-analytics"
                 title="Visão geral"
                 value="Visão geral"
-                to="home"
+                to="/home"
             >
                 <v-tooltip
                 activator="parent"
@@ -89,7 +90,7 @@
                 prepend-icon="mdi-swap-horizontal-bold"
                 title="Transações"
                 value="transacoes"
-                to="tes"
+                to="/transactions"
             >
                 <v-tooltip
                 activator="parent"
@@ -102,7 +103,7 @@
                 prepend-icon="mdi-credit-card-multiple-outline"
                 title="Cartões de crédito"
                 value="cartoes"
-                to="credit-card"
+                to="/credit-card"
             >
                 <v-tooltip
                 activator="parent"
@@ -139,14 +140,14 @@
             prepend-icon="mdi-folder-outline"
             title="Categorias"
             value="categoria"
-            to="categories"
+            to="/categories"
             ></v-list-item>
 
             <v-list-item
             prepend-icon="mdi-bank-outline"
             title="Contas bancárias"
             value="contas"
-            to="accounts"
+            to="/accounts"
             ></v-list-item>
 
             </v-list-group>

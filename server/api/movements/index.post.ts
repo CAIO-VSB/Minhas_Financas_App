@@ -1,6 +1,6 @@
 import { auth } from "~~/auth"
-import { schemaMoviments } from "~~/schemas/moviments.schema"
-import { movimentsRespository } from "~~/server/repositories/moviments.repository"
+import { schemaMovements } from "~~/schemas/movements.schema"
+import { movementsRespository } from "~~/server/repositories/moviments.repository"
 
 export default defineEventHandler( async (event) => {
 
@@ -15,7 +15,7 @@ export default defineEventHandler( async (event) => {
         })
     }
         
-    const result = await readValidatedBody(event, body => schemaMoviments.safeParse(body))
+    const result = await readValidatedBody(event, body => schemaMovements.safeParse(body))
 
     if (!result.success) {
         throw createError({
@@ -26,7 +26,7 @@ export default defineEventHandler( async (event) => {
 
     try {
 
-        return await movimentsRespository.create(session.session.userId, result.data)
+        return await movementsRespository.create(session.session.userId, result.data)
 
     } catch (error) {
         console.log("Erro ao criar movimentação " + error)

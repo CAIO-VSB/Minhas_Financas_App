@@ -12,12 +12,15 @@
   import { useHttpAccounts } from "~/composables/useHttp/useHttpAccounts"
   import { useValidateSchemas } from "~/composables/useValidateSchema"
   import { useInvalidate } from "~/composables/useInvalidate"
+  import CurrencyInput from "~/components/ui/CurrencyInput.vue"
 
   const { patchAccount } = useHttpAccounts()
   
   const props = defineProps<{
     draft: TAccount | null
   }>()
+
+  console.log("Props chegando ", toRaw(props.draft))
 
   const modelValue = defineModel<boolean>()
 
@@ -123,6 +126,9 @@
           <v-divider></v-divider>
           <v-card-text>
             <form>
+
+              <CurrencyInput readonly autocomplete="off" hint="Valor atual da conta no momento do cadastro." v-model="props.draft.initial_balance" label="Saldo inicial" />
+
               <v-text-field
                 label="Nome da conta *"
                 variant="underlined"

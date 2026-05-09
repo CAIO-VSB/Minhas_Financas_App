@@ -1,6 +1,6 @@
 import client from "~/utils/db"
 
-export const movimentsRespository = {
+export const movementsRespository = {
 
     async create(userId: string, data: {id?: number, type_transaction: string, value_transaction: number, date_transaction: Date, description_transaction: string, categorie_id: number, accounts_id: number, observation?: string, url_recibo?: string, status_transaction: string, is_deleted?: boolean}) {
 
@@ -16,5 +16,39 @@ export const movimentsRespository = {
         return {message:"Movimentação criada com sucesso", status: 200, data: (await moviments).rows[0]}
 
     },
+
+    async findAll(userId: string, month: number, year: number) {
+
+        const text = 
+        `SELECT * FROM fn_movements($1, $2, $3) ORDER BY date_transaction ASC`
+
+        const movements = client.query(text, [userId, month, year])
+
+        return (await movements).rows
+    },
+
+    async findOnlyRevenues(userId: string) {
+        
+        const text =
+        `SELECT * 
+            FROM vw_movements_only_revenues 
+            WHERE user_id = $1`
+
+        const movementsOnlyRevenues = client.query(text, [userId])
+
+        return (await movementsOnlyRevenues).rows
+    },
+
+    async findOnlyExpenses(userId: string) {
+        
+        const text =
+        `SELECT * 
+            FROM vw_movements_only_expenses 
+            WHERE user_id = $1`
+
+        const movementsOnlyExpenses = client.query(text, [userId])
+
+        return (await movementsOnlyExpenses).rows
+    }
 
 }

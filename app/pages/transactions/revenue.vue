@@ -5,7 +5,9 @@
         layout: "layout-dashboard"
     })
 
-
+    import { VueDatePicker } from '@vuepic/vue-datepicker'
+    import { ptBR } from 'date-fns/locale'
+    import CardAddMovimentsRevenue from '~/components/forms/CardAddMovimentsRevenue.vue'
     import { useHttpMovements } from '~/composables/useHttp/useHttpMovements'
     import type { TMovements } from '~~/types/movements/TMovements'
     import type { TOptionAction } from '~~/types/option_action/TOptionAction'
@@ -22,17 +24,22 @@
         route: string
     }
 
-    const { getMoviments } = useHttpMovements()
+    const { getOnlyRevenues } = useHttpMovements()
 
     const route = useRoute()
 
+    const modalAddRevenue = ref(false)
+
     const search = ref('')
 
-    const dialog = ref(false)
+    const period = ref({
+        month: new Date().getMonth(),
+        year: new Date().getFullYear(),
+    })
   
     const { data, isPending } = useQuery({
-        queryKey: QUERY_KEYS.movements.all,
-        queryFn: getMoviments,
+        queryKey: QUERY_KEYS.movements.only_revenues,
+        queryFn: getOnlyRevenues,
     })
 
 
@@ -43,6 +50,22 @@
             value_transaction: new Intl.NumberFormat('pt-br', {style: 'currency', currency: 'BRL'}).format(item.value_transaction ?? 0.00)
         }))
         
+    })
+
+    const sumary = computed(() => {
+
+        const row = transitionsFformatted.value?.[0]
+
+        const formated = new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+        })
+
+        return {
+            receitas_pendentes: formated.format(row?.t_receitas_pendentes ?? 0.00),
+            receitas_efetivadas: formated.format(row?.t_receitas_efetivadas ?? 0.00),
+            total_geral: formated.format(row?.total_geral_receitas ?? 0.00),
+        }
     })
 
     const itemsRouter = [
@@ -71,7 +94,11 @@
     })
 
     const titleButtonOption = computed(() => {
-        return currentItem.value?.title ?? "Todas"
+        return currentItem.value?.title 
+    })
+
+    const ColorButtonOption = computed(() => {
+        return currentItem.value?.color
     })
 
     function getTitleRouter(item: option) {
@@ -90,9 +117,7 @@
         ]
     } 
 
-  const drawer = ref(false)
 
-  const model = ref()
  
 </script>
 
@@ -100,170 +125,8 @@
 <template>
     <div class="container-main">
 
-      <v-navigation-drawer
-        v-model="drawer"
-        location="right"
-        temporary
-        width="470"
-      >
+        <cardAddMovimentsRevenue v-model="modalAddRevenue" />
 
-       <v-list >
-          <v-list-item
-          >
-            <template #title>
-              <span style="font-weight: 600; font-size: 1.2rem;">Filtro de transações</span>
-            </template>
-          </v-list-item>
-        </v-list>
-
-        <v-divider ></v-divider>
-
-        <div class="filter-main">
-
-          <div class="d-flex justify-center">
-            <v-date-input
-              v-model="model"
-              label="Selecione o período"
-              multiple="range"
-              autocomplete="off"
-              prepend-icon=""
-              variant="underlined"
-              clearable
-            ></v-date-input>
-          </div>
-
-          <div>
-            <v-select
-              autocomplete="off"
-              :loading="isPending"
-              v-model="modelCategorias"
-              v-model:menu="menuCategorias"
-              :items="filterCategorias"
-              item-title="name_identifier"
-              item-value="id"
-              variant="underlined"
-              label="Categoria"
-              persistent-hint
-              :rules="selectRules"
-              >                
-                <template v-slot:selection="{item}">
-                  <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
-                    <v-avatar :icon="item.raw.url_icon"></v-avatar>
-                  </v-avatar>
-                  <span>{{ item.raw.name_identifier }}</span>
-                </template>
-
-                <template v-slot:item="{props, item}">
-                  <v-list-item v-bind="props">
-                    <template v-slot:prepend>
-                      <v-avatar :icon="item.raw.url_icon"></v-avatar>
-                    </template>
-                  </v-list-item>
-                </template>
-
-                <template v-slot:prepend-item>
-                  <div class="pa-2 border-b">
-                    <v-text-field
-                      v-model="searchCategorias"
-                      :error="!!searchCategorias && !filterCategorias?.length"
-                      density="compact"
-                      placeholder="Buscar..."
-                      prepend-inner-icon="mdi-magnify"
-                      variant="outlined"
-                      @click.stop
-                      @keydown.stop
-                      @mousedown.stop
-                      hide-details="auto"
-                    >                 
-                  </v-text-field>
-                  </div>
-                </template>
-              </v-select>
-          </div>
-
-          <div>
-            <v-select
-              v-model="modelAccounts"
-              v-model:menu="menuAccounts"
-              :items="filterAccounts"
-              :rules="selectRules"
-              item-title="name_identifier"
-              item-value="id"
-              variant="underlined"
-              label="Conta"
-              persistent-hint
-              autocomplete="off"
-            >
-
-                <template v-slot:selection="{item}">
-                  <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
-                    <v-img  :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
-                  </v-avatar>
-                  <span >{{ item.raw.name_identifier }}</span>
-                </template>
-
-                <template v-slot:item="{props, item}">
-                  <v-list-item  v-bind="props">
-                    <template v-slot:prepend>
-                      <v-avatar>
-                        <v-img :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
-                      </v-avatar>
-                    </template>
-                  </v-list-item>
-                </template>
-
-                <template v-slot:prepend-item>
-                  <div class="pa-2 border-b">
-                    <v-text-field
-                      v-model="searchAccounts"
-                      :error="!!searchAccounts && !filterAccounts?.length"
-                      density="compact"
-                      placeholder="Buscar..."
-                      prepend-inner-icon="mdi-magnify"
-                      variant="outlined"
-                      @click.stop
-                      @keydown.stop
-                      @mousedown.stop
-                      hide-details="auto"
-                    >                 
-                  </v-text-field>
-                  </div>
-                </template>
-              </v-select>
-          </div>
-
-          <div>
-            <v-select
-              variant="underlined"
-              clearable
-              label="Situação"
-              :items="['California', 'Colorado', 'Florida', 'Georgia', 'Texas', 'Wyoming']"
-            ></v-select>
-          </div>
-
-          <v-divider style="margin-top: 5px;"></v-divider>
-          
-          <v-card-actions style="display: flex; justify-content: space-between; margin-top: 13px;">
-          
-            <v-btn
-              text="Cancelar"
-              variant="elevated"
-              @click="resetForm"
-            ></v-btn>
-
-            <v-btn
-              color="primary"
-              text="Aplicar filtros"
-              variant="elevated"
-              :loading="isPending"
-              @click="handleAddAccount"
-            ></v-btn>
-          </v-card-actions>
-
-        </div>
-
-      </v-navigation-drawer>
-      
         <div class="text-center bnt-options">
             
             <v-menu
@@ -271,7 +134,7 @@
                 >
                 <template v-slot:activator="{ props }">
                     <v-btn
-                    color="primary"
+                    :color="ColorButtonOption"
                     v-bind="props"
                     class="text-none rounded-xl"
                     append-icon="mdi-arrow-down-drop-circle"
@@ -296,26 +159,52 @@
             </v-menu>
 
             <div class="more-option">
+
+                <v-btn
+                color="success"
+                prepend-icon="mdi-plus"
+                class="text-none rounded-xl"
+                @click="modalAddRevenue = true"
+                >
+                NOVA RECEITA
+                </v-btn>
+
                 <v-btn
                 color="primary"
                 prepend-icon="mdi-filter"
                 class="text-none rounded-xl"
-                @click="drawer = true"
                 >
                 Filtro
                 </v-btn>
+
             </div>
-
-
-
 
         </div>
 
-        <div class="main-cards">
-            <v-card text="Saldo Atual"></v-card>
-            <v-card text="Receitas"></v-card>
-            <v-card text="Despesas"></v-card>
-            <v-card text="Balanco Mensal"></v-card>
+         <div class="main-cards">
+            <v-card subtitle="Receitas pendentes">
+                <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
+                <div v-else  class="main-value-formated">
+                    <v-icon color="green" icon="mdi-arrow-down-bold-circle"></v-icon>
+                    <span>{{ sumary?.receitas_pendentes }}</span>
+                </div>
+
+            </v-card>
+            <v-card :loading="isPending" subtitle="Receitas recebidas">
+                 <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
+                 <div v-else class="main-value-formated">
+                    <v-icon color="green" icon="mdi-arrow-up-bold-circle"></v-icon>
+                    <span>{{ sumary?.receitas_efetivadas }}</span>
+                </div>
+
+            </v-card>
+            <v-card :loading="isPending" subtitle="Total">
+                <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
+                 <div v-else  class="main-value-formated">
+                    <v-icon color='black' icon="mdi-scale-balance"></v-icon>
+                    <span> {{ sumary?.total_geral }}</span>
+                </div>
+            </v-card>
         </div>
         
         <div class="container-table">
@@ -336,6 +225,11 @@
                 v-else
             >
             <template v-slot:text>
+
+            <div style="margin-bottom: 10px;">
+                <VueDatePicker :teleport="true" :locale="ptBR" v-model="period" month-picker :formats="{ month: 'LLLL' }" />
+            </div>
+
             <v-text-field
                 v-model="search"
                 label="Pesquisar"
@@ -362,6 +256,13 @@
                         activator="parent"
                         location="top"
                     >{{ item.status_transaction === 'recebido' || item.status_transaction === 'pago' ? 'Efetivada' : 'Pendente' }}</v-tooltip>
+                </template>
+
+                
+                <template v-slot:item.value_transaction="{item}">
+                    <v-chip color="green">
+                    {{ item.value_transaction }}
+                    </v-chip>
                 </template>
 
                 <template v-slot:item.actions="{ item }">
@@ -396,11 +297,6 @@
 
 <style scoped>
 
-.filter-main {
-  padding: 10px;
-  margin-top: 10px;
-}
-
 .container-main {
     margin-top: 35px;
 }
@@ -434,15 +330,29 @@
 
 .table {
     overflow-y: auto;
-    max-height: calc(100vh - 220px);
+    max-height: calc(100vh - 256px);
     height: fit-content;
 }
+
+.main-value-formated {
+    font-size: 1.2rem;
+    display: flex;
+    gap: 20px;
+    padding-left: 10px;
+    margin-bottom: 10px;
+}
+
+.icon-help:hover {
+    transform: scale(1.3);
+    cursor: pointer;
+}
+
 
 :deep(.v-data-table-header__content) {
     font-weight: 800;
 }
 
-@media (max-width: 950px) {
+@media (max-width: 1200px) {
   .main-cards {
     display: grid;
     grid-template-columns: 1fr;
@@ -466,6 +376,5 @@
         flex-direction: column;
     }
 }
-
 
 </style>

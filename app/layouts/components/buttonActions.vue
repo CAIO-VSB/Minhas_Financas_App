@@ -2,13 +2,15 @@
 
 
   import { mergeProps } from 'vue'
-  import CardAddMovimentsRevenue  from '~/components/forms/CardAddMovimentsRevenue.vue';
+  import CardAddMovimentsRevenue  from '~/components/forms/CardAddMovimentsRevenue.vue'
+  import CardAddMovimentsExpenses from '~/components/forms/CardAddMovimentsExpenses.vue';
 
   const props = defineProps<{
     rail: boolean
   }>()
 
   const modalAddRevenue = ref(false)
+  const modalExpenses = ref(false)
 
   const items = [
     { title: 'Receita', icon: "mdi-arrow-up-circle-outline", value: "receita" },
@@ -20,15 +22,17 @@
   function getOption(data: string)  {
     
     if (data === "receita") {
-      handleOpenModalAddRevenue()
+      modalAddRevenue.value = true
+      return
+    }
+
+    if (data === "despesa") {
+      modalExpenses.value = true
       return
     }
 
   }
 
-  function handleOpenModalAddRevenue() {
-    modalAddRevenue.value = true
-  }
 
 </script>
 
@@ -78,6 +82,10 @@
         </v-list-item>
       </v-list>
     </v-menu>
+
     <CardAddMovimentsRevenue v-model="modalAddRevenue" />
+
+    <CardAddMovimentsExpenses v-model="modalExpenses" />
+    
   </div>
 </template>

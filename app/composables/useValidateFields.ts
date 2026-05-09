@@ -6,7 +6,7 @@ export function useValidateFields() {
     const nameRules = ref([
         (val: string) => !!val || "Campo nome é obrigatório",
         (val: string) => (val && val.length <= 55) || "Nome não pode conter mais de 55 caracteres",
-        (val: string) => (val && val.length > 2) || "Nome precisa ter no minímo 3 caracteres"
+        (val: string) => (val && val.length > 1) || "Nome precisa ter no minímo 1 caracteres"
     ])
 
     const emailRules = ref([

@@ -46,13 +46,13 @@
   const modalAddAccount = ref(false)
 
   const movementsForm = ref<TMovements>({
-    type_transaction: "Receita",
+    type_transaction: "Despesa",
     value_transaction: null,
     date_transaction: null,
     description_transaction: "",
     categorie_id: null,
     accounts_id: null,
-    status_transaction: "recebido"
+    status_transaction: "pago"
   })
 
   watch(menuCategorias, (val) => {
@@ -91,7 +91,7 @@
     movementsForm.value.observation = ""
     movementsForm.value.value_transaction = null
     movementsForm.value.url_recibo = ""
-    movementsForm.value.status_transaction = "recebido"
+    movementsForm.value.status_transaction = 'pago'
     
     modelValue.value = false
   }
@@ -104,6 +104,7 @@
     modalAddAccount.value = true
   }
 
+
   const  { mutate, isPending  } = useMutation({
     
     mutationFn: postMovements,
@@ -111,19 +112,22 @@
     onSuccess: () => {
       invalidate(QUERY_KEYS.accounts.all)
       invalidate(QUERY_KEYS.movements.all)
-      invalidate(QUERY_KEYS.movements.only_revenues)
-      notifySuccess("Sucesso", "Receita lançada com sucesso", 6000)
+      invalidate(QUERY_KEYS.movements.only_expenses)
+
+      console.log("Invalndio: ", QUERY_KEYS.movements.all)
+
+      notifySuccess("Sucesso", "Despesa lançada com sucesso", 6000)
       resetForm()
       modelValue.value = false
     },
 
     onError: (error) => {
-      notifyError("😢", "Ops! Algo deu errado ao salvar a receita. Tente novamente ou entre em contato com o suporte. Detalhes: " + error.message)
+      notifyError("😢", "Ops! Algo deu errado ao salvar a desepesa. Tente novamente ou entre em contato com o suporte. Detalhes: " + error.message)
     },
 
   })
 
-  async function handleAddMovimentRevenue() {
+  async function handleAddMovimentExpenses() {
     
     try {
 
@@ -153,11 +157,11 @@
     validate-on="lazy blur"
     >
       <v-dialog v-model="modelValue" max-width="600">
-        <v-card prepend-icon="mdi-bank-plus" title="Nova receita">
+        <v-card prepend-icon="mdi-bank-plus" title="Nova despesa">
           <v-divider></v-divider>
           <v-card-text>
 
-            <CurrencyInput input-color="#2E7D32" base-color="#2E7D32" color="#2E7D32" :rules="currencyRules"  text-color="green" autocomplete="off" label="Valor*" v-model="movementsForm.value_transaction" />
+            <CurrencyInput input-color="#C62828" base-color="#C62828" color="#C62828" :rules="currencyRules"  autocomplete="off" label="Valor*" v-model="movementsForm.value_transaction" />
 
             <v-date-input :rules="dateRules" autocomplete="off" name="date" prepend-icon="" label="Data*" variant="underlined" v-model="movementsForm.date_transaction"></v-date-input>
 
@@ -227,7 +231,7 @@
                   item-value="id"
                   variant="underlined"
                   label="Conta*"
-                  hint="O valor será creditado nesta conta"
+                  hint="O valor será debitado desta conta"
                   persistent-hint
                   autocomplete="off"
                 >
@@ -281,11 +285,11 @@
 
               <v-switch
                 v-model="movementsForm.status_transaction"
-                color="success"
-                label="Receita recebida"
+                color="error"
+                label="Despesa paga"
                 hide-details
                 false-value="pendente"
-                true-value="recebido"
+                true-value="pago"
               ></v-switch> 
 
             <small class="text-caption text-medium-emphasis"
@@ -309,7 +313,7 @@
               text="Lançar"
               variant="tonal"
               :loading="isPending"
-              @click="handleAddMovimentRevenue"
+              @click="handleAddMovimentExpenses"
             ></v-btn>
           </v-card-actions>
         </v-card>
@@ -341,8 +345,8 @@
 
 .button-hover:hover {
   background-color: rgba(255, 255, 255, 0.418);
-  transform: scale(1.1); /* Efeito de zoom */
-  transition: 0.3s; /* Transição suave */
+  transform: scale(1.1); 
+  transition: 0.3s; 
 }
 
 

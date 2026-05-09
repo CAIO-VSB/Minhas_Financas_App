@@ -15,10 +15,12 @@
   import { useHttpAccounts } from "~/composables/useHttp/useHttpAccounts"
   import { useSelectedColor } from "~/composables/useAccount/useSelectedColor"
   import { useSelectedBank } from "~/composables/useAccount/useSelectedBank"
+  import { useHttpMovements } from '~/composables/useHttp/useHttpMovements'
 
-  const { getAllAccounts } = useHttpAccounts()
+  const { getAllAccounts, getBalanceForId } = useHttpAccounts()
   const { resetColor } = useSelectedColor()
   const { resetBank } = useSelectedBank()
+  const { getMoviments } = useHttpMovements()
 
   const modalAddAccount = ref(false)
   const modalEditAccount = ref(false)
@@ -34,6 +36,30 @@
   const { isPending, data, error } = useQuery({
     queryKey: QUERY_KEYS.accounts.all,
     queryFn: getAllAccounts,
+  })
+
+  const { data:balanceForId } = useQuery({
+    queryKey: QUERY_KEYS.accounts.getBalanceForId,
+    queryFn: getBalanceForId,
+  })
+
+  const balanceFormated = computed(() => {
+
+    const row = balanceForId.value?.[0]
+
+    const formated = new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    })
+
+    return {
+      balance: formated.format(row?.saldo_inicial ?? 0.00),
+    }
+
+  })
+
+  watch(balanceForId, (val) => {
+    console.log("O movementes chegando", balanceForId.value)
   })
 
   function handleOpenModalAddAccount() {
@@ -121,7 +147,10 @@
         >
 
           <template #title>
-            <p :class="{'text-disabled': !account.active}" style="padding-bottom: 12px; ">{{ account.name_identifier }}</p>
+            <div>
+              <p :class="{'text-disabled': !account.active}" style="padding-bottom: 4px;">{{ account.name_identifier }} </p>
+
+            </div>
           </template>
 
           <template #prepend>
@@ -131,7 +160,12 @@
           </template>
 
           <template #subtitle>
-            <p  style="padding-bottom: 12px;">{{ account.type_account }}</p>
+            <div class="subtitle">
+              <p style="padding-bottom: 12px;">{{ account.type_account }}</p>
+              <div class="valor-saldo">
+                <span>Saldo atual</span> <span class="saldo">{{ balanceFormated.balance }}</span>
+              </div>
+            </div>
           </template>
 
           <v-divider></v-divider>
@@ -216,6 +250,26 @@
 .text-disabled {
   text-decoration: line-through;
 }
+
+.subtitle {
+  display: flex;
+  flex-direction: column;
+}
+
+.valor-saldo {
+  display: flex;
+  gap: 40px;
+}
+
+.saldo {
+  width: 65%;
+  display: flex;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: black;
+}
+
 
 
 </style>

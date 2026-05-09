@@ -2,6 +2,7 @@ import * as z from "zod";
 
 export const schemaAccount = z.object({
     id: z.number("ID da conta está ausente").optional(),
+    initial_balance: z.number().optional().nullable(),
     name_identifier: z.string().max(55, "Limite de caractere excedido").min(3, "Nome da conta é obrigatório"),
     type_account: z.string().min(3, "Nenhum tipo selecionado"),
     name_bank: z.string().min(3, "Nenhuma logo selecionada"),

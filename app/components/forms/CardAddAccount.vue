@@ -12,6 +12,7 @@
   import { useInvalidate } from "~/composables/useInvalidate"
   import DialogAddColor from "~/components/forms/DialogAddColor.vue"
   import DialogAddFinancialInstitution from "~/components/forms/DialogAddFinancialInstitution.vue"
+  import CurrencyInput from "~/components/ui/CurrencyInput.vue"
   
 
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
@@ -51,6 +52,7 @@
 
   const accountForm = ref<TAccount>({
     name_identifier: "",
+    initial_balance: null,
     type_account: "",
     name_bank: "",
     color: "",
@@ -134,6 +136,9 @@
         <v-card prepend-icon="mdi-plus-box" title="Nova Conta">
           <v-divider></v-divider>
           <v-card-text>
+
+              <CurrencyInput autocomplete="off" hint="Valor atual da conta no momento do cadastro." v-model="accountForm.initial_balance!" label="Saldo inicial" />
+
               <v-text-field
                 label="Nome da conta *"
                 variant="underlined"
@@ -142,6 +147,7 @@
                 autocomplete="name"
                 v-model="accountForm.name_identifier"
                 :rules="nameRules"
+                
               >
               </v-text-field>
 
@@ -173,7 +179,7 @@
                   </template>
               </v-text-field>
 
-              <v-text-field :rules="colorRules" persistent-hint hint="Cor de identifiação" color="primary" v-model="accountForm.color" readonly variant="underlined">
+              <v-text-field :rules="colorRules" persistent-hint hint="Cor de identifiação *" color="primary" v-model="accountForm.color" readonly variant="underlined">
                 <template v-slot:append>
                     <v-icon @click="dialogColorPicker = true" class="cursor-pointer icon-add-logo"  icon="mdi-eyedropper-variant" size="large"></v-icon>
                     <v-tooltip

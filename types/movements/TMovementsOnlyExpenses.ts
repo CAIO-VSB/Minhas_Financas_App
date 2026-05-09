@@ -1,4 +1,4 @@
-export type TMoviments = {
+export type TMovementsOnlyExpenses = {
     id?: number | null
     type_transaction: string | null,
     value_transaction: number | null, 
@@ -9,5 +9,8 @@ export type TMoviments = {
     observation?: string | null,
     url_recibo?: string | null,
     status_transaction: string | null,
-    is_deleted?: boolean | null
+    is_deleted?: boolean | null,
+    t_despesas_efetivadas?: number | null,
+    t_despesas_pendentes?: number | null,
+    total_geral_despesas?: null | null 
 }

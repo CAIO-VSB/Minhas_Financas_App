@@ -1,4 +1,5 @@
 import type { TAccount } from "~~/types/account/TAccount.types"
+import type { TMovements } from "~~/types/movements/TMovements"
 
 export function useHttpAccounts() {
 
@@ -8,6 +9,10 @@ export function useHttpAccounts() {
 
     const getAccountsOnlyActive = async () => {
         return await $fetch<TAccount []>("/api/account", {method: "GET", query: {active: true}})
+    }
+
+    const getBalanceForId = async () => {
+        return await $fetch<TMovements []>("/api/account/index.getBalanceForId", {method: "GET"})
     }
 
     const postAccount = async (data: TAccount) => {
@@ -23,6 +28,7 @@ export function useHttpAccounts() {
         postAccount,
         getAllAccounts,
         patchAccount,
-        getAccountsOnlyActive
+        getAccountsOnlyActive,
+        getBalanceForId
     }
 }

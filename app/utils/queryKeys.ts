@@ -5,10 +5,16 @@ export const QUERY_KEYS = {
     },
     accounts: {
         all: ['accounts'],
-        active: ['accounts', 'active']
+        active: ['accounts', 'active'],
+        getBalanceForId: ['getBalance']
     },
     creditCards: {
         all: ['credit-cards'],
         disable: ['credit-cards-disable']
+    },
+    movements: {
+        all: ['movements'],
+        only_revenues: ['only_revenues'],
+        only_expenses: ['only_expenses']
     }
 }
