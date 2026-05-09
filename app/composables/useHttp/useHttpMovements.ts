@@ -13,12 +13,12 @@ export function useHttpMovements() {
         return $fetch<TMovements []>("/api/movements", {method: "GET", query: { month, year}})
     }
 
-    const getOnlyRevenues = async () => {
-        return $fetch<TMovementsOnlyRenevue []>("/api/movements/index.onlyGetRevenues", {method: "GET"})
+    const getOnlyRevenues = async (month: number, year: number) => {
+        return $fetch<TMovementsOnlyRenevue []>("/api/movements/index.onlyGetRevenues", {method: "GET", query: { month, year}})
     }
 
-    const getOnlyExpenses = async () => {
-        return $fetch<TMovementsOnlyExpenses []>("/api/movements/index.onlyGetExpenses", {method: "GET"})
+    const getOnlyExpenses = async (month: number, year: number) => {
+        return $fetch<TMovementsOnlyExpenses []>("/api/movements/index.onlyGetExpenses", {method: "GET", query: { month, year}})
     }
 
     return {

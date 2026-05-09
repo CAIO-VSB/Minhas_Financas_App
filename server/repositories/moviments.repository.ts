@@ -27,26 +27,22 @@ export const movementsRespository = {
         return (await movements).rows
     },
 
-    async findOnlyRevenues(userId: string) {
+    async findOnlyRevenues(userId: string, month: number, year: number) {
         
         const text =
-        `SELECT * 
-            FROM vw_movements_only_revenues 
-            WHERE user_id = $1`
+        `SELECT * FROM fn_movements_only_revenues($1, $2, $3) ORDER BY date_transaction ASC`
 
-        const movementsOnlyRevenues = client.query(text, [userId])
+        const movementsOnlyRevenues = client.query(text, [userId, month, year])
 
         return (await movementsOnlyRevenues).rows
     },
 
-    async findOnlyExpenses(userId: string) {
+    async findOnlyExpenses(userId: string, month: number, year: number) {
         
         const text =
-        `SELECT * 
-            FROM vw_movements_only_expenses 
-            WHERE user_id = $1`
+        `SELECT * FROM fn_movements_only_expenses($1, $2, $3) ORDER BY date_transaction ASC`
 
-        const movementsOnlyExpenses = client.query(text, [userId])
+        const movementsOnlyExpenses = client.query(text, [userId, month, year])
 
         return (await movementsOnlyExpenses).rows
     }

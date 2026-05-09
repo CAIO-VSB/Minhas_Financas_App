@@ -114,8 +114,6 @@
       invalidate(QUERY_KEYS.movements.all)
       invalidate(QUERY_KEYS.movements.only_expenses)
 
-      console.log("Invalndio: ", QUERY_KEYS.movements.all)
-
       notifySuccess("Sucesso", "Despesa lançada com sucesso", 6000)
       resetForm()
       modelValue.value = false

@@ -6,10 +6,12 @@
     })
 
 
-import CardAddMovimentsExpenses from '~/components/forms/CardAddMovimentsExpenses.vue'
+    import CardAddMovimentsExpenses from '~/components/forms/CardAddMovimentsExpenses.vue'
     import { useHttpMovements } from '~/composables/useHttp/useHttpMovements'
     import type { TMovements } from '~~/types/movements/TMovements'
     import type { TOptionAction } from '~~/types/option_action/TOptionAction'
+    import { VueDatePicker } from '@vuepic/vue-datepicker'
+    import { ptBR } from 'date-fns/locale'
 
     type TMovementsFormatted = Omit<TMovements, 'value_transaction' | 'date_transaction'> & {
         value_transaction: string,
@@ -30,11 +32,23 @@ import CardAddMovimentsExpenses from '~/components/forms/CardAddMovimentsExpense
     const search = ref('')
 
     const modalAddExpenses = ref(false)
-  
-    const { data, isPending } = useQuery({
-        queryKey: QUERY_KEYS.movements.only_expenses,
-        queryFn: getOnlyExpenses,
+
+    const period = ref({
+        month: new Date().getMonth(),
+        year: new Date().getFullYear(),
     })
+  
+  
+    const { data, isPending, refetch } = useQuery({
+        queryKey: QUERY_KEYS.movements.only_expenses,
+        queryFn: () =>  getOnlyExpenses(period.value.month, period.value.year),
+    })
+
+    async function handleMovementesForPeriod() {
+        await nextTick()
+        refetch()
+    }
+
 
     const transitionsFformatted = computed(() => {
         return data.value?.map(item => ({
@@ -169,9 +183,6 @@ import CardAddMovimentsExpenses from '~/components/forms/CardAddMovimentsExpense
                 </v-btn>
             </div>
 
-
-
-
         </div>
 
         <div class="main-cards">
@@ -218,6 +229,11 @@ import CardAddMovimentsExpenses from '~/components/forms/CardAddMovimentsExpense
                 v-else
             >
             <template v-slot:text>
+
+            <div style="margin-bottom: 10px;">
+                <VueDatePicker @update:model-value="handleMovementesForPeriod" :teleport="true" :locale="ptBR" v-model="period" month-picker :formats="{ month: 'LLLL' }" />
+            </div>
+
             <v-text-field
                 v-model="search"
                 label="Pesquisar"
@@ -231,7 +247,6 @@ import CardAddMovimentsExpenses from '~/components/forms/CardAddMovimentsExpense
                 :headers="headers"
                 :items="transitionsFformatted"
                 :search="search"
-                hide-no-data
                 >
 
                 <template v-slot:item.status_transaction="{ item }">

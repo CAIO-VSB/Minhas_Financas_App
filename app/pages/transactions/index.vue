@@ -47,7 +47,6 @@
         refetch()
     }
 
-
     const transitionsformatted = computed(() => {
         return data.value?.map(item => ({
             ...item,

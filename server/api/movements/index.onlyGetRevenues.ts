@@ -13,10 +13,15 @@ export default defineEventHandler( async (event) => {
             statusMessage: "Unauthorized"
         })
     }
+
+    const { month, year } = getQuery(event)
+
+    const monthNumber = Number(month) + 1
+    const yearNumber = Number(year)
         
     try {
 
-        return await movementsRespository.findOnlyRevenues(session.session.userId)
+        return await movementsRespository.findOnlyRevenues(session.session.userId, monthNumber, yearNumber)
 
     } catch (error) {
         console.log("Erro ao buscar movimentações movimentação " + error)

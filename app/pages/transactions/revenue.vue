@@ -37,11 +37,15 @@
         year: new Date().getFullYear(),
     })
   
-    const { data, isPending } = useQuery({
+    const { data, isPending, refetch } = useQuery({
         queryKey: QUERY_KEYS.movements.only_revenues,
-        queryFn: getOnlyRevenues,
+        queryFn: () => getOnlyRevenues(period.value.month, period.value.year),
     })
 
+    async function handleMovementesForPeriod() {
+        await nextTick()
+        refetch()
+    }
 
     const transitionsFformatted = computed(() => {
         return data.value?.map(item => ({
@@ -209,25 +213,15 @@
         
         <div class="container-table">
 
-            <template v-if="isPending">
-                <v-skeleton-loader 
-                    v-for="n in 12" 
-                    :key="n" 
-                    type="list-item-avatar"
-                    class="mb-2"
-                />
-            </template>
-            
             <v-card
                 flat
                 class="table"
                 :loading="isPending"
-                v-else
             >
             <template v-slot:text>
 
             <div style="margin-bottom: 10px;">
-                <VueDatePicker :teleport="true" :locale="ptBR" v-model="period" month-picker :formats="{ month: 'LLLL' }" />
+                <VueDatePicker @update:model-value="handleMovementesForPeriod" :teleport="true" :locale="ptBR" v-model="period" month-picker :formats="{ month: 'LLLL' }" />
             </div>
 
             <v-text-field
@@ -243,7 +237,7 @@
                 :headers="headers"
                 :items="transitionsFformatted"
                 :search="search"
-                hide-no-data
+                :loading="isPending"
                 >
 
                 <template v-slot:item.status_transaction="{ item }">
