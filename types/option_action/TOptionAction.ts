@@ -1,5 +1,5 @@
 export type TOptionAction = {
-    title: string,
-    icon: string,
-    value?: string | boolean
+    title: string | null,
+    icon: string | null,
+    value?: string | boolean | null
 }

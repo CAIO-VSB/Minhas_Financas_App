@@ -45,6 +45,30 @@ export const movementsRespository = {
         const movementsOnlyExpenses = client.query(text, [userId, month, year])
 
         return (await movementsOnlyExpenses).rows
-    }
+    },
+
+    async update(data: {id?: number, type_transaction?: string, value_transaction: number, date_transaction: Date, description_transaction: string, categorie_id: number, accounts_id: number, observation?: string, url_recibo?: string, status_transaction: string, is_deleted?: boolean}) {
+
+        const text = 
+        `UPDATE movements 
+            SET 
+                type_transaction = $1,
+                value_transaction = $2,
+                date_transaction = $3,
+                description_transaction = $4,
+                categorie_id = $5,
+                accounts_id = $6,
+                observation = $7,
+                url_recibo = $8,
+                status_transaction = $9,
+                is_deleted = $10
+            WHERE id = $11
+        `
+        const values = [data.type_transaction, data.value_transaction, data.date_transaction, data.description_transaction, data.categorie_id, data.accounts_id, data.observation, data.url_recibo, data.status_transaction, data.is_deleted, data.id]
+
+        const updateMovements = client.query(text, values)
+
+        return (await updateMovements).rows
+    }       
 
 }

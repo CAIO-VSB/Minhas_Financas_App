@@ -300,8 +300,8 @@
                 <v-list>
                   <v-list-item
                     v-for="item in getOptions(categorie)"
-                    :key="item.title"
-                    :prepend-icon="item.icon"
+                    :key="item.title!"
+                    :prepend-icon="item.icon!"
                     @click="handleOptionClick(item, categorie)"
                   >
                     <v-list-item-title>{{ item.title }}</v-list-item-title>

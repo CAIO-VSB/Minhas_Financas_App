@@ -8,7 +8,7 @@ export const schemaMovements = z.object({
     description_transaction: z.string("Descrição da transação ausente").min(1),
     categorie_id: z.number("Categoria ausente").min(1),
     accounts_id: z.number("Conta ausente").min(1),
-    observation: z.string().optional(),
+    observation: z.string().optional().nullable(),
     url_recibo: z.string().optional(),
     status_transaction: z.string("Status ausente").min(1),
     is_deleted: z.boolean().default(false).optional(),

@@ -21,10 +21,16 @@ export function useHttpMovements() {
         return $fetch<TMovementsOnlyExpenses []>("/api/movements/index.onlyGetExpenses", {method: "GET", query: { month, year}})
     }
 
+    const patchMovements = async (data: TMovements) => {
+        return $fetch<TMovements>("/api/movements", {method: "PATCH", body: data},) 
+    }
+
+
     return {
         postMovements,
         getMoviments,
         getOnlyRevenues,
-        getOnlyExpenses
+        getOnlyExpenses,
+        patchMovements
     }
 }

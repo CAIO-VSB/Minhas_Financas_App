@@ -11,6 +11,9 @@
     import type { TMovements } from '~~/types/movements/TMovements'
     import type { TOptionAction } from '~~/types/option_action/TOptionAction'
     import FilterDrawer from './components/FilterDrawer.vue'
+    import CardEditMovementsRevenue from '~/components/forms/CardEditMovementsRevenue.vue'
+    import CardEdtiMovementsExpenses from '~/components/forms/CardEdtiMovementsExpenses.vue'
+    import { useInvalidate } from "~/composables/useInvalidate"
 
     type TMovementsFormatted = Omit<TMovements, 'value_transaction' | 'date_transaction'> & {
         value_transaction: string,
@@ -24,13 +27,21 @@
         route: string
     }
 
-    const { getMoviments } = useHttpMovements()
+    const { getMoviments, patchMovements } = useHttpMovements()
+    const { notifyError, notifyInfo, notifySuccess } = useNotify()
+    const { invalidate } = useInvalidate()
 
     const route = useRoute()
 
     const search = ref('')
 
     const drawer = ref(false)
+
+    const modalEditMovementsRevenue = ref(false)
+
+    const modalEditMovementesExpenses = ref(false)
+
+    const editDraft = ref<TMovements | null>(null)
 
     const period = ref({
         month: new Date().getMonth(),
@@ -106,18 +117,100 @@
     }
 
     function getOptions(moviments: TMovementsFormatted): TOptionAction [] {
-        return [
-        {
-            title: moviments.status_transaction === 'pendente' ? 'Efetivar' : 'Editar',
-            icon: moviments.status_transaction === 'pendente' ? "mdi-check-all" : "mdi-circle-edit-outline",
-            value: moviments.status_transaction === 'pendente' ? 'efetivar' : 'editar'
-        },
-        { title: 'Anexar arquivo',  value: "arquivo", icon: "mdi-paperclip" },
-        { title: 'Deletar', value: "delete", icon: "mdi-delete-forever" }
+
+        const options = [
+            moviments.status_transaction === "pendente" ? {
+                title: "Efetivar",
+                icon: "mdi-check-all",
+                value: "efetivar"
+            } : null,
+            { title: 'Editar', value: "edit", icon: "mdi-circle-edit-outline" },
+            { title: 'Anexar arquivo',  value: "arquivo", icon: "mdi-paperclip" },
+            { title: 'Deletar', value: "delete", icon: "mdi-delete-forever" },
         ]
+
+        return options.filter(Boolean) as TOptionAction[]
+
     } 
 
+    const  { mutate } = useMutation({
 
+        mutationFn: (payload: TMovements) => patchMovements(payload),
+
+        onSuccess: () => {
+            invalidate(QUERY_KEYS.movements.all)
+            invalidate(QUERY_KEYS.movements.only_expenses)
+            invalidate(QUERY_KEYS.movements.only_revenues)
+            notifySuccess("Sucesso", "Transação editada com sucesso", 6000)
+        },
+
+        onError: (error) => {
+            notifyInfo("Atenção", `Erro ao editar transação. Tente novamente mais tarde ou contate o surpote técnico. Erro detalhado: ${error.message}`)
+        },
+
+    })
+
+    function handleOpenModalEditMovementsRevenue(movements: TMovementsFormatted) {
+        modalEditMovementsRevenue.value = true
+
+        //Usamos structuredClone + toRaw para evitar mutar o objeto reativo do Vue
+        const rawMovements =  structuredClone(toRaw(movements))
+
+        editDraft.value = {
+            ...rawMovements,
+            value_transaction: Number(rawMovements.value_transaction.replace(/[^\d,]/g, '').replace(',', '.')),
+            date_transaction: new Date(rawMovements.date_transaction.split('/').reverse().join('-') + 'T00:00:00'),
+        }
+  }
+
+    function handleOpenModalEditMovementsExpense(movements: TMovementsFormatted) {
+        modalEditMovementesExpenses.value = true
+
+        //Usamos structuredClone + toRaw para evitar mutar o objeto reativo do Vue
+        const rawMovements =  structuredClone(toRaw(movements))
+
+        editDraft.value = {
+            ...rawMovements,
+            value_transaction: Number(rawMovements.value_transaction.replace(/[^\d,]/g, '').replace(',', '.')),
+            date_transaction: new Date(rawMovements.date_transaction.split('/').reverse().join('-') + 'T00:00:00'),
+        }
+  }
+
+
+    function handleOptionClick(option: TOptionAction, data: TMovementsFormatted) {
+
+        if (option.value === "edit" && data.type_transaction === "Receita") {
+            handleOpenModalEditMovementsRevenue(data)
+            return 
+        }
+
+        if (option.value === "edit" && data.type_transaction === "Despesa") {
+            handleOpenModalEditMovementsExpense(data)
+            return 
+        }
+
+        const raw = structuredClone(toRaw(data))
+
+        const payload: TMovements = {
+            ...raw,
+            value_transaction: Number(raw.value_transaction.replace(/[^\d,]/g, '').replace(',', '.')),
+            date_transaction: new Date(raw.date_transaction.split('/').reverse().join('-') + 'T00:00:00'),
+        }
+
+        if (option.value === "delete") {
+            payload.is_deleted = true
+            mutate(payload)
+            return
+        }
+
+        if (option.value === "efetivar" && data.type_transaction === "Receita") {
+            payload.status_transaction = "recebido"
+        } else if (option.value === "efetivar" && data.type_transaction === "Despesa") {
+            payload.status_transaction = "pago"
+        }
+
+        mutate(payload)
+    }
 
 
 </script>
@@ -125,6 +218,9 @@
 
 <template>
     <div class="container-main">
+
+        <CardEditMovementsRevenue :draft="editDraft" v-model="modalEditMovementsRevenue"/>
+        <CardEdtiMovementsExpenses  v-model="modalEditMovementesExpenses"/>
         
         <filterDrawer v-model="drawer"/>
           
@@ -261,6 +357,7 @@
                 :items="transitionsformatted"
                 :search="search"
                 :loading="isPending"
+                mobile-breakpoint="md"
                 >
 
                 <template v-slot:item.status_transaction="{ item }">
@@ -282,39 +379,37 @@
                 </template>
 
                 <template v-slot:item.actions="{ item }">
-                    <v-btn icon variant="text" size="small">
                         <v-menu
                             transition="slide-y-transition"
                             >
                             <template v-slot:activator="{ props }">
-                                <v-icon v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
+                                <v-icon class="hover:scale-120 border-1 rounded-full"  v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
                             </template>
                             <v-list>
                                 <v-list-item
                                 v-for="action in getOptions(item)"
-                                :key="action.title"
+                                :key="action.title!"
                                 :value="action.value"
-                                :prepend-icon="action.icon"
+                                :prepend-icon="action.icon!"
+                                @click="handleOptionClick(action, item)"
                                 >
                                 <v-list-item-title>{{ action.title }}</v-list-item-title>
                                 </v-list-item>
                             </v-list>
                         </v-menu>
-                    </v-btn>
                 </template>
                 </v-data-table>
             </v-card>
         </div>
     </div>
 
-    
 
 </template>
 
 <style scoped>
 
 .container-main {
-    margin-top: 35px;
+    margin-top: 30px;
 }
 
 .main-cards {
@@ -346,8 +441,8 @@
 
 .table {
     overflow-y: auto;
-    max-height: calc(100vh - 256px);
     height: fit-content;
+    height: calc(100vh - 245px);
 }
 
 .main-value-formated {
@@ -374,6 +469,26 @@
     grid-template-columns: 1fr;
     padding: 0 6px 0 6px;
   }
+
+      .container-table {
+        width: 100%;
+        height: 100vh;
+        padding: 10px;
+    }
+
+    .container-main {
+        margin-top: 30px;
+        overflow: auto;
+        height: 100vh;
+    }
+
+    .table {
+        overflow-y: auto;
+        height: fit-content;
+        height: calc(100vh - 115px);
+    }
+
+
 }
 
 @media (max-width: 680px) {
@@ -391,6 +506,28 @@
         gap: 10px;
         flex-direction: column;
     }
+
+    .container-table {
+        width: 100%;
+        background-color: blue;
+        height: 100vh;
+        padding: 10px;
+    }
+
+    .container-main {
+        margin-top: 30px;
+        overflow: auto;
+        height: 100vh;
+    }
+
+    .table {
+        overflow-y: auto;
+        height: fit-content;
+        background-color: red;
+        height: calc(100vh - 115px);
+    }
+
+  
 }
 
 </style>

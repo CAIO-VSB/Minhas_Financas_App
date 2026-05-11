@@ -21,6 +21,8 @@
     variant="underlined"
     ref="inputRef"
     :style="{'--input-color': props.inputColor}"
+    counter="8"
+    maxlength="8"
     >
     </v-text-field>
 </template>

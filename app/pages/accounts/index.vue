@@ -20,8 +20,7 @@
   const { getAllAccounts, getBalanceForId } = useHttpAccounts()
   const { resetColor } = useSelectedColor()
   const { resetBank } = useSelectedBank()
-  const { getMoviments } = useHttpMovements()
-
+  
   const modalAddAccount = ref(false)
   const modalEditAccount = ref(false)
   const errorModal = ref(false)
@@ -56,10 +55,6 @@
       balance: formated.format(row?.saldo_inicial ?? 0.00),
     }
 
-  })
-
-  watch(balanceForId, (val) => {
-    console.log("O movementes chegando", balanceForId.value)
   })
 
   function handleOpenModalAddAccount() {
