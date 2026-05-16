@@ -6,7 +6,7 @@ export const QUERY_KEYS = {
     accounts: {
         all: ['accounts'],
         active: ['accounts', 'active'],
-        getBalanceForId: ['getBalance']
+        getBalanceForAccount: ['getBalanceForAccount']
     },
     creditCards: {
         all: ['credit-cards'],
@@ -14,7 +14,8 @@ export const QUERY_KEYS = {
     },
     movements: {
         all: ['movements'],
-        only_revenues: ['only_revenues'],
-        only_expenses: ['only_expenses']
+        only_revenues: ['only-revenues'],
+        only_expenses: ['only-expenses'],
+        current_balance: ['current-balance']
     }
 }

@@ -38,7 +38,6 @@
         year: new Date().getFullYear(),
     })
   
-  
     const { data, isPending, refetch } = useQuery({
         queryKey: QUERY_KEYS.movements.only_expenses,
         queryFn: () =>  getOnlyExpenses(period.value.month, period.value.year),
@@ -278,9 +277,9 @@
                             <v-list>
                                 <v-list-item
                                 v-for="action in getOptions(item)"
-                                :key="action.title"
+                                :key="action.title!"
                                 :value="action.value"
-                                :prepend-icon="action.icon"
+                                :prepend-icon="action.icon!"
                                 >
                                 <v-list-item-title>{{ action.title }}</v-list-item-title>
                                 </v-list-item>

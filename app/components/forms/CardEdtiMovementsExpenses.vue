@@ -1,147 +1,142 @@
 <script lang="ts" setup>
 
 
-  import CurrencyInput from "~/components/ui/CurrencyInput.vue"
+    import CurrencyInput from "~/components/ui/CurrencyInput.vue"
 
-  import { useHttpCategories } from '~/composables/useHttp/useHttpCategories'
-  import { useHttpAccounts } from "~/composables/useHttp/useHttpAccounts"
-  import { useHttpMovements } from "~/composables/useHttp/useHttpMovements"
+    import { useHttpCategories } from '~/composables/useHttp/useHttpCategories'
+    import { useHttpAccounts } from "~/composables/useHttp/useHttpAccounts"
+    import { useHttpMovements } from "~/composables/useHttp/useHttpMovements"
 
-  import { useValidateSchemas } from "~/composables/useValidateSchema"
-  import { useValidateFields } from "~/composables/useValidateFields"
-  import { useInvalidate } from "~/composables/useInvalidate"
+    import { useValidateSchemas } from "~/composables/useValidateSchema"
+    import { useValidateFields } from "~/composables/useValidateFields"
+    import { useInvalidate } from "~/composables/useInvalidate"
 
-  import CardAddCategorie from '~/components/forms/CardAddCategorie.vue'
-  import CardAddAccount from "~/components/forms/CardAddAccount.vue"
+    import CardAddCategorie from '~/components/forms/CardAddCategorie.vue'
+    import CardAddAccount from "~/components/forms/CardAddAccount.vue"
 
-  import type { TMovements } from "~~/types/movements/TMovements"
+    import type { TMovements } from "~~/types/movements/TMovements"
 
-  const { notifyError, notifyInfo, notifySuccess } = useNotify()
-  const { getCategoriesOnlyActive } = useHttpCategories()
-  const { getAccountsOnlyActive } = useHttpAccounts()
-  const { validateSchemaMovements } = useValidateSchemas()
-  const { postMovements } = useHttpMovements()
-  const { invalidate } = useInvalidate()
-  const { nameRules, selectRules, dateRules, currencyRules } = useValidateFields()
+    const { notifyError, notifyInfo, notifySuccess } = useNotify()
+    const { getCategoriesOnlyActive } = useHttpCategories()
+    const { getAccountsOnlyActive } = useHttpAccounts()
+    const { validateSchemaMovements } = useValidateSchemas()
+    const { patchMovements } = useHttpMovements()
+    const { invalidate } = useInvalidate()
+    const { nameRules, selectRules, dateRules, currencyRules } = useValidateFields()
 
-  const { data:categories } = useQuery({
+    const { data:categories } = useQuery({
     queryKey: QUERY_KEYS.categories.active,
     queryFn: getCategoriesOnlyActive,
-  })
+    })
 
-  const { data:accounts } = useQuery({
+    const { data:accounts } = useQuery({
     queryKey: QUERY_KEYS.accounts.active,
     queryFn: getAccountsOnlyActive,
-  })
+    })
 
-  const form = ref()
-  const modelValue = defineModel<boolean>()
-  const menuCategorias = ref(false)
-  const modelCategorias = ref<number | null>(null)
-  const searchCategorias = ref("")
-  const searchAccounts = ref("")
-  const modelAccounts = ref<number | null>(null)
-  const menuAccounts = ref(false)
-  const modalAddCategorie = ref(false)
-  const modalAddAccount = ref(false)
+    const props = defineProps<{
+        draft: TMovements | null
+    }>()
 
-  const movementsForm = ref<TMovements>({
-    type_transaction: "Despesa",
-    value_transaction: null,
-    date_transaction: null,
-    description_transaction: "",
-    categorie_id: null,
-    accounts_id: null,
-    status_transaction: "pago"
-  })
+    const form = ref()
+    const modelValue = defineModel<boolean>()
+    const menuCategorias = ref(false)
+    const modelCategorias = ref<number | null>(null)
+    const searchCategorias = ref("")
+    const searchAccounts = ref("")
+    const modelAccounts = ref<number | null>(null)
+    const menuAccounts = ref(false)
+    const modalAddCategorie = ref(false)
+    const modalAddAccount = ref(false)
 
-  watch(menuCategorias, (val) => {
-    if (!val) searchCategorias.value = ""
-  })
+    watch(menuCategorias, (val) => {
+        if (!val) searchCategorias.value = ""
+    })
 
-  watch(modelAccounts, (val) => {
-    if (!val) searchAccounts.value = ""
-    movementsForm.value.accounts_id = val
-  })
+    //Watch reponsável por mostrar a categoria e conta atual
+    watch(() => props.draft, (newDraft) => {
+        if (newDraft) {
+            modelCategorias.value = newDraft.categorie_id ?? null
+            modelAccounts.value = newDraft.accounts_id ?? null
+        }
+    }, {immediate: true})
 
-  watch(modelCategorias, (val) => {
-    if (!val) searchAccounts.value = ""
-    movementsForm.value.categorie_id = val
-  })
+    //Watch responsável por atualizar a categoria escolhida pelo usário no ato da edição
+    watch(modelCategorias, (val) => {
+        if (props.draft) props.draft.categorie_id = val
+    })
 
-  watch(menuAccounts, (val) => {
-    if (!val) searchAccounts.value = ""
-  })
+    //Watch responsável por atualizar a conta escolhida pelo usário no ato da edição
+    watch(modelAccounts, (val) => {
+        if (props.draft) props.draft.accounts_id = val
+    })
 
-  const filterCategorias = computed(() => {
-    return categories.value?.filter(item => item.name_identifier.toLowerCase().includes(searchCategorias.value.toLowerCase()))
-  })
+    watch(menuAccounts, (val) => {
+        if (!val) searchAccounts.value = ""
+    })
 
-  const filterAccounts = computed(() => {
-    return accounts.value?.filter(item => item.name_identifier.toLowerCase().includes(searchAccounts.value?.toLowerCase() ?? ''))
-  })
+    const filterCategorias = computed(() => {
+        return categories.value?.filter(item => item.name_identifier.toLowerCase().includes(searchCategorias.value.toLowerCase()))
+    })
 
-  function resetForm() {
-    modelAccounts.value = null
-    modelCategorias.value = null
-    movementsForm.value.accounts_id = null
-    movementsForm.value.categorie_id = null
-    movementsForm.value.date_transaction = null
-    movementsForm.value.description_transaction = ""
-    movementsForm.value.observation = ""
-    movementsForm.value.value_transaction = null
-    movementsForm.value.url_recibo = ""
-    movementsForm.value.status_transaction = 'pago'
-    
-    modelValue.value = false
-  }
+    const filterAccounts = computed(() => {
+        return accounts.value?.filter(item => item.name_identifier.toLowerCase().includes(searchAccounts.value?.toLowerCase() ?? ''))
+    })
 
-  function handleOpenModalAddCategorie() {
-    modalAddCategorie.value = true
-  }
+    function handleOpenModalAddCategorie() {
+        modalAddCategorie.value = true
+    }
 
-  function handleOpenModalAddAccount() {
-    modalAddAccount.value = true
-  }
+    function handleOpenModalAddAccount() {
+        modalAddAccount.value = true
+    }
 
 
-  const  { mutate, isPending  } = useMutation({
-    
-    mutationFn: postMovements,
+    const  { mutate, isPending  } = useMutation({
+
+    mutationFn: patchMovements,
 
     onSuccess: () => {
-      invalidate(QUERY_KEYS.accounts.all)
-      invalidate(QUERY_KEYS.movements.all)
-      invalidate(QUERY_KEYS.movements.only_expenses)
-      notifySuccess("Sucesso", "Despesa lançada com sucesso", 6000)
-      resetForm()
-      modelValue.value = false
+        invalidate(QUERY_KEYS.accounts.all)
+        invalidate(QUERY_KEYS.movements.all)
+        invalidate(QUERY_KEYS.movements.only_expenses)
+        invalidate(QUERY_KEYS.movements.current_balance)
+        notifySuccess("Sucesso", "Despesa editada com sucesso", 6000)
+        modelValue.value = false
     },
 
     onError: (error) => {
-      notifyError("😢", "Ops! Algo deu errado ao salvar a desepesa. Tente novamente ou entre em contato com o suporte. Detalhes: " + error.message)
+        notifyError("😢", "Ops! Algo deu errado ao editar a despesa. Tente novamente ou entre em contato com o suporte. Detalhes: " + error.message)
     },
 
-  })
+    })
 
-  async function handleAddMovimentExpenses() {
-    
+    async function handleEditMovimentExpenses() {
+
     try {
 
-      const formValid = await form.value.validate()
-      const resultSchema = validateSchemaMovements(movementsForm.value)
-      
-      console.log("Objeto a ser envidado" + JSON.stringify(movementsForm.value))
-      
-      if (formValid) {
-        if (resultSchema.success) {  
-          mutate(movementsForm.value)
+        if(!props.draft) {
+            notifyError("Ops!", "Algo não parece certo. Confira os dados e tente novamente.")
+            return
+        } 
+
+
+        const formValid = await form.value.validate()
+        const resultSchema = validateSchemaMovements(props.draft)
+        
+        console.log("Objeto a ser envidado" + JSON.stringify(props.draft))
+        
+        if (formValid) {
+            if (resultSchema.success) {  
+                mutate(props.draft)
+            }
         }
-      }
+
     } catch (err) {
-      notifyInfo("Error", "Erro ao criar conta bancária" + err)
+        
+        notifyInfo("Error", "Erro ao criar conta bancária" + err)
     } 
-  }
+    }
 
 
 </script>
@@ -152,17 +147,18 @@
     @submit.prevent
     ref="form"
     validate-on="lazy blur"
+    v-if="props.draft"
     >
       <v-dialog v-model="modelValue" max-width="600">
         <v-card prepend-icon="mdi-bank-plus" title="Nova despesa">
           <v-divider></v-divider>
           <v-card-text>
 
-            <CurrencyInput input-color="#C62828" base-color="#C62828" color="#C62828" :rules="currencyRules"  autocomplete="off" label="Valor*" v-model="movementsForm.value_transaction" />
+            <CurrencyInput input-color="#C62828" base-color="#C62828" color="#C62828" :rules="currencyRules"  autocomplete="off" label="Valor*" v-model="props.draft.value_transaction" />
 
-            <v-date-input :rules="dateRules" autocomplete="off" name="date" prepend-icon="" label="Data*" variant="underlined" v-model="movementsForm.date_transaction"></v-date-input>
+            <v-date-input :rules="dateRules" autocomplete="off" name="date" prepend-icon="" label="Data*" variant="underlined" v-model="props.draft.date_transaction"></v-date-input>
 
-            <v-text-field :rules="nameRules" :counter="45" maxlength="45"  autocomplete="name" name="name" label="Descrição*" variant="underlined" v-model="movementsForm.description_transaction"></v-text-field>
+            <v-text-field :rules="nameRules" :counter="45" maxlength="45"  autocomplete="name" name="name" label="Descrição*" variant="underlined" v-model="props.draft.description_transaction"></v-text-field>
 
             <v-select
               autocomplete="off"
@@ -276,12 +272,12 @@
                   </template>
                 </v-select>
 
-                <v-text-field v-model="movementsForm.observation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="underlined"></v-text-field >
+                <v-text-field v-model="props.draft.observation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="underlined"></v-text-field >
 
                 <v-file-input prepend-icon=""  prepend-inner-icon="mdi-paperclip" clearable label="Anexar comprovante" variant="underlined"></v-file-input>
 
               <v-switch
-                v-model="movementsForm.status_transaction"
+                v-model="props.draft.status_transaction"
                 color="error"
                 label="Despesa paga"
                 hide-details
@@ -302,7 +298,7 @@
             <v-btn
               text="Fechar"
               variant="plain"
-              @click="resetForm"
+              @click="modelValue = false"
             ></v-btn>
 
             <v-btn
@@ -310,7 +306,7 @@
               text="Lançar"
               variant="tonal"
               :loading="isPending"
-              @click="handleAddMovimentExpenses"
+              @click="handleEditMovimentExpenses"
             ></v-btn>
           </v-card-actions>
         </v-card>

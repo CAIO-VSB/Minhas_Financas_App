@@ -57,7 +57,8 @@
     name_bank: "",
     color: "",
     url_image: "",
-    active: true
+    active: true,
+    saldo_atual: 0.00
   })
 
 
@@ -65,7 +66,6 @@
     if (bank !== null) {
       accountForm.value.name_bank  = bank.name
       accountForm.value.url_image = bank.url
-      console.log("Cor chegando" + JSON.stringify(bank))
     } else {
       accountForm.value.url_image = ""
       accountForm.value.name_bank = ""
@@ -75,9 +75,9 @@
   watch (selectedColor, (color) => {
     if (color !== null) {
       accountForm.value.color = color
-      console.log("Cor chegando" + JSON.stringify(color))
     }
   })
+
 
   function resetForm() {
     accountForm.value.name_identifier = ""
@@ -85,6 +85,7 @@
     accountForm.value.type_account = ""
     accountForm.value.url_image = ""
     accountForm.value.color = ""
+    accountForm.value.initial_balance = 0.00
     modelValue.value = false
   }
 
@@ -94,6 +95,7 @@
 
     onSuccess: () => {
       invalidate(QUERY_KEYS.accounts.all)
+      invalidate(QUERY_KEYS.accounts.getBalanceForAccount)
       notifySuccess("Sucesso", "Conta criada com sucesso", 6000)
       resetForm()
       modelValue.value = false
@@ -110,8 +112,6 @@
     try {
       const formValid = await form.value.validate()
       const resultSchema = validateSchemaAccount(accountForm.value)
-
-      console.log("Objeto a ser envidado" + JSON.stringify(accountForm.value))
       
       if (formValid) {
         if (resultSchema.success) {  
@@ -137,7 +137,7 @@
           <v-divider></v-divider>
           <v-card-text>
 
-              <CurrencyInput autocomplete="off" hint="Valor atual da conta no momento do cadastro." v-model="accountForm.initial_balance!" label="Saldo inicial" />
+              <CurrencyInput autocomplete="off" hint="Valor atual da conta no momento do cadastro." v-model="accountForm.initial_balance" label="Saldo inicial" />
 
               <v-text-field
                 label="Nome da conta *"
@@ -147,7 +147,8 @@
                 autocomplete="name"
                 v-model="accountForm.name_identifier"
                 :rules="nameRules"
-                
+                maxlength="45"
+                counter="45"
               >
               </v-text-field>
 

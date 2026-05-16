@@ -16,7 +16,7 @@ export default defineEventHandler( async (event) => {
         
     try {
 
-        return await accountsRepository.findBalance(session.session.userId)
+        return await accountsRepository.findBalanceForAccount(session.session.userId)
 
     } catch (error) {
         console.log("Erro ao buscar movimentações movimentação " + error)

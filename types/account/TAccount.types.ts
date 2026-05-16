@@ -8,5 +8,7 @@ export type TAccount = {
     url_image: string,
     active: boolean,
     color?: string | undefined,
-    name_color?: string
+    name_color?: string,
+
+    saldo_atual: number | null
 }

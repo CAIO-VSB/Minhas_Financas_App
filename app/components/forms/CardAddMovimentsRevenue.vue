@@ -112,6 +112,8 @@
       invalidate(QUERY_KEYS.accounts.all)
       invalidate(QUERY_KEYS.movements.all)
       invalidate(QUERY_KEYS.movements.only_revenues)
+      invalidate(QUERY_KEYS.movements.current_balance)
+      invalidate(QUERY_KEYS.accounts.getBalanceForAccount)
       notifySuccess("Sucesso", "Receita lançada com sucesso", 6000)
       resetForm()
       modelValue.value = false

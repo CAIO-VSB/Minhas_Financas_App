@@ -24,11 +24,13 @@
       >
       
         <template v-slot:actions>
+           <v-spacer></v-spacer>
           <v-btn
             class="ms-auto"
             text="Ok"
             @click="modelValue = false"
           ></v-btn>
+
         </template>
       </v-card>
     </v-dialog>

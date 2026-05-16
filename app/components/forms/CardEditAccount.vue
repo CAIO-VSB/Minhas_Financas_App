@@ -15,14 +15,6 @@
   import CurrencyInput from "~/components/ui/CurrencyInput.vue"
 
   const { patchAccount } = useHttpAccounts()
-  
-  const props = defineProps<{
-    draft: TAccount | null
-  }>()
-
-  console.log("Props chegando ", toRaw(props.draft))
-
-  const modelValue = defineModel<boolean>()
 
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
   const { nameRules} = useValidateFields()
@@ -30,7 +22,14 @@
   const { dialogAddInstitution, selectedBank } = useSelectedBank()
   const { dialogColorPicker, selectedColor } = useSelectedColor()
   const { invalidate } = useInvalidate()
-  
+
+  const modelValue = defineModel<boolean>()
+  const form = ref()
+  const dialog = ref(false)
+  const newInitialBalance = ref()
+  const props = defineProps<{
+    draft: TAccount | null
+  }>()
 
   const selectRules = ref([
     (val: string) => !!val || "Tipo de conta é obrigatório"
@@ -54,7 +53,6 @@
     'Conta de Investimentos'
   ])
 
-  const form = ref()
 
   const  { mutate, isPending } = useMutation({
 
@@ -63,6 +61,7 @@
     onSuccess: () => {
       notifySuccess("Sucesso", "Conta editada com sucesso", 6000)
       invalidate(QUERY_KEYS.accounts.all)
+      invalidate(QUERY_KEYS.accounts.getBalanceForAccount)
       modelValue.value = false
     },
 
@@ -85,9 +84,28 @@
     }
   })
 
-  
+  watch(() => props.draft, (newValue) => {
+    newInitialBalance.value = newValue?.initial_balance
+  })
+
   async function handleEditAccount() {
     
+    if (props.draft?.initial_balance != newInitialBalance.value) {
+      dialog.value= true
+      return
+    }
+
+    await submitForm()
+   
+  }
+
+  function handleConfirmDialog() {
+    dialog.value = false
+    submitForm()
+  }
+
+  async function submitForm() {
+
     try {
 
       if(!props.draft) {
@@ -97,6 +115,8 @@
 
       const formValid = await form.value.validate()
       const resultSchema = validateSchemaAccount(props.draft)
+
+      console.log("Valor envidado", toRaw(props.draft))
 
       if (formValid) {
         if (resultSchema.success) {
@@ -115,7 +135,39 @@
 </script>
 
 <template>
+
   <div class="text-center">
+
+    <div class="text-center pa-4">
+    <v-dialog
+      v-model="dialog"
+      max-width="400"
+      persistent
+    >
+
+      <v-card
+        style="white-space: pre-line;"
+        prepend-icon="mdi-alert"
+        text="Você está prestes a alterar o saldo inicial desta conta. Essa ação impacta diretamente todos os cálculos financeiros, incluindo o saldo atual, balanço mensal e relatórios anteriores.
+
+        💡 Dica: Se o seu saldo está incorreto por causa de uma movimentação esquecida, considere lançar uma receita ou despesa de ajuste. Assim você mantém seu histórico financeiro íntegro e organizado."    
+        title="Leia com atenção!"
+      >
+        <template v-slot:actions>
+          <v-spacer></v-spacer>
+
+          <v-btn  @click="dialog = false">
+            Cancelar
+          </v-btn>
+
+          <v-btn @click="handleConfirmDialog">
+            Confirmar
+          </v-btn>
+        </template>
+      </v-card>
+    </v-dialog>
+  </div>
+
     <v-form
     @submit.prevent
     ref="form"
@@ -127,7 +179,7 @@
           <v-card-text>
             <form>
 
-              <CurrencyInput readonly autocomplete="off" hint="Valor atual da conta no momento do cadastro." v-model="props.draft.initial_balance" label="Saldo inicial" />
+              <CurrencyInput  autocomplete="off" hint="Salo lançado no ato do cadastro" v-model="props.draft.initial_balance" label="Saldo inicial" ></CurrencyInput>
 
               <v-text-field
                 label="Nome da conta *"

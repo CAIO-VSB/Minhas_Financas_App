@@ -27,7 +27,7 @@ export default defineEventHandler( async (event) => {
 
     try {
 
-        return await accountsRepository.update(result.data)
+        return await accountsRepository.update(session.session.userId, result.data)
 
     } catch (error) {
         

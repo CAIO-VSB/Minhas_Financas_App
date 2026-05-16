@@ -21,6 +21,10 @@ export function useHttpMovements() {
         return $fetch<TMovementsOnlyExpenses []>("/api/movements/index.onlyGetExpenses", {method: "GET", query: { month, year}})
     }
 
+    const getCurrentBalance = async () => {
+        return $fetch<Pick<TMovements, "saldo_atual"> []>("/api/movements/index.getOnlyCurrentBalance", {method: "GET"})
+    }
+
     const patchMovements = async (data: TMovements) => {
         return $fetch<TMovements>("/api/movements", {method: "PATCH", body: data},) 
     }
@@ -31,6 +35,7 @@ export function useHttpMovements() {
         getMoviments,
         getOnlyRevenues,
         getOnlyExpenses,
-        patchMovements
+        patchMovements,
+        getCurrentBalance
     }
 }

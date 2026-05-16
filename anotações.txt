@@ -11,7 +11,3 @@ const { invalidate } = useInvalidate()
 Lista de coisas a ser fazer (para não cair no esquecimento)
 
 -- Tentar componetizar a sideBar - Prioridade baixa
-
--- Refactorar sql - finalizar
--- Validar campo de dinherio e demais campo com base na coluna do sql
--- Logica de mostra saldo atual na tela de contas

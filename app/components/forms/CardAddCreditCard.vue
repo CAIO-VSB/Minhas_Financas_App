@@ -179,6 +179,8 @@
                 name="cc-name"
                 v-model="cardCredit.name_identifier"
                 autocomplete="cc-name"
+                maxlength="45"
+                counter="45"
               ></v-text-field>
             </v-col>
             <v-col
@@ -187,7 +189,7 @@
               sm="6"
             >
             
-            <CurrencyInput :rules="currencyRules" autocomplete="limite" name="limite" v-model="cardCredit.limit_card!" label="Limite" />
+            <CurrencyInput  autocomplete="limite" name="limite" v-model="cardCredit.limit_card!" label="Limite" />
 
             </v-col>
             <v-col

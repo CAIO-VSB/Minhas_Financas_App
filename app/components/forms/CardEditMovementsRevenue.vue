@@ -98,6 +98,7 @@
         invalidate(QUERY_KEYS.accounts.all)
         invalidate(QUERY_KEYS.movements.all)
         invalidate(QUERY_KEYS.movements.only_revenues)
+        invalidate(QUERY_KEYS.movements.current_balance)
         notifySuccess("Sucesso", "Receita editada com sucesso", 6000)
         resetForm()
         modelValue.value = false
@@ -109,7 +110,7 @@
 
     })
 
-  async function handleAddMovimentRevenue() {
+  async function handleEditMovementRevenue() {
     
     try {
 
@@ -287,7 +288,7 @@
               text="Editar"
               variant="tonal"
               :loading="isPending"
-              @click="handleAddMovimentRevenue"
+              @click="handleEditMovementRevenue"
             ></v-btn>
           </v-card-actions>
         </v-card>

@@ -175,7 +175,7 @@
                 >
                   <v-divider></v-divider>
                   <v-list>
-                    <v-list-item @click="handleSelectedCard(card)" v-for="card in allCreditCard" rounded="xl"  :prepend-avatar="card.url_logo" :value="card" >
+                    <v-list-item @click="handleSelectedCard(card)" v-for="card in allCreditCard" rounded="xl" :prepend-avatar="card.url_logo" :value="card" >
                       <v-list-item-title>{{ card.name_identifier }}</v-list-item-title>
                     </v-list-item>
                   </v-list>
@@ -200,11 +200,11 @@
                   </v-card>
                 </v-card>
               </v-menu>
+
               <div>
                 <span>Período da fatura: {{ monthName }}</span>
                 <VueDatePicker :teleport="true" :locale="ptBR" v-model="period" month-picker :formats="{ month: 'LLLL' }" />
               </div>
-
 
             </div>
         
@@ -223,9 +223,9 @@
               <v-list >
                 <v-list-item
                   v-for="item in getOptions(selectedCardData)"
-                  :key="item.title"
+                  :key="item.title!"
                   :value="item.title"
-                  :prepend-icon="item.icon"
+                  :prepend-icon="item.icon!"
                   @click="handleOptionClick(item, selectedCardData)"
                 >
                   <v-list-item-title >{{ item.title }}</v-list-item-title>

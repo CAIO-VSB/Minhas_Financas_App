@@ -47,6 +47,18 @@ export const movementsRespository = {
         return (await movementsOnlyExpenses).rows
     },
 
+    async findCurrentBalance(userId: string) {
+        
+        const text =
+        `SELECT fn_current_balance($1) AS saldo_atual`
+
+        const currentBalance = client.query(text, [userId])
+
+        console.log("findCurrentBalance resultado:", (await currentBalance).rows)
+
+        return (await currentBalance).rows
+    },
+
     async update(data: {id?: number, type_transaction?: string, value_transaction: number, date_transaction: Date, description_transaction: string, categorie_id: number, accounts_id: number, observation?: string, url_recibo?: string, status_transaction: string, is_deleted?: boolean}) {
 
         const text = 

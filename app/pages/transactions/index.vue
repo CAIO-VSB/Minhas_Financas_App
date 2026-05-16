@@ -27,7 +27,7 @@
         route: string
     }
 
-    const { getMoviments, patchMovements } = useHttpMovements()
+    const { getMoviments, patchMovements, getCurrentBalance } = useHttpMovements()
     const { notifyError, notifyInfo, notifySuccess } = useNotify()
     const { invalidate } = useInvalidate()
 
@@ -51,6 +51,11 @@
     const { data, isPending, refetch } = useQuery({
         queryKey: QUERY_KEYS.movements.all,
         queryFn: () => getMoviments(period.value.month, period.value.year)
+    })
+
+    const { data:currentBalance, isPending:isPendingCurrentBalance, refetch:refetchCurrentBalance } = useQuery({
+        queryKey: QUERY_KEYS.movements.current_balance,
+        queryFn: getCurrentBalance
     })
 
     async function handleMovementesForPeriod() {
@@ -81,6 +86,23 @@
             balanco_mensal: formated.format(row?.balanco_mensal ?? 0.00),
             saldo_atual: formated.format(row?.saldo_atual ?? 0.00)
         }
+    })
+
+    const balanceCurrent = computed(() => {
+        
+        const row = currentBalance.value?.[0]
+
+         console.log("currentBalance.value:", currentBalance.value)
+
+        const formated = new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+        })
+
+        return {
+            saldo_atual: formated.format(row?.saldo_atual ?? 0.00)
+        }
+
     })
     
     const itemsRouter = [
@@ -141,6 +163,8 @@
             invalidate(QUERY_KEYS.movements.all)
             invalidate(QUERY_KEYS.movements.only_expenses)
             invalidate(QUERY_KEYS.movements.only_revenues)
+            invalidate(QUERY_KEYS.movements.current_balance)
+            invalidate(QUERY_KEYS.accounts.getBalanceForAccount)
             notifySuccess("Sucesso", "Transação editada com sucesso", 6000)
         },
 
@@ -220,7 +244,7 @@
     <div class="container-main">
 
         <CardEditMovementsRevenue :draft="editDraft" v-model="modalEditMovementsRevenue"/>
-        <CardEdtiMovementsExpenses  v-model="modalEditMovementesExpenses"/>
+        <CardEdtiMovementsExpenses :draft="editDraft"  v-model="modalEditMovementesExpenses"/>
         
         <filterDrawer v-model="drawer"/>
           
@@ -270,13 +294,13 @@
 
         <div class="main-cards">
             <v-card subtitle="Saldo Atual">
-                <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
+                <v-skeleton-loader v-if="isPendingCurrentBalance" type="list-item-avatar"></v-skeleton-loader>
                 <div v-else  class="main-value-formated">
                     <v-icon icon="mdi-bank"></v-icon>
-                    <span>{{ sumary?.saldo_atual }}</span>
+                    <span>{{ balanceCurrent?.saldo_atual }}</span>
                 </div>
                 <template #append>
-                    <v-tooltip text="O cálculo do saldo atual considera o saldo inicial das contas ativas, além de todas as movimentações efetivadas de entrada e saída.">
+                    <v-tooltip  text="O cálculo do saldo atual é independente do período selecionado, considerando o saldo inicial das contas ativas juntamente com todas as movimentações efetivadas de entrada e saída">
                         <template v-slot:activator="{ props }">
                             <v-icon class="icon-help" v-bind="props" size="20px" icon="mdi-information-outline"></v-icon>
                         </template>
@@ -509,7 +533,6 @@
 
     .container-table {
         width: 100%;
-        background-color: blue;
         height: 100vh;
         padding: 10px;
     }
@@ -523,7 +546,6 @@
     .table {
         overflow-y: auto;
         height: fit-content;
-        background-color: red;
         height: calc(100vh - 115px);
     }
 

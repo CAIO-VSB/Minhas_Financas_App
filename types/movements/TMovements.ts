@@ -14,7 +14,6 @@ export type TMovements = {
     t_despesas?: number | null,
     t_receitas?: number | null,
     balanco_mensal?: number | null,
-    saldo_inicial?: number | null,
     saldo_atual?: number | null,
 
     t_receitas_efetivadas?: number | null,

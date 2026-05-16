@@ -15,9 +15,9 @@
   import { useHttpAccounts } from "~/composables/useHttp/useHttpAccounts"
   import { useSelectedColor } from "~/composables/useAccount/useSelectedColor"
   import { useSelectedBank } from "~/composables/useAccount/useSelectedBank"
-  import { useHttpMovements } from '~/composables/useHttp/useHttpMovements'
 
-  const { getAllAccounts, getBalanceForId } = useHttpAccounts()
+
+  const { getAllAccounts, getBalanceForAccount } = useHttpAccounts()
   const { resetColor } = useSelectedColor()
   const { resetBank } = useSelectedBank()
   
@@ -38,24 +38,19 @@
   })
 
   const { data:balanceForId } = useQuery({
-    queryKey: QUERY_KEYS.accounts.getBalanceForId,
-    queryFn: getBalanceForId,
+    queryKey: QUERY_KEYS.accounts.getBalanceForAccount,
+    queryFn: getBalanceForAccount,
   })
 
   const balanceFormated = computed(() => {
 
-    const row = balanceForId.value?.[0]
-
-    const formated = new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    })
-
-    return {
-      balance: formated.format(row?.saldo_inicial ?? 0.00),
-    }
+    return balanceForId.value?.map(item => ({
+        ...item,
+        saldo_atual: new Intl.NumberFormat('pt-br', {style: 'currency', currency: 'BRL'}).format(item.saldo_atual ?? 0.00)
+    }))
 
   })
+
 
   function handleOpenModalAddAccount() {
     modalAddAccount.value = true
@@ -79,7 +74,10 @@
 
   function handleOpenModalEditAccount(account: TAccount) {
     modalEditAccount.value = true
-    editDraft.value = structuredClone(toRaw(account))
+    editDraft.value = {
+      ...structuredClone(toRaw(account)),
+      initial_balance: account.saldo_atual ?? 0.00
+    } 
   }
 
   function handleCloseEditAccount () {
@@ -155,10 +153,10 @@
           </template>
 
           <template #subtitle>
-            <div class="subtitle">
+            <div  class="subtitle">
               <p style="padding-bottom: 12px;">{{ account.type_account }}</p>
               <div class="valor-saldo">
-                <span>Saldo atual</span> <span class="saldo">{{ balanceFormated.balance }}</span>
+                <span>Saldo atual</span> <span class="saldo">{{ balanceFormated?.find(item => item.id === account.id)?.saldo_atual }}</span>
               </div>
             </div>
           </template>

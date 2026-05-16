@@ -11,8 +11,8 @@ export function useHttpAccounts() {
         return await $fetch<TAccount []>("/api/account", {method: "GET", query: {active: true}})
     }
 
-    const getBalanceForId = async () => {
-        return await $fetch<TMovements []>("/api/account/index.getBalanceForId", {method: "GET"})
+    const getBalanceForAccount = async () => {
+        return await $fetch< TAccount []>("/api/account/index.getBalanceForAccount", {method: "GET"})
     }
 
     const postAccount = async (data: TAccount) => {
@@ -29,6 +29,6 @@ export function useHttpAccounts() {
         getAllAccounts,
         patchAccount,
         getAccountsOnlyActive,
-        getBalanceForId
+        getBalanceForAccount
     }
 }

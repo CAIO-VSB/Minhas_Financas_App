@@ -15,10 +15,6 @@
     selectBank(data)
   }
 
-  watch(radios, (newValue: string) => {
-    currentRadio.value = newValue
-    dialogFilter.value = false
-  })
 
   watch(valueEntered, () => {
     loading.value = true
@@ -28,12 +24,32 @@
   })
 
   const finalData = computed(() => {
-    return banks.filter(item => {
+
+    const filter =  banks.filter(item => {
       const onlyText = item.text.toLowerCase().includes(valueEntered.value.toLowerCase())
       const onlyRadio = item.type.toLowerCase().includes(currentRadio.value.toLowerCase())
-      return onlyText && onlyRadio
+      return onlyText && onlyRadio && banks
     })
+
+    if (filter) {
+      return filter
+    }
   })
+
+  watch(radios, (newValue: string) => {
+    currentRadio.value = newValue
+    dialogFilter.value = false
+
+    if (newValue === 'todos') {
+      dialogFilter.value = false
+      currentRadio.value = ""
+      radios.value = ""
+
+      return finalData.value
+    }
+
+  })
+
 
   const modelValue = defineModel<boolean>()
 
@@ -44,8 +60,8 @@
   <div class="text-center pa-4">
     <v-dialog
       v-model="modelValue"
-      max-width="600"
-      min-height="600"
+      max-width="550"
+      min-height="550"
       persistent
     >
 
@@ -65,6 +81,7 @@
                 class="!p-4"
                 prepend-inner-icon="mdi-magnify"
                 v-model="valueEntered"
+                focus
             >
             <template #append-inner>
                 <v-btn
@@ -116,6 +133,7 @@
           <v-radio label="Instituições Financeiras" value="instituicoes" ></v-radio>
           <v-radio label="Bandeiras Cartão" value="bandeiras"></v-radio>
           <v-radio label="Ícones Genéricos" value="generics"></v-radio>
+          <v-radio label="Todos" value="todos"></v-radio>
         </v-radio-group>
 
       </v-card>
