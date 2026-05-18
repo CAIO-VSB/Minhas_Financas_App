@@ -14,6 +14,7 @@
     import CardEditMovementsRevenue from '~/components/forms/CardEditMovementsRevenue.vue'
     import CardEdtiMovementsExpenses from '~/components/forms/CardEdtiMovementsExpenses.vue'
     import { useInvalidate } from "~/composables/useInvalidate"
+    import CardSettleTransactionModal from '~/components/forms/CardSettleTransactionModal.vue'
 
     type TMovementsFormatted = Omit<TMovements, 'value_transaction' | 'date_transaction'> & {
         value_transaction: string,
@@ -37,9 +38,18 @@
 
     const drawer = ref(false)
 
+    const cardPostValueTransaction = ref(false)
+
     const modalEditMovementsRevenue = ref(false)
 
     const modalEditMovementesExpenses = ref(false)
+
+    const labelOptions = ref({
+        colorButton: "",
+        textButton: "",
+        title: "",
+        text: ""
+    })
 
     const editDraft = ref<TMovements | null>(null)
 
@@ -175,7 +185,6 @@
     })
 
     function handleOpenModalEditMovementsRevenue(movements: TMovementsFormatted) {
-        modalEditMovementsRevenue.value = true
 
         //Usamos structuredClone + toRaw para evitar mutar o objeto reativo do Vue
         const rawMovements =  structuredClone(toRaw(movements))
@@ -185,10 +194,11 @@
             value_transaction: Number(rawMovements.value_transaction.replace(/[^\d,]/g, '').replace(',', '.')),
             date_transaction: new Date(rawMovements.date_transaction.split('/').reverse().join('-') + 'T00:00:00'),
         }
+
+        modalEditMovementsRevenue.value = true
   }
 
     function handleOpenModalEditMovementsExpense(movements: TMovementsFormatted) {
-        modalEditMovementesExpenses.value = true
 
         //Usamos structuredClone + toRaw para evitar mutar o objeto reativo do Vue
         const rawMovements =  structuredClone(toRaw(movements))
@@ -198,6 +208,8 @@
             value_transaction: Number(rawMovements.value_transaction.replace(/[^\d,]/g, '').replace(',', '.')),
             date_transaction: new Date(rawMovements.date_transaction.split('/').reverse().join('-') + 'T00:00:00'),
         }
+
+        modalEditMovementesExpenses.value = true
   }
 
 
@@ -228,9 +240,21 @@
         }
 
         if (option.value === "efetivar" && data.type_transaction === "Receita") {
-            payload.status_transaction = "recebido"
+            editDraft.value = payload
+            labelOptions.value.colorButton = "green"
+            labelOptions.value.textButton = "Receber"
+            labelOptions.value.title = "Deseja efetivar esta receita?"
+            labelOptions.value.text = "Ao efetivar essa receita será adicionado o valor na Conta."
+            cardPostValueTransaction.value = true
+            return
         } else if (option.value === "efetivar" && data.type_transaction === "Despesa") {
-            payload.status_transaction = "pago"
+            editDraft.value = payload
+            labelOptions.value.colorButton = "red"
+            labelOptions.value.textButton = "Pagar"
+            labelOptions.value.title = "Deseja efetivar esta despesa?"
+            labelOptions.value.text = "Ao efetivar essa despesa será descontado o valor na Conta."
+            cardPostValueTransaction.value = true
+            return
         }
 
         mutate(payload)
@@ -243,6 +267,8 @@
 <template>
     <div class="container-main">
 
+
+        <CardSettleTransactionModal v-model="cardPostValueTransaction" :draft="editDraft" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" />
         <CardEditMovementsRevenue :draft="editDraft" v-model="modalEditMovementsRevenue"/>
         <CardEdtiMovementsExpenses :draft="editDraft"  v-model="modalEditMovementesExpenses"/>
         

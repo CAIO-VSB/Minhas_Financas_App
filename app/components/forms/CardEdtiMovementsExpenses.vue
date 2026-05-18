@@ -25,17 +25,17 @@
     const { nameRules, selectRules, dateRules, currencyRules } = useValidateFields()
 
     const { data:categories } = useQuery({
-    queryKey: QUERY_KEYS.categories.active,
-    queryFn: getCategoriesOnlyActive,
+      queryKey: QUERY_KEYS.categories.active,
+      queryFn: getCategoriesOnlyActive,
     })
 
     const { data:accounts } = useQuery({
-    queryKey: QUERY_KEYS.accounts.active,
-    queryFn: getAccountsOnlyActive,
+      queryKey: QUERY_KEYS.accounts.active,
+      queryFn: getAccountsOnlyActive,
     })
 
     const props = defineProps<{
-        draft: TMovements | null
+      draft: TMovements | null
     }>()
 
     const form = ref()
@@ -50,45 +50,45 @@
     const modalAddAccount = ref(false)
 
     watch(menuCategorias, (val) => {
-        if (!val) searchCategorias.value = ""
+      if (!val) searchCategorias.value = ""
     })
 
     //Watch reponsável por mostrar a categoria e conta atual
     watch(() => props.draft, (newDraft) => {
-        if (newDraft) {
-            modelCategorias.value = newDraft.categorie_id ?? null
-            modelAccounts.value = newDraft.accounts_id ?? null
-        }
+      if (newDraft) {
+        modelCategorias.value = newDraft.categorie_id ?? null
+        modelAccounts.value = newDraft.accounts_id ?? null
+      }
     }, {immediate: true})
 
     //Watch responsável por atualizar a categoria escolhida pelo usário no ato da edição
     watch(modelCategorias, (val) => {
-        if (props.draft) props.draft.categorie_id = val
+      if (props.draft) props.draft.categorie_id = val
     })
 
     //Watch responsável por atualizar a conta escolhida pelo usário no ato da edição
     watch(modelAccounts, (val) => {
-        if (props.draft) props.draft.accounts_id = val
+      if (props.draft) props.draft.accounts_id = val
     })
 
     watch(menuAccounts, (val) => {
-        if (!val) searchAccounts.value = ""
+      if (!val) searchAccounts.value = ""
     })
 
     const filterCategorias = computed(() => {
-        return categories.value?.filter(item => item.name_identifier.toLowerCase().includes(searchCategorias.value.toLowerCase()))
+      return categories.value?.filter(item => item.name_identifier.toLowerCase().includes(searchCategorias.value.toLowerCase()))
     })
 
     const filterAccounts = computed(() => {
-        return accounts.value?.filter(item => item.name_identifier.toLowerCase().includes(searchAccounts.value?.toLowerCase() ?? ''))
+      return accounts.value?.filter(item => item.name_identifier.toLowerCase().includes(searchAccounts.value?.toLowerCase() ?? ''))
     })
 
     function handleOpenModalAddCategorie() {
-        modalAddCategorie.value = true
+      modalAddCategorie.value = true
     }
 
     function handleOpenModalAddAccount() {
-        modalAddAccount.value = true
+      modalAddAccount.value = true
     }
 
 
@@ -115,28 +115,29 @@
 
     try {
 
-        if(!props.draft) {
-            notifyError("Ops!", "Algo não parece certo. Confira os dados e tente novamente.")
-            return
-        } 
+      if(!props.draft) {
+        notifyError("Ops!", "Algo não parece certo. Confira os dados e tente novamente.")
+        return
+      } 
 
 
-        const formValid = await form.value.validate()
-        const resultSchema = validateSchemaMovements(props.draft)
-        
-        console.log("Objeto a ser envidado" + JSON.stringify(props.draft))
-        
-        if (formValid) {
-            if (resultSchema.success) {  
-                mutate(props.draft)
-            }
+      const formValid = await form.value.validate()
+      const resultSchema = validateSchemaMovements(props.draft)
+      
+      console.log("Objeto a ser envidado" + JSON.stringify(props.draft))
+      
+      if (formValid) {
+        if (resultSchema.success) {  
+          mutate(props.draft)
         }
+      }
 
     } catch (err) {
         
-        notifyInfo("Error", "Erro ao criar conta bancária" + err)
+      notifyInfo("Error", "Erro ao criar conta bancária" + err)
+
     } 
-    }
+  }
 
 
 </script>
