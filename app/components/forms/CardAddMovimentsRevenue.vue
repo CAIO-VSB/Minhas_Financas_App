@@ -159,11 +159,11 @@
           <v-divider></v-divider>
           <v-card-text>
 
-            <CurrencyInput input-color="#2E7D32" base-color="#2E7D32" color="#2E7D32" :rules="currencyRules"  text-color="green" autocomplete="off" label="Valor*" v-model="movementsForm.value_transaction" />
+            <CurrencyInput prepend-icon="mdi-cash" input-color="#2E7D32" base-color="#2E7D32" color="#2E7D32" :rules="currencyRules"  text-color="green" autocomplete="off" label="Valor*" v-model="movementsForm.value_transaction" />
 
-            <v-date-input :rules="dateRules" autocomplete="off" name="date" prepend-icon="" label="Data*" variant="underlined" v-model="movementsForm.date_transaction"></v-date-input>
+            <v-date-input prepend-icon="mdi-calendar" :rules="dateRules" autocomplete="off" name="date" label="Data*" variant="underlined" v-model="movementsForm.date_transaction"></v-date-input>
 
-            <v-text-field :rules="nameRules" :counter="45" maxlength="45"  autocomplete="name" name="name" label="Descrição*" variant="underlined" v-model="movementsForm.description_transaction"></v-text-field>
+            <v-text-field prepend-icon="mdi-pencil" :rules="nameRules" :counter="45" maxlength="45"  autocomplete="name" name="name" label="Descrição*" variant="underlined" v-model="movementsForm.description_transaction"></v-text-field>
 
             <v-select
               autocomplete="off"
@@ -177,6 +177,7 @@
               label="Categoria*"
               persistent-hint
               :rules="selectRules"
+              prepend-icon="mdi-shape"
               >
                 <template #append-inner>
                   <v-tooltip
@@ -232,6 +233,7 @@
                   hint="O valor será creditado nesta conta"
                   persistent-hint
                   autocomplete="off"
+                  prepend-icon="mdi-bank"
                 >
                   <template #append-inner>
                     <v-tooltip
@@ -277,9 +279,9 @@
                   </template>
                 </v-select>
 
-                <v-text-field v-model="movementsForm.observation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="underlined"></v-text-field >
+                <v-text-field prepend-icon="mdi-note-text" v-model="movementsForm.observation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="underlined"></v-text-field >
 
-                <v-file-input prepend-icon=""  prepend-inner-icon="mdi-paperclip" clearable label="Anexar comprovante" variant="underlined"></v-file-input>
+                <v-file-input prepend-icon="mdi-paperclip" clearable label="Anexar comprovante" variant="underlined"></v-file-input>
 
               <v-switch
                 v-model="movementsForm.status_transaction"

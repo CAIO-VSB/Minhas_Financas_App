@@ -35,7 +35,7 @@
     })
 
     const props = defineProps<{
-        draft: TMovements | null
+      draft: TMovements | null
     }>()
 
 
@@ -51,62 +51,62 @@
     const modalAddAccount = ref(false)
 
     watch(menuCategorias, (val) => {
-        if (!val) searchCategorias.value = ""
+      if (!val) searchCategorias.value = ""
     })
 
     //Watch reponsável por mostrar a categoria e conta atual
     watch(() => props.draft, (newDraft) => {
-        if (newDraft) {
-            modelCategorias.value = newDraft.categorie_id ?? null
-            modelAccounts.value = newDraft.accounts_id ?? null
-        }
+      if (newDraft) {
+        modelCategorias.value = newDraft.categorie_id ?? null
+        modelAccounts.value = newDraft.accounts_id ?? null
+      }
     }, {immediate: true})
 
     //Watch responsável por atualizar a categoria escolhida pelo usário no ato da edição
     watch(modelCategorias, (val) => {
-        if (props.draft) props.draft.categorie_id = val
+      if (props.draft) props.draft.categorie_id = val
     })
 
     //Watch responsável por atualizar a conta escolhida pelo usário no ato da edição
     watch(modelAccounts, (val) => {
-        if (props.draft) props.draft.accounts_id = val
+      if (props.draft) props.draft.accounts_id = val
     })
 
     watch(menuAccounts, (val) => {
-        if (!val) searchAccounts.value = ""
+      if (!val) searchAccounts.value = ""
     })
 
     const filterCategorias = computed(() => {
-        return categories.value?.filter(item => item.name_identifier.toLowerCase().includes(searchCategorias.value.toLowerCase()))
+      return categories.value?.filter(item => item.name_identifier.toLowerCase().includes(searchCategorias.value.toLowerCase()))
     })
 
     const filterAccounts = computed(() => {
-        return accounts.value?.filter(item => item.name_identifier.toLowerCase().includes(searchAccounts.value?.toLowerCase() ?? ''))
+      return accounts.value?.filter(item => item.name_identifier.toLowerCase().includes(searchAccounts.value?.toLowerCase() ?? ''))
     })
 
     function resetForm() {
-        modelAccounts.value = null
-        modelCategorias.value = null    
-        modelValue.value = false
+      modelAccounts.value = null
+      modelCategorias.value = null    
+      modelValue.value = false
     }
 
     const  { mutate, isPending  } = useMutation({
-        
-        mutationFn: patchMovements,
+      
+      mutationFn: patchMovements,
 
-        onSuccess: () => {
-        invalidate(QUERY_KEYS.accounts.all)
-        invalidate(QUERY_KEYS.movements.all)
-        invalidate(QUERY_KEYS.movements.only_revenues)
-        invalidate(QUERY_KEYS.movements.current_balance)
-        notifySuccess("Sucesso", "Receita editada com sucesso", 6000)
-        resetForm()
-        modelValue.value = false
-        },
+      onSuccess: () => {
+      invalidate(QUERY_KEYS.accounts.all)
+      invalidate(QUERY_KEYS.movements.all)
+      invalidate(QUERY_KEYS.movements.only_revenues)
+      invalidate(QUERY_KEYS.movements.current_balance)
+      notifySuccess("Sucesso", "Receita editada com sucesso", 6000)
+      resetForm()
+      modelValue.value = false
+      },
 
-        onError: (error) => {
-        notifyError("😢", "Ops! Algo deu errado ao editar a receita. Tente novamente ou entre em contato com o suporte. Detalhes: " + error.message)
-        },
+      onError: (error) => {
+      notifyError("😢", "Ops! Algo deu errado ao editar a receita. Tente novamente ou entre em contato com o suporte. Detalhes: " + error.message)
+      },
 
     })
 
@@ -114,21 +114,21 @@
     
     try {
 
-        if(!props.draft) {
-            notifyError("Ops!", "Algo não parece certo. Confira os dados e tente novamente.")
-            return
-        } 
+      if(!props.draft) {
+        notifyError("Ops!", "Algo não parece certo. Confira os dados e tente novamente.")
+        return
+      } 
 
-        const formValid = await form.value.validate()
-        const resultSchema = validateSchemaMovements(props.draft)
-      
-        console.log("Valor sendo enviado" + JSON.stringify(props.draft))
-      
-        if (formValid) {
-            if (resultSchema.success) {  
-                mutate(props.draft)
-            }
+      const formValid = await form.value.validate()
+      const resultSchema = validateSchemaMovements(props.draft)
+    
+      console.log("Valor sendo enviado" + JSON.stringify(props.draft))
+    
+      if (formValid) {
+        if (resultSchema.success) {  
+          mutate(props.draft)
         }
+      }
 
     } catch (err) {
 

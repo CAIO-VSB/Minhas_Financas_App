@@ -89,8 +89,12 @@
   })
 
   async function handleEditAccount() {
+
+    console.log("initial_balance atual:", props.draft?.initial_balance)
+    console.log("newInitialBalance:", newInitialBalance.value)
+    console.log("são diferentes?", Number(props.draft?.initial_balance) !== Number(newInitialBalance.value))
     
-    if (props.draft?.initial_balance != newInitialBalance.value) {
+    if (Number(props.draft?.initial_balance) != Number(newInitialBalance.value)) {
       dialog.value= true
       return
     }
@@ -116,15 +120,16 @@
       const formValid = await form.value.validate()
       const resultSchema = validateSchemaAccount(props.draft)
 
-      console.log("Valor envidado", toRaw(props.draft))
+      if (formValid && resultSchema.success) {
+        const payload = {...toRaw(props.draft)}
 
-      if (formValid) {
-        if (resultSchema.success) {
-          if(props.draft)
-          mutate(props.draft)
+        if (Number(payload.initial_balance === Number(newInitialBalance.value))) {
+          delete payload.initial_balance
         }
+
+        mutate(payload)
       }
-      
+
     } catch (err) {
       console.log("Erro ao criar conta" + err)
     } 
@@ -179,7 +184,7 @@
           <v-card-text>
             <form>
 
-              <CurrencyInput  autocomplete="off" hint="Salo lançado no ato do cadastro" v-model="props.draft.initial_balance" label="Saldo inicial" ></CurrencyInput>
+              <CurrencyInput prepend-icon="mdi-bank"  autocomplete="off" hint="Salo lançado no ato do cadastro" v-model="props.draft.initial_balance" label="Saldo inicial" ></CurrencyInput>
 
               <v-text-field
                 label="Nome da conta *"
@@ -187,10 +192,11 @@
                 color="primary"
                 v-model="props.draft.name_identifier"
                 :rules="nameRules"
+                prepend-icon="mdi-wallet"
               >
               </v-text-field>
 
-              <v-select :rules="selectRules" v-model="props.draft.type_account" color="primary" persistent-hint hint="Dúvidas sobre qual conta escolher? Clique no ícone de ajuda." label="Tipo *" :items="items" variant="underlined">
+              <v-select :rules="selectRules" prepend-icon="mdi-format-list-bulleted"  v-model="props.draft.type_account" color="primary" persistent-hint hint="Dúvidas sobre qual conta escolher? Clique no ícone de ajuda." label="Tipo *" :items="items" variant="underlined">
                 <template v-slot:append>
                   <nuxt-link target="_blank" to="https://www.serasa.com.br/blog/conta-bancaria/">
                     <v-icon class="cursor-pointer" color="info" icon="mdi-chat-question" size="large"></v-icon>
@@ -203,7 +209,7 @@
                 </template>
               </v-select>
 
-              <v-text-field  :rules="logoRules" persistent-hint hint="Logo de identifiação *"   color="primary"  v-model="props.draft.name_bank" readonly variant="underlined">
+              <v-text-field prepend-icon="mdi-credit-card" :rules="logoRules" persistent-hint hint="Logo de identifiação *"   color="primary"  v-model="props.draft.name_bank" readonly variant="underlined">
                 <template v-slot:append>
                     <v-icon @click="dialogAddInstitution = true" class="cursor-pointer icon-add-logo"  icon="mdi-plus" size="large"></v-icon>
                     <v-tooltip
@@ -217,7 +223,7 @@
                   </template>
               </v-text-field>
 
-              <v-text-field  :rules="colorRules" persistent-hint hint="Cor de identifiação" color="primary" v-model="props.draft.color" readonly variant="underlined">
+              <v-text-field  prepend-icon="mdi-palette" :rules="colorRules" persistent-hint hint="Cor de identifiação" color="primary" v-model="props.draft.color" readonly variant="underlined">
                 <template v-slot:append>
                     <v-icon @click="dialogColorPicker = true" class="cursor-pointer icon-add-logo"  icon="mdi-eyedropper-variant" size="large"></v-icon>
                     <v-tooltip

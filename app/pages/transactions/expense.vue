@@ -7,6 +7,10 @@
 
 
     import CardAddMovimentsExpenses from '~/components/forms/CardAddMovimentsExpenses.vue'
+    import CardEdtiMovementsExpenses from '~/components/forms/CardEdtiMovementsExpenses.vue'
+    import CardSettleTransactionModal from '~/components/forms/CardSettleTransactionModal.vue'
+    import CardDeletTransaction from '~/components/forms/CardDeletTransaction.vue'
+    import { useInvalidate } from "~/composables/useInvalidate"
     import { useHttpMovements } from '~/composables/useHttp/useHttpMovements'
     import type { TMovements } from '~~/types/movements/TMovements'
     import type { TOptionAction } from '~~/types/option_action/TOptionAction'
@@ -25,13 +29,31 @@
         route: string
     }
 
+    const editDraft = ref<TMovements | null>(null)
+
     const { getOnlyExpenses } = useHttpMovements()
+    const { getMoviments, patchMovements, getCurrentBalance } = useHttpMovements()
+    const { notifyError, notifyInfo, notifySuccess } = useNotify()
+    const { invalidate } = useInvalidate()
 
     const route = useRoute()
 
     const search = ref('')
 
     const modalAddExpenses = ref(false)
+
+    const cardPostValueTransaction = ref(false)
+
+    const modalEditMovementesExpenses = ref(false)
+
+    const cardDeletTransaction = ref(false)
+
+    const labelOptions = ref({
+        colorButton: "",
+        textButton: "",
+        title: "",
+        text: ""
+    })
 
     const period = ref({
         month: new Date().getMonth(),
@@ -112,17 +134,92 @@
     }
 
     function getOptions(moviments: TMovementsFormatted): TOptionAction [] {
-        return [
-        {
-            title: moviments.status_transaction === 'pendente' ? 'Efetivar' : 'Editar',
-            icon: moviments.status_transaction === 'pendente' ? "mdi-check-all" : "mdi-circle-edit-outline",
-            value: moviments.status_transaction === 'pendente' ? 'efetivar' : 'editar'
-        },
-        { title: 'Anexar arquivo',  value: "arquivo", icon: "mdi-paperclip" },
-        { title: 'Deletar', value: "delete", icon: "mdi-delete-forever" }
+
+        const options = [
+            moviments.status_transaction === "pendente" ? {
+                title: "Efetivar",
+                icon: "mdi-check-all",
+                value: "efetivar"
+            } : null,
+            { title: 'Editar', value: "edit", icon: "mdi-circle-edit-outline" },
+            { title: 'Anexar arquivo',  value: "arquivo", icon: "mdi-paperclip" },
+            { title: 'Deletar', value: "delete", icon: "mdi-delete-forever" },
         ]
+
+        return options.filter(Boolean) as TOptionAction[]
+
     } 
 
+    const  { mutate } = useMutation({
+
+        mutationFn: (payload: TMovements) => patchMovements(payload),
+
+        onSuccess: () => {
+            invalidate(QUERY_KEYS.movements.all)
+            invalidate(QUERY_KEYS.movements.only_expenses)
+            invalidate(QUERY_KEYS.movements.only_revenues)
+            invalidate(QUERY_KEYS.movements.current_balance)
+            invalidate(QUERY_KEYS.accounts.getBalanceForAccount)
+        },
+
+        onError: (error) => {
+            notifyInfo("Atenção", `Erro ao editar transação. Tente novamente mais tarde ou contate o surpote técnico. Erro detalhado: ${error.message}`)
+        },
+
+    })
+
+    
+    function handleOpenModalEditMovementsExpense(movements: TMovementsFormatted) {
+
+        //Usamos structuredClone + toRaw para evitar mutar o objeto reativo do Vue
+        const rawMovements =  structuredClone(toRaw(movements))
+
+        editDraft.value = {
+            ...rawMovements,
+            value_transaction: Number(rawMovements.value_transaction.replace(/[^\d,]/g, '').replace(',', '.')),
+            date_transaction: new Date(rawMovements.date_transaction.split('/').reverse().join('-') + 'T00:00:00'),
+        }
+
+        modalEditMovementesExpenses.value = true
+    }
+
+
+    function handleOptionClick(option: TOptionAction, data: TMovementsFormatted) {
+
+        if (option.value === "edit" && data.type_transaction === "Despesa") {
+            handleOpenModalEditMovementsExpense(data)
+            return 
+        }
+
+        const raw = structuredClone(toRaw(data))
+
+        const payload: TMovements = {
+            ...raw,
+            value_transaction: Number(raw.value_transaction.replace(/[^\d,]/g, '').replace(',', '.')),
+            date_transaction: new Date(raw.date_transaction.split('/').reverse().join('-') + 'T00:00:00'),
+        }
+
+        if (option.value === "efetivar" && data.type_transaction === "Despesa") {
+            editDraft.value = payload
+            labelOptions.value.colorButton = "red"
+            labelOptions.value.textButton = "Pagar"
+            labelOptions.value.title = "Deseja efetivar esta despesa?"
+            labelOptions.value.text = "Ao efetivar essa despesa será descontado o valor na Conta."
+            cardPostValueTransaction.value = true
+            return
+        } else if (option.value === "delete" && data.type_transaction === "Despesa") {
+            editDraft.value = payload
+            payload.is_deleted = true
+            labelOptions.value.colorButton = "red"
+            labelOptions.value.textButton = "Deletar"
+            labelOptions.value.title = "Deseja deletar esta despesa?"
+            labelOptions.value.text = "Essa ação não poderá ser desfeita. O valor será retornado ao saldo da conta."
+            cardDeletTransaction.value = true
+            return
+        }
+
+        mutate(payload)
+    }
 
  
 </script>
@@ -132,7 +229,10 @@
     <div class="container-main">
 
         <cardAddMovimentsExpenses v-model="modalAddExpenses" />
-
+        <CardDeletTransaction :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="editDraft" v-model="cardDeletTransaction" />
+        <CardSettleTransactionModal v-model="cardPostValueTransaction" :draft="editDraft" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" />
+        <CardEdtiMovementsExpenses :draft="editDraft"  v-model="modalEditMovementesExpenses"/>
+        
         <div class="text-center bnt-options">
             
             <v-menu
@@ -246,6 +346,7 @@
                 :headers="headers"
                 :items="transitionsFformatted"
                 :search="search"
+                mobile-breakpoint="md"
                 >
 
                 <template v-slot:item.status_transaction="{ item }">
@@ -267,25 +368,24 @@
                 </template>
 
                 <template v-slot:item.actions="{ item }">
-                    <v-btn icon variant="text" size="small">
                         <v-menu
                             transition="slide-y-transition"
                             >
-                            <template v-slot:activator="{ props }">
-                                <v-icon v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
+                             <template v-slot:activator="{ props }">
+                                <v-icon class="hover:scale-120 border-1 rounded-full"  v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
                             </template>
                             <v-list>
                                 <v-list-item
                                 v-for="action in getOptions(item)"
-                                :key="action.title!"
+                                :key="action.title"
                                 :value="action.value"
-                                :prepend-icon="action.icon!"
+                                :prepend-icon="action.icon"
+                                @click="handleOptionClick(action, item)"
                                 >
                                 <v-list-item-title>{{ action.title }}</v-list-item-title>
                                 </v-list-item>
                             </v-list>
                         </v-menu>
-                    </v-btn>
                 </template>
                 </v-data-table>
             </v-card>
@@ -299,7 +399,7 @@
 <style scoped>
 
 .container-main {
-    margin-top: 35px;
+    margin-top: 30px;
 }
 
 .main-cards {
@@ -331,8 +431,8 @@
 
 .table {
     overflow-y: auto;
-    max-height: calc(100vh - 256px);
     height: fit-content;
+    height: calc(100vh - 245px);
 }
 
 .main-value-formated {
@@ -359,6 +459,26 @@
     grid-template-columns: 1fr;
     padding: 0 6px 0 6px;
   }
+
+      .container-table {
+        width: 100%;
+        height: 100vh;
+        padding: 10px;
+    }
+
+    .container-main {
+        margin-top: 30px;
+        overflow: auto;
+        height: 100vh;
+    }
+
+    .table {
+        overflow-y: auto;
+        height: fit-content;
+        height: calc(100vh - 115px);
+    }
+
+
 }
 
 @media (max-width: 680px) {
@@ -376,7 +496,26 @@
         gap: 10px;
         flex-direction: column;
     }
-}
 
+    .container-table {
+        width: 100%;
+        height: 100vh;
+        padding: 10px;
+    }
+
+    .container-main {
+        margin-top: 30px;
+        overflow: auto;
+        height: 100vh;
+    }
+
+    .table {
+        overflow-y: auto;
+        height: fit-content;
+        height: calc(100vh - 115px);
+    }
+
+  
+}
 
 </style>

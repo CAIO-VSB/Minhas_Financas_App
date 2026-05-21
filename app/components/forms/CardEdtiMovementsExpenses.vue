@@ -55,6 +55,7 @@
 
     //Watch reponsável por mostrar a categoria e conta atual
     watch(() => props.draft, (newDraft) => {
+      console.log("A despesa que chegou foi", props.draft)
       if (newDraft) {
         modelCategorias.value = newDraft.categorie_id ?? null
         modelAccounts.value = newDraft.accounts_id ?? null
@@ -97,12 +98,12 @@
     mutationFn: patchMovements,
 
     onSuccess: () => {
-        invalidate(QUERY_KEYS.accounts.all)
-        invalidate(QUERY_KEYS.movements.all)
-        invalidate(QUERY_KEYS.movements.only_expenses)
-        invalidate(QUERY_KEYS.movements.current_balance)
-        notifySuccess("Sucesso", "Despesa editada com sucesso", 6000)
-        modelValue.value = false
+      invalidate(QUERY_KEYS.accounts.all)
+      invalidate(QUERY_KEYS.movements.all)
+      invalidate(QUERY_KEYS.movements.only_expenses)
+      invalidate(QUERY_KEYS.movements.current_balance) 
+      notifySuccess("Sucesso", "Despesa editada com sucesso", 6000)
+      modelValue.value = false
     },
 
     onError: (error) => {

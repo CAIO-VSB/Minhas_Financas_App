@@ -8,6 +8,7 @@
   import { useValidateSchemas } from "~/composables/useValidateSchema"
   import { useValidateFields } from "~/composables/useValidateFields"
   import { useInvalidate } from "~/composables/useInvalidate"
+import flags from "~~/shared/flags/catalog"
 
   const { getAccountsOnlyActive } = useHttpAccounts()
   const { postCreditCard } = useHttpCreditsCards()
@@ -92,7 +93,7 @@
   })
 
   const filterLogos = computed(() => {
-    return banks.filter(item => item.text.toLowerCase().includes(searchLogos.value.toLowerCase()))
+    return flags.filter(item => item.text.toLowerCase().includes(searchLogos.value.toLowerCase()))
   })
 
   function resetForm() {
@@ -103,6 +104,7 @@
     cardCredit.value.name_identifier = ""
     modelAccounts.value = 0
     modelLogos.value = ""
+    modelValue.value = false
   }
 
   const  { mutate, isPending  } = useMutation({
@@ -113,7 +115,6 @@
       resetForm()
       invalidate(QUERY_KEYS.creditCards.all)
       notifySuccess("Sucesso", "Cartão de crédito criado com sucesso", 6000)
-      modelValue.value = false
     },
 
     onError: (error) => {
@@ -157,11 +158,10 @@
     >
     <v-dialog
       v-model="modelValue"
-      max-width="600"
-
+      max-width="640"
     >
       <v-card
-        prepend-icon="mdi-plus-circle"
+        prepend-icon="mdi-wallet-plus"
         title="Novo cartão de crédito"
       >
         <v-card-text>
@@ -181,6 +181,7 @@
                 autocomplete="cc-name"
                 maxlength="45"
                 counter="45"
+                prepend-inner-icon="mdi-card-text"
               ></v-text-field>
             </v-col>
             <v-col
@@ -189,7 +190,7 @@
               sm="6"
             >
             
-            <CurrencyInput  autocomplete="limite" name="limite" v-model="cardCredit.limit_card!" label="Limite" />
+            <CurrencyInput prepend-inner-icon="mdi-cash-multiple"  autocomplete="limite" name="limite" v-model="cardCredit.limit_card!" label="Limite" />
 
             </v-col>
             <v-col
@@ -208,6 +209,7 @@
                 maxlength="4"
                 :rules="fourDigitsRules"
                 v-model="cardCredit.four_digits"
+                prepend-inner-icon="mdi-credit-card-lock"
               ></v-text-field>
             </v-col>
 
@@ -226,6 +228,7 @@
                 :rules="dueDayRules"
                 isent
                 v-model="cardCredit.due_day"
+                prepend-inner-icon="mdi-calendar-remove"
               ></v-number-input>
             </v-col>
 
@@ -244,6 +247,7 @@
                 :min="1"
                 :rules="closingDayRules"
                 v-model="cardCredit.closing_day"
+                prepend-inner-icon="mdi-calendar-clock"
               ></v-number-input>
             </v-col>
 
@@ -263,6 +267,7 @@
                 label="Conta vinculada*"
                 hint="Os débitos do cartão serão debitados desta conta"
                 persistent-hint
+                prepend-inner-icon="mdi-bank-transfer"
               >
                 <template v-slot:selection="{item}">
                   <v-avatar  style="width: 30px; height: 30px; margin-right: 12px;"> 
@@ -323,10 +328,9 @@
                 item-value="url"
                 clearable
                 variant="underlined"
-                label="Logo*"
-                hint="Logo de identificação"
-                persistent-hint
+                label="Bandeira*"
                 :rules="logoCreditCardRules"
+                prepend-inner-icon="mdi-credit-card-outline"
               >
                 <template v-slot:selection="{item}">
                   <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
@@ -393,7 +397,7 @@
           <v-btn
             text="Cancelar"
             variant="plain"
-            @click="modelValue = false"
+            @click="resetForm"
           ></v-btn>
 
           <v-btn

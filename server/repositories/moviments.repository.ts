@@ -54,8 +54,6 @@ export const movementsRespository = {
 
         const currentBalance = client.query(text, [userId])
 
-        console.log("findCurrentBalance resultado:", (await currentBalance).rows)
-
         return (await currentBalance).rows
     },
 

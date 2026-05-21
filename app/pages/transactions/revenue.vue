@@ -11,6 +11,9 @@
     import { useHttpMovements } from '~/composables/useHttp/useHttpMovements'
     import type { TMovements } from '~~/types/movements/TMovements'
     import type { TOptionAction } from '~~/types/option_action/TOptionAction'
+    import CardSettleTransactionModal from '~/components/forms/CardSettleTransactionModal.vue'
+    import CardEditMovementsRevenue from '~/components/forms/CardEditMovementsRevenue.vue'
+    import CardDeletTransaction from '~/components/forms/CardDeletTransaction.vue'
 
     type TMovementsFormatted = Omit<TMovements, 'value_transaction' | 'date_transaction'> & {
         value_transaction: string,
@@ -24,13 +27,31 @@
         route: string
     }
 
+    const { getMoviments, patchMovements, getCurrentBalance } = useHttpMovements()
+    const { notifyError, notifyInfo, notifySuccess } = useNotify()
+    const { invalidate } = useInvalidate()
     const { getOnlyRevenues } = useHttpMovements()
+
+    const editDraft = ref<TMovements | null>(null)
 
     const route = useRoute()
 
     const modalAddRevenue = ref(false)
 
+    const modalEditMovementsRevenue = ref(false)
+
+    const cardPostValueTransaction = ref(false)
+
+    const cardDeletTransaction = ref(false)
+
     const search = ref('')
+
+    const labelOptions = ref({
+        colorButton: "",
+        textButton: "",
+        title: "",
+        text: ""
+    })
 
     const period = ref({
         month: new Date().getMonth(),
@@ -110,19 +131,94 @@
     }
 
     function getOptions(moviments: TMovementsFormatted): TOptionAction [] {
-        return [
-        {
-            title: moviments.status_transaction === 'pendente' ? 'Efetivar' : 'Editar',
-            icon: moviments.status_transaction === 'pendente' ? "mdi-check-all" : "mdi-circle-edit-outline",
-            value: moviments.status_transaction === 'pendente' ? 'efetivar' : 'editar'
-        },
-        { title: 'Anexar arquivo',  value: "arquivo", icon: "mdi-paperclip" },
-        { title: 'Deletar', value: "delete", icon: "mdi-delete-forever" }
+
+        const options = [
+            moviments.status_transaction === "pendente" ? {
+                title: "Efetivar",
+                icon: "mdi-check-all",
+                value: "efetivar"
+            } : null,
+            { title: 'Editar', value: "edit", icon: "mdi-circle-edit-outline" },
+            { title: 'Anexar arquivo',  value: "arquivo", icon: "mdi-paperclip" },
+            { title: 'Deletar', value: "delete", icon: "mdi-delete-forever" },
         ]
+
+        return options.filter(Boolean) as TOptionAction[]
+
     } 
 
+    const  { mutate } = useMutation({
 
- 
+        mutationFn: (payload: TMovements) => patchMovements(payload),
+
+        onSuccess: () => {
+            invalidate(QUERY_KEYS.movements.all)
+            invalidate(QUERY_KEYS.movements.only_expenses)
+            invalidate(QUERY_KEYS.movements.only_revenues)
+            invalidate(QUERY_KEYS.movements.current_balance)
+            invalidate(QUERY_KEYS.accounts.getBalanceForAccount)
+            notifySuccess("Sucesso", "Transação editada com sucesso", 6000)
+        },
+
+        onError: (error) => {
+            notifyInfo("Atenção", `Erro ao editar transação. Tente novamente mais tarde ou contate o surpote técnico. Erro detalhado: ${error.message}`)
+        },
+
+    })
+
+
+    function handleOpenModalEditMovementsRevenue(movements: TMovementsFormatted) {
+
+        //Usamos structuredClone + toRaw para evitar mutar o objeto reativo do Vue
+        const rawMovements =  structuredClone(toRaw(movements))
+
+        editDraft.value = {
+            ...rawMovements,
+            value_transaction: Number(rawMovements.value_transaction.replace(/[^\d,]/g, '').replace(',', '.')),
+            date_transaction: new Date(rawMovements.date_transaction.split('/').reverse().join('-') + 'T00:00:00'),
+        }
+
+        modalEditMovementsRevenue.value = true
+    }
+
+    function handleOptionClick(option: TOptionAction, data: TMovementsFormatted) {
+
+        if (option.value === "edit" && data.type_transaction === "Receita") {
+            handleOpenModalEditMovementsRevenue(data)
+            return 
+        }
+
+        const raw = structuredClone(toRaw(data))
+
+        const payload: TMovements = {
+            ...raw,
+            value_transaction: Number(raw.value_transaction.replace(/[^\d,]/g, '').replace(',', '.')),
+            date_transaction: new Date(raw.date_transaction.split('/').reverse().join('-') + 'T00:00:00'),
+        }
+
+        if (option.value === "efetivar" && data.type_transaction === "Receita") {
+            editDraft.value = payload
+            labelOptions.value.colorButton = "green"
+            labelOptions.value.textButton = "Receber"
+            labelOptions.value.title = "Deseja efetivar esta receita?"
+            labelOptions.value.text = "Ao efetivar essa receita será adicionado o valor na Conta."
+            cardPostValueTransaction.value = true
+            return
+        } else if (option.value === "delete" && data.type_transaction === "Receita") {
+            editDraft.value = payload
+            payload.is_deleted = true
+            labelOptions.value.colorButton = "green"
+            labelOptions.value.textButton = "Deletar"
+            labelOptions.value.title = "Deseja deletar esta receita?"
+            labelOptions.value.text = "Essa ação não poderá ser desfeita. O valor será removido da conta."
+            cardDeletTransaction.value = true
+            return
+        }
+
+        mutate(payload)
+    }
+
+
 </script>
 
 
@@ -130,6 +226,9 @@
     <div class="container-main">
 
         <cardAddMovimentsRevenue v-model="modalAddRevenue" />
+        <CardDeletTransaction :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="editDraft" v-model="cardDeletTransaction" />
+        <CardEditMovementsRevenue :draft="editDraft" v-model="modalEditMovementsRevenue"/>
+        <CardSettleTransactionModal v-model="cardPostValueTransaction" :draft="editDraft" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" />
 
         <div class="text-center bnt-options">
             
@@ -238,6 +337,7 @@
                 :items="transitionsFformatted"
                 :search="search"
                 :loading="isPending"
+                mobile-breakpoint="md"
                 >
 
                 <template v-slot:item.status_transaction="{ item }">
@@ -260,12 +360,11 @@
                 </template>
 
                 <template v-slot:item.actions="{ item }">
-                    <v-btn icon variant="text" size="small">
                         <v-menu
                             transition="slide-y-transition"
                             >
                             <template v-slot:activator="{ props }">
-                                <v-icon v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
+                                <v-icon class="hover:scale-120 border-1 rounded-full"  v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
                             </template>
                             <v-list>
                                 <v-list-item
@@ -273,12 +372,12 @@
                                 :key="action.title"
                                 :value="action.value"
                                 :prepend-icon="action.icon"
+                                @click="handleOptionClick(action, item)"
                                 >
                                 <v-list-item-title>{{ action.title }}</v-list-item-title>
                                 </v-list-item>
                             </v-list>
                         </v-menu>
-                    </v-btn>
                 </template>
                 </v-data-table>
             </v-card>
@@ -292,7 +391,7 @@
 <style scoped>
 
 .container-main {
-    margin-top: 35px;
+    margin-top: 30px;
 }
 
 .main-cards {
@@ -324,8 +423,8 @@
 
 .table {
     overflow-y: auto;
-    max-height: calc(100vh - 256px);
     height: fit-content;
+    height: calc(100vh - 245px);
 }
 
 .main-value-formated {
@@ -352,6 +451,26 @@
     grid-template-columns: 1fr;
     padding: 0 6px 0 6px;
   }
+
+      .container-table {
+        width: 100%;
+        height: 100vh;
+        padding: 10px;
+    }
+
+    .container-main {
+        margin-top: 30px;
+        overflow: auto;
+        height: 100vh;
+    }
+
+    .table {
+        overflow-y: auto;
+        height: fit-content;
+        height: calc(100vh - 115px);
+    }
+
+
 }
 
 @media (max-width: 680px) {
@@ -369,6 +488,26 @@
         gap: 10px;
         flex-direction: column;
     }
+
+    .container-table {
+        width: 100%;
+        height: 100vh;
+        padding: 10px;
+    }
+
+    .container-main {
+        margin-top: 30px;
+        overflow: auto;
+        height: 100vh;
+    }
+
+    .table {
+        overflow-y: auto;
+        height: fit-content;
+        height: calc(100vh - 115px);
+    }
+
+  
 }
 
 </style>

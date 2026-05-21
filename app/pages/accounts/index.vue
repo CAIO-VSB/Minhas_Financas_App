@@ -45,8 +45,8 @@
   const balanceFormated = computed(() => {
 
     return balanceForId.value?.map(item => ({
-        ...item,
-        saldo_atual: new Intl.NumberFormat('pt-br', {style: 'currency', currency: 'BRL'}).format(item.saldo_atual ?? 0.00)
+      ...item,
+      saldo_atual: new Intl.NumberFormat('pt-br', {style: 'currency', currency: 'BRL'}).format(item.saldo_atual ?? 0.00)
     }))
 
   })

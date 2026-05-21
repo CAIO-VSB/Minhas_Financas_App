@@ -8,6 +8,7 @@
   import { useValidateSchemas } from "~/composables/useValidateSchema"
   import { useValidateFields } from "~/composables/useValidateFields"
   import { useInvalidate } from "~/composables/useInvalidate"
+import flags from "~~/shared/flags/catalog"
 
 
   const { getAllAccounts } = useHttpAccounts()
@@ -79,7 +80,7 @@
   })
 
   const filterLogos = computed(() => {
-    return banks.filter(item => item.text.toLowerCase().includes(searchLogos.value.toLowerCase()))
+    return flags.filter(item => item.text.toLowerCase().includes(searchLogos.value.toLowerCase()))
   })
 
   const  { mutate, isPending  } = useMutation({
@@ -143,7 +144,7 @@
 
     >
       <v-card
-        prepend-icon="mdi-pencil-circle"
+        prepend-icon="mdi-wallet-plus"
         title="Editar cartão de crédito"
       >
         <v-card-text>
@@ -159,6 +160,7 @@
                 variant="underlined"
                 :rules="nameRules"
                 v-model="props.draft.name_identifier"
+                prepend-inner-icon="mdi-card-text"
               ></v-text-field>
             </v-col>
             <v-col
@@ -166,7 +168,7 @@
               md="6"
               sm="6"
             >
-              <CurrencyInput v-model="props.draft.limit_card!" label="Limite" />
+              <CurrencyInput prepend-inner-icon="mdi-cash-multiple" v-model="props.draft.limit_card!" label="Limite" />
             </v-col>
             <v-col
               cols="12"
@@ -182,6 +184,7 @@
                 counter
                 :rules="fourDigitsRules"
                 v-model="props.draft.four_digits"
+                prepend-inner-icon="mdi-credit-card-lock"
               ></v-text-field>
             </v-col>
 
@@ -199,6 +202,7 @@
                 :rules="dueDayRules"
                 isent
                 v-model="props.draft.due_day"
+                prepend-inner-icon="mdi-calendar-remove"
               ></v-number-input>
             </v-col>
 
@@ -216,6 +220,7 @@
                 :min="1"
                 :rules="closingDayRules"
                 v-model="props.draft.closing_day"
+                prepend-inner-icon="mdi-calendar-clock"
               ></v-number-input>
             </v-col>
 
@@ -235,6 +240,7 @@
                 label="Conta vinculada*"
                 hint="Os débitos do cartão serão debitados desta conta"
                 persistent-hint
+                prepend-inner-icon="mdi-bank-transfer"
               >
                 <template v-slot:selection="{item}">
                   <v-avatar  style="width: 30px; height: 30px; margin-right: 12px;"> 
@@ -295,9 +301,10 @@
                 clearable
                 variant="underlined"
                 label="Logo*"
-                hint="Logo de identificação"
+                hint="Bandeira do cartão"
                 persistent-hint
                 :rules="selectRules"
+                prepend-inner-icon="mdi-credit-card-outline"
               >
                 <template v-slot:selection="{item}">
                   <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 

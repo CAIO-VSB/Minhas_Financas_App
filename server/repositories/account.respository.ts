@@ -27,8 +27,15 @@ export const accountsRepository = {
     
     async findBalanceForAccount(userId: string) {
         
+        
         const text = `
-            SELECT a.*, COALESCE(v.saldo_atual, 0) AS saldo_atual
+            SELECT a.*, COALESCE(v.saldo_atual, 0) AS saldo_atual,
+            (SELECT value_transaction
+            FROM movements
+            WHERE accounts_id = a.id
+            AND type_transaction = 'Saldo inicial'
+            AND is_deleted = false
+            LIMIT 1) AS initial_balance
 			FROM banks_accounts a
 			LEFT JOIN vw_balance_for_account v ON v.accounts_id = a.id
 			WHERE a.user_id = $1 
@@ -38,6 +45,10 @@ export const accountsRepository = {
 
         const accountsBalance = client.query(text, values)
 
+       const result = (await accountsBalance).rows
+        console.log("initial_balance retornado:", result.map(r => ({ id: r.id, initial_balance: r.initial_balance, saldo_atual: r.saldo_atual })))
+        return result
+      
         return (await accountsBalance).rows 
 
     },
@@ -73,6 +84,10 @@ export const accountsRepository = {
     },
 
     async update(userId: string, data: {name_identifier: string, url_image: string, name_bank: string, type_account: string, active: boolean, color: string, id?: number, initial_balance?: number}) {
+
+    console.log("initial_balance recebido:", data.initial_balance)
+    console.log("entrou no if?", data.initial_balance !== undefined)
+
 
         const text = `
             UPDATE banks_accounts

@@ -111,10 +111,11 @@
                 color="primary"
                 v-model="categorieForm.name_identifier"
                 :rules="nameRules"
-                hint="Adicione um ícone clicando no botão ao lado"
+                hint="Adicione uma identificação clicando no ícone ao lado"
                 persistent-hint
                 :counter="45" 
                 maxlength="45"
+                prepend-icon="mdi-rename"
               >
 
                <template v-slot:append>
@@ -128,7 +129,7 @@
                 </template>
               </v-text-field>
 
-              <v-select :rules="selectRules" v-model="categorieForm.type_categorie" color="primary" persistent-hint hint="Selecione o tipo de categoria" label="Tipo *" :items="items" variant="underlined">
+              <v-select prepend-icon="mdi-tag"  :rules="selectRules" v-model="categorieForm.type_categorie" color="primary" persistent-hint hint="Selecione o tipo de categoria" label="Tipo *" :items="items" variant="underlined">
               </v-select>
 
               <v-switch

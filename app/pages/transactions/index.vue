@@ -15,6 +15,7 @@
     import CardEdtiMovementsExpenses from '~/components/forms/CardEdtiMovementsExpenses.vue'
     import { useInvalidate } from "~/composables/useInvalidate"
     import CardSettleTransactionModal from '~/components/forms/CardSettleTransactionModal.vue'
+    import CardDeletTransaction from '~/components/forms/CardDeletTransaction.vue'
 
     type TMovementsFormatted = Omit<TMovements, 'value_transaction' | 'date_transaction'> & {
         value_transaction: string,
@@ -43,6 +44,8 @@
     const modalEditMovementsRevenue = ref(false)
 
     const modalEditMovementesExpenses = ref(false)
+
+    const cardDeletTransaction = ref(false)
 
     const labelOptions = ref({
         colorButton: "",
@@ -175,7 +178,6 @@
             invalidate(QUERY_KEYS.movements.only_revenues)
             invalidate(QUERY_KEYS.movements.current_balance)
             invalidate(QUERY_KEYS.accounts.getBalanceForAccount)
-            notifySuccess("Sucesso", "Transação editada com sucesso", 6000)
         },
 
         onError: (error) => {
@@ -196,7 +198,7 @@
         }
 
         modalEditMovementsRevenue.value = true
-  }
+    }
 
     function handleOpenModalEditMovementsExpense(movements: TMovementsFormatted) {
 
@@ -210,7 +212,7 @@
         }
 
         modalEditMovementesExpenses.value = true
-  }
+    }
 
 
     function handleOptionClick(option: TOptionAction, data: TMovementsFormatted) {
@@ -233,12 +235,6 @@
             date_transaction: new Date(raw.date_transaction.split('/').reverse().join('-') + 'T00:00:00'),
         }
 
-        if (option.value === "delete") {
-            payload.is_deleted = true
-            mutate(payload)
-            return
-        }
-
         if (option.value === "efetivar" && data.type_transaction === "Receita") {
             editDraft.value = payload
             labelOptions.value.colorButton = "green"
@@ -255,6 +251,24 @@
             labelOptions.value.text = "Ao efetivar essa despesa será descontado o valor na Conta."
             cardPostValueTransaction.value = true
             return
+        } else if (option.value === "delete" && data.type_transaction === "Receita") {
+            editDraft.value = payload
+            payload.is_deleted = true
+            labelOptions.value.colorButton = "green"
+            labelOptions.value.textButton = "Deletar"
+            labelOptions.value.title = "Deseja deletar esta receita?"
+            labelOptions.value.text = "Essa ação não poderá ser desfeita. O valor será removido da conta."
+            cardDeletTransaction.value = true
+            return
+        } else if (option.value === "delete" && data.type_transaction === "Despesa") {
+            editDraft.value = payload
+            payload.is_deleted = true
+            labelOptions.value.colorButton = "red"
+            labelOptions.value.textButton = "Deletar"
+            labelOptions.value.title = "Deseja deletar esta despesa?"
+            labelOptions.value.text = "Essa ação não poderá ser desfeita. O valor será retornado ao saldo da conta."
+            cardDeletTransaction.value = true
+            return
         }
 
         mutate(payload)
@@ -267,10 +281,10 @@
 <template>
     <div class="container-main">
 
-
+        <CardDeletTransaction :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="editDraft" v-model="cardDeletTransaction" />
         <CardSettleTransactionModal v-model="cardPostValueTransaction" :draft="editDraft" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" />
-        <CardEditMovementsRevenue :draft="editDraft" v-model="modalEditMovementsRevenue"/>
         <CardEdtiMovementsExpenses :draft="editDraft"  v-model="modalEditMovementesExpenses"/>
+        <CardEditMovementsRevenue :draft="editDraft" v-model="modalEditMovementsRevenue"/>
         
         <filterDrawer v-model="drawer"/>
           
@@ -438,9 +452,9 @@
                             <v-list>
                                 <v-list-item
                                 v-for="action in getOptions(item)"
-                                :key="action.title!"
+                                :key="action.title"
                                 :value="action.value"
-                                :prepend-icon="action.icon!"
+                                :prepend-icon="action.icon"
                                 @click="handleOptionClick(action, item)"
                                 >
                                 <v-list-item-title>{{ action.title }}</v-list-item-title>
