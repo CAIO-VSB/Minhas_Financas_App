@@ -10,6 +10,7 @@
     import { useHttpMovements } from '~/composables/useHttp/useHttpMovements'
     import type { TMovements } from '~~/types/movements/TMovements'
     import type { TOptionAction } from '~~/types/option_action/TOptionAction'
+    import type { TMovementsByFilter } from "~~/types/movements/TMovementsByFilter"
     import FilterDrawer from './components/FilterDrawer.vue'
     import CardEditMovementsRevenue from '~/components/forms/CardEditMovementsRevenue.vue'
     import CardEdtiMovementsExpenses from '~/components/forms/CardEdtiMovementsExpenses.vue'
@@ -29,7 +30,7 @@
         route: string
     }
 
-    const { getMoviments, patchMovements, getCurrentBalance } = useHttpMovements()
+    const { getMoviments, patchMovements, getCurrentBalance, getMovimentsByFilter } = useHttpMovements()
     const { notifyError, notifyInfo, notifySuccess } = useNotify()
     const { invalidate } = useInvalidate()
 
@@ -46,6 +47,10 @@
     const modalEditMovementesExpenses = ref(false)
 
     const cardDeletTransaction = ref(false)
+
+    const isFiltered = ref(false)
+
+    const filteredData = ref<TMovements[] | null>(null)
 
     const labelOptions = ref({
         colorButton: "",
@@ -66,7 +71,7 @@
         queryFn: () => getMoviments(period.value.month, period.value.year)
     })
 
-    const { data:currentBalance, isPending:isPendingCurrentBalance, refetch:refetchCurrentBalance } = useQuery({
+    const { data:currentBalance, isPending:isPendingCurrentBalance } = useQuery({
         queryKey: QUERY_KEYS.movements.current_balance,
         queryFn: getCurrentBalance
     })
@@ -76,8 +81,26 @@
         refetch()
     }
 
+    async function handleApplyFilter(filter: TMovementsByFilter) {
+       const movements = await getMovimentsByFilter(
+        filter.start_day as string,
+        filter.end_day as string,
+        filter.categorie_id ?? [],
+        filter.accounts_id ?? [],
+        filter.situation as string,
+        filter.for_type ?? []
+       )
+
+       filteredData.value = movements
+       isFiltered.value = true
+    }
+
+    const tableData = computed(() => {
+        return isFiltered.value ? filteredData.value : data.value
+    })
+
     const transitionsformatted = computed(() => {
-        return data.value?.map(item => ({
+        return tableData.value?.map(item => ({
             ...item,
             date_transaction: new Date(item.date_transaction ?? "").toLocaleDateString("pt-BR"),
             value_transaction: new Intl.NumberFormat('pt-br', {style: 'currency', currency: 'BRL'}).format(item.value_transaction ?? 0.00)
@@ -215,6 +238,12 @@
     }
 
 
+
+    function handleClearFilter() {
+        filteredData.value = null
+        isFiltered.value = false
+    }
+
     function handleOptionClick(option: TOptionAction, data: TMovementsFormatted) {
 
         if (option.value === "edit" && data.type_transaction === "Receita") {
@@ -286,7 +315,7 @@
         <CardEdtiMovementsExpenses :draft="editDraft"  v-model="modalEditMovementesExpenses"/>
         <CardEditMovementsRevenue :draft="editDraft" v-model="modalEditMovementsRevenue"/>
         
-        <filterDrawer v-model="drawer"/>
+        <filterDrawer @apply-filter="handleApplyFilter" @reset-filter="handleClearFilter" v-model="drawer"/>
           
         <div class="text-center bnt-options">
             
@@ -395,9 +424,9 @@
         <div class="container-table">
 
             <v-card
-                flat
-                class="table"
-                :loading="isPending"
+            flat
+            class="table"
+            :loading="isPending"
             >
            
             <template v-slot:text>

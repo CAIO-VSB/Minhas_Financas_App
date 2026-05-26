@@ -1,5 +1,92 @@
 <script setup lang="ts">
+
+    import { useHttpCategories } from '~/composables/useHttp/useHttpCategories'
+    import { useHttpAccounts } from "~/composables/useHttp/useHttpAccounts"
+    import { useInvalidate } from "~/composables/useInvalidate"
+    import type { TMovementsByFilter } from '~~/types/movements/TMovementsByFilter'
+
+    const emit = defineEmits<{
+        applyFilter: [filter: TMovementsByFilter],
+        resetFilter: [reset: true]
+    }>()
+
+    const { getCategoriesOnlyActive } = useHttpCategories()
+    const { getAccountsOnlyActive } = useHttpAccounts()
+    const { nameRules, selectRules, dateRules, currencyRules } = useValidateFields()
+
+    const { data:categories, isPending:categorieIsPending } = useQuery({
+      queryKey: QUERY_KEYS.categories.active,
+      queryFn: getCategoriesOnlyActive,
+    })
+
+    const { data:accounts, isPending:accountsIsPending } = useQuery({
+      queryKey: QUERY_KEYS.accounts.active,
+      queryFn: getAccountsOnlyActive,
+    })
+
     const modelValue = defineModel<boolean>()
+    const menuCategorias = ref(false)
+    const modelCategorias = ref<number[]>([])
+    const searchCategorias = ref("")
+    const searchAccounts = ref("")
+    const modelAccounts = ref<number[]>([])
+    const menuAccounts = ref(false)
+    const startDate = ref<Date | null>(null)
+    const endDate = ref<Date | null>(null)
+
+    const filterFrom = ref<TMovementsByFilter>({
+        start_day: null,
+        end_day: null,
+        categorie_id: [],
+        accounts_id: [],
+        situation: null,
+        for_type: []
+    })
+
+    watch(modelCategorias, (val) => {
+        filterFrom.value.categorie_id = val
+    })
+
+    watch(modelAccounts, (val) => {
+        filterFrom.value.accounts_id = val
+    })
+
+    const filterCategorias = computed(() => {
+      return categories.value?.filter(item => item.name_identifier.toLowerCase().includes(searchCategorias.value.toLowerCase()))
+    })
+
+    const filterAccounts = computed(() => {
+      return accounts.value?.filter(item => item.name_identifier.toLowerCase().includes(searchAccounts.value?.toLowerCase() ?? ''))
+    })
+
+    function resetForm() {
+        filterFrom.value.for_type = []
+        filterFrom.value.situation = null
+        modelAccounts.value = [],
+        modelCategorias.value = [],
+        startDate.value = null
+        endDate.value = null
+
+        modelValue.value = false
+
+        emit("resetFilter", true)
+    }
+
+    function submitForm() {
+
+        if (startDate && endDate) {
+            filterFrom.value.start_day = startDate.value ? new Date(startDate.value).toISOString().split('T')[0] : null
+            filterFrom.value.end_day = endDate.value ? new Date(endDate.value).toISOString().split('T')[0] : null
+        }
+    
+        console.log("Objeto a ser enviado", filterFrom.value)
+
+        emit("applyFilter", filterFrom.value)
+
+        modelValue.value = false
+    }
+
+
 </script>
 
 <template>
@@ -24,11 +111,19 @@
 
             <div class="filter-main">
 
-            <div class="d-flex justify-center">
+            <div class="d-flex justify-center filter-data">
                 <v-date-input
-                v-model="model"
-                label="Selecione o período"
-                multiple="range"
+                v-model="startDate"
+                label="De"
+                autocomplete="off"
+                prepend-icon=""
+                variant="underlined"
+                clearable
+                ></v-date-input>
+
+                <v-date-input
+                v-model="endDate"
+                label="Até"
                 autocomplete="off"
                 prepend-icon=""
                 variant="underlined"
@@ -39,7 +134,7 @@
             <div>
                 <v-select
                 autocomplete="off"
-                :loading="isPending"
+                :loading="categorieIsPending"
                 v-model="modelCategorias"
                 v-model:menu="menuCategorias"
                 :items="filterCategorias"
@@ -49,6 +144,8 @@
                 label="Categoria"
                 persistent-hint
                 :rules="selectRules"
+                clearable
+                multiple
                 >                
                     <template v-slot:selection="{item}">
                     <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
@@ -91,12 +188,15 @@
                 v-model:menu="menuAccounts"
                 :items="filterAccounts"
                 :rules="selectRules"
+                :loading="accountsIsPending"
                 item-title="name_identifier"
                 item-value="id"
                 variant="underlined"
                 label="Conta"
                 persistent-hint
                 autocomplete="off"
+                clearable
+                multiple
                 >
 
                     <template v-slot:selection="{item}">
@@ -141,7 +241,19 @@
                 variant="underlined"
                 clearable
                 label="Situação"
-                :items="['California', 'Colorado', 'Florida', 'Georgia', 'Texas', 'Wyoming']"
+                :items="['Recebidas', 'Pagas', 'Pendentes']"
+                v-model="filterFrom.situation"
+                ></v-select>
+            </div>
+
+            <div>
+                <v-select
+                clearable
+                variant="underlined"
+                label="Tipos"
+                :items="['Despesas', 'Receitas', 'Tranferências de entrada', 'Transferências de saída', 'Cartão de crédito']"
+                multiple
+                v-model="filterFrom.for_type"
                 ></v-select>
             </div>
 
@@ -150,7 +262,7 @@
             <v-card-actions style="display: flex; justify-content: space-between; margin-top: 13px;">
             
                 <v-btn
-                text="Cancelar"
+                text="Limpar e sair"
                 variant="elevated"
                 @click="resetForm"
                 ></v-btn>
@@ -159,8 +271,7 @@
                 color="primary"
                 text="Aplicar filtros"
                 variant="elevated"
-                :loading="isPending"
-                @click="handleAddAccount"
+                @click="submitForm"
                 ></v-btn>
             </v-card-actions>
 
@@ -173,6 +284,11 @@
 
 .filter-main {
   padding: 10px;
+}
+
+.filter-data {
+    display: flex;
+    gap: 45px;
 }
 
 </style>

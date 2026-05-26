@@ -16,6 +16,7 @@ export const QUERY_KEYS = {
         all: ['movements'],
         only_revenues: ['only-revenues'],
         only_expenses: ['only-expenses'],
-        current_balance: ['current-balance']
+        current_balance: ['current-balance'],
+        movements_by_filter: ['movements-by-filter']
     }
 }

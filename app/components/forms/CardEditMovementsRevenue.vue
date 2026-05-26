@@ -25,13 +25,13 @@
     const { nameRules, selectRules, dateRules, currencyRules } = useValidateFields()
 
     const { data:categories } = useQuery({
-    queryKey: QUERY_KEYS.categories.active,
-    queryFn: getCategoriesOnlyActive,
+      queryKey: QUERY_KEYS.categories.active,
+      queryFn: getCategoriesOnlyActive,
     })
 
     const { data:accounts } = useQuery({
-    queryKey: QUERY_KEYS.accounts.active,
-    queryFn: getAccountsOnlyActive,
+      queryKey: QUERY_KEYS.accounts.active,
+      queryFn: getAccountsOnlyActive,
     })
 
     const props = defineProps<{
