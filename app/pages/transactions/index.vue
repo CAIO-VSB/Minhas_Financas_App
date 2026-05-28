@@ -50,6 +50,8 @@
 
     const isFiltered = ref(false)
 
+    const lastFilter = ref<TMovementsByFilter | null>(null)
+
     const filteredData = ref<TMovements[] | null>(null)
 
     const labelOptions = ref({
@@ -79,9 +81,12 @@
     async function handleMovementesForPeriod() {
         await nextTick()
         refetch()
+        isFiltered.value = false
     }
 
     async function handleApplyFilter(filter: TMovementsByFilter) {
+
+        lastFilter.value = filter
        const movements = await getMovimentsByFilter(
         filter.start_day as string,
         filter.end_day as string,
@@ -201,6 +206,7 @@
             invalidate(QUERY_KEYS.movements.only_revenues)
             invalidate(QUERY_KEYS.movements.current_balance)
             invalidate(QUERY_KEYS.accounts.getBalanceForAccount)
+
         },
 
         onError: (error) => {
@@ -208,6 +214,18 @@
         },
 
     })
+
+    function handleMutationSuccess() {
+        if (isFiltered.value && lastFilter.value) {
+            handleApplyFilter(lastFilter.value)
+        }
+    }
+
+    function handleClearFilter() {
+        filteredData.value = null
+        isFiltered.value = false
+    }
+
 
     function handleOpenModalEditMovementsRevenue(movements: TMovementsFormatted) {
 
@@ -237,12 +255,6 @@
         modalEditMovementesExpenses.value = true
     }
 
-
-
-    function handleClearFilter() {
-        filteredData.value = null
-        isFiltered.value = false
-    }
 
     function handleOptionClick(option: TOptionAction, data: TMovementsFormatted) {
 
@@ -310,12 +322,12 @@
 <template>
     <div class="container-main">
 
-        <CardDeletTransaction :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="editDraft" v-model="cardDeletTransaction" />
-        <CardSettleTransactionModal v-model="cardPostValueTransaction" :draft="editDraft" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" />
-        <CardEdtiMovementsExpenses :draft="editDraft"  v-model="modalEditMovementesExpenses"/>
-        <CardEditMovementsRevenue :draft="editDraft" v-model="modalEditMovementsRevenue"/>
+        <CardDeletTransaction @success="handleMutationSuccess" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="editDraft" v-model="cardDeletTransaction" />
+        <CardSettleTransactionModal @success="handleMutationSuccess" v-model="cardPostValueTransaction" :draft="editDraft" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" />
+        <CardEdtiMovementsExpenses @success="handleMutationSuccess" :draft="editDraft"  v-model="modalEditMovementesExpenses"/>
+        <CardEditMovementsRevenue @success="handleMutationSuccess" :draft="editDraft" v-model="modalEditMovementsRevenue"/>
         
-        <filterDrawer @apply-filter="handleApplyFilter" @reset-filter="handleClearFilter" v-model="drawer"/>
+        <filterDrawer :items="[ 'Recebidas', 'Pagas', 'Pendentes']" :field-type-active="false" color-button="primary" @apply-filter="handleApplyFilter" @reset-filter="handleClearFilter" v-model="drawer"/>
           
         <div class="text-center bnt-options">
             

@@ -44,6 +44,7 @@
   const menuAccounts = ref(false)
   const modalAddCategorie = ref(false)
   const modalAddAccount = ref(false)
+  const labelSwitch = ref("Despesa paga")
 
   const movementsForm = ref<TMovements>({
     type_transaction: "Despesa",
@@ -71,6 +72,16 @@
 
   watch(menuAccounts, (val) => {
     if (!val) searchAccounts.value = ""
+  })
+
+  watch(movementsForm.value, (val) => {
+
+    if (val.status_transaction === 'pago') {
+      labelSwitch.value = "Despesa paga"
+    } else if (val.status_transaction === "pendente") {
+      labelSwitch.value = "Despesa pendente"
+    }
+
   })
 
   const filterCategorias = computed(() => {
@@ -287,7 +298,7 @@
               <v-switch
                 v-model="movementsForm.status_transaction"
                 color="error"
-                label="Despesa paga"
+                :label="labelSwitch"
                 hide-details
                 false-value="pendente"
                 true-value="pago"

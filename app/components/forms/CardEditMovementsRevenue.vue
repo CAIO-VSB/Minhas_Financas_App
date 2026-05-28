@@ -38,7 +38,11 @@
       draft: TMovements | null
     }>()
 
-
+    
+    const  emit = defineEmits<{
+      success: []
+    }>()
+  
     const form = ref()
     const modelValue = defineModel<boolean>()
     const menuCategorias = ref(false)
@@ -101,6 +105,7 @@
       invalidate(QUERY_KEYS.movements.current_balance)
       notifySuccess("Sucesso", "Receita editada com sucesso", 6000)
       resetForm()
+      emit("success")
       modelValue.value = false
       },
 

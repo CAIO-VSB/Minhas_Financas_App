@@ -8,6 +8,9 @@
     draft: TMovements | null
   }>()
 
+  const  emit = defineEmits<{
+    success: []
+  }>()
 
   import CurrencyInput from "~/components/ui/CurrencyInput.vue"
 
@@ -73,6 +76,7 @@
       invalidate(QUERY_KEYS.movements.only_revenues)
       invalidate(QUERY_KEYS.movements.current_balance)
       invalidate(QUERY_KEYS.accounts.getBalanceForAccount)
+      emit("success")
     },
 
     onError: (error) => {

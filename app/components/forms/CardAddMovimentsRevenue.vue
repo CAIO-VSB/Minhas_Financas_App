@@ -34,6 +34,10 @@
     queryFn: getAccountsOnlyActive,
   })
 
+  const emit = defineEmits<{
+    success: []
+  }>()
+
   const form = ref()
   const modelValue = defineModel<boolean>()
   const menuCategorias = ref(false)
@@ -44,6 +48,7 @@
   const menuAccounts = ref(false)
   const modalAddCategorie = ref(false)
   const modalAddAccount = ref(false)
+  const labelSwitch = ref("Receita recebida")
 
   const movementsForm = ref<TMovements>({
     type_transaction: "Receita",
@@ -71,6 +76,16 @@
 
   watch(menuAccounts, (val) => {
     if (!val) searchAccounts.value = ""
+  })
+
+    watch(movementsForm.value, (val) => {
+
+    if (val.status_transaction === 'recebido') {
+      labelSwitch.value = "Receita recebida"
+    } else if (val.status_transaction === "pendente") {
+      labelSwitch.value = "Receita pendente"
+    }
+
   })
 
   const filterCategorias = computed(() => {
@@ -117,6 +132,7 @@
       notifySuccess("Sucesso", "Receita lançada com sucesso", 6000)
       resetForm()
       modelValue.value = false
+      emit("success")
     },
 
     onError: (error) => {
@@ -131,14 +147,13 @@
 
       const formValid = await form.value.validate()
       const resultSchema = validateSchemaMovements(movementsForm.value)
-      
-      console.log("Objeto a ser envidado" + JSON.stringify(movementsForm.value))
-      
+
       if (formValid) {
         if (resultSchema.success) {  
           mutate(movementsForm.value)
         }
       }
+
     } catch (err) {
       notifyInfo("Error", "Erro ao criar conta bancária" + err)
     } 
@@ -286,7 +301,7 @@
               <v-switch
                 v-model="movementsForm.status_transaction"
                 color="success"
-                label="Receita recebida"
+                :label="labelSwitch"
                 hide-details
                 false-value="pendente"
                 true-value="recebido"

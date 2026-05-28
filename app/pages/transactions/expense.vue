@@ -5,7 +5,7 @@
         layout: "layout-dashboard"
     })
 
-
+    import FilterDrawer from './components/FilterDrawer.vue'
     import CardAddMovimentsExpenses from '~/components/forms/CardAddMovimentsExpenses.vue'
     import CardEdtiMovementsExpenses from '~/components/forms/CardEdtiMovementsExpenses.vue'
     import CardSettleTransactionModal from '~/components/forms/CardSettleTransactionModal.vue'
@@ -13,6 +13,8 @@
     import { useInvalidate } from "~/composables/useInvalidate"
     import { useHttpMovements } from '~/composables/useHttp/useHttpMovements'
     import type { TMovements } from '~~/types/movements/TMovements'
+    import type { TMovementsOnlyExpenses } from '~~/types/movements/TMovementsOnlyExpenses'
+    import type { TMovementsByFilter } from "~~/types/movements/TMovementsByFilter"
     import type { TOptionAction } from '~~/types/option_action/TOptionAction'
     import { VueDatePicker } from '@vuepic/vue-datepicker'
     import { ptBR } from 'date-fns/locale'
@@ -31,14 +33,15 @@
 
     const editDraft = ref<TMovements | null>(null)
 
-    const { getOnlyExpenses } = useHttpMovements()
-    const { getMoviments, patchMovements, getCurrentBalance } = useHttpMovements()
+    const { getOnlyExpenses, getMovimentsOnlyExpensesByFilter, patchMovements } = useHttpMovements()
     const { notifyError, notifyInfo, notifySuccess } = useNotify()
     const { invalidate } = useInvalidate()
 
     const route = useRoute()
 
     const search = ref('')
+
+    const drawer = ref(false)
 
     const modalAddExpenses = ref(false)
 
@@ -47,6 +50,12 @@
     const modalEditMovementesExpenses = ref(false)
 
     const cardDeletTransaction = ref(false)
+
+    const isFiltered = ref(false)
+
+    const filteredData = ref<TMovementsOnlyExpenses[] | null>(null)
+
+    const lastFilter = ref<TMovementsByFilter | null>(null)
 
     const labelOptions = ref({
         colorButton: "",
@@ -68,11 +77,16 @@
     async function handleMovementesForPeriod() {
         await nextTick()
         refetch()
+        isFiltered.value = false
     }
 
 
+    const tableData = computed(() => {
+        return isFiltered.value ? filteredData.value : data.value
+    })
+
     const transitionsFformatted = computed(() => {
-        return data.value?.map(item => ({
+        return tableData.value?.map(item => ({
             ...item,
             date_transaction: new Date(item.date_transaction ?? "").toLocaleDateString("pt-BR"),
             value_transaction: new Intl.NumberFormat('pt-br', {style: 'currency', currency: 'BRL'}).format(item.value_transaction ?? 0.00)
@@ -108,6 +122,7 @@
             align: 'center' as const,
             key: 'status_transaction',
             title: 'Situação',
+            sortable: true,
         },
         { key: 'date_transaction', title: 'Data'  },
         { key: 'description_transaction', title: 'Descrição' },
@@ -168,7 +183,33 @@
 
     })
 
-    
+    async function handleApplyFilter(filter: TMovementsByFilter) {
+
+        lastFilter.value = filter
+       const movements = await getMovimentsOnlyExpensesByFilter(
+        filter.start_day as string,
+        filter.end_day as string,
+        filter.categorie_id ?? [],
+        filter.accounts_id ?? [],
+        filter.situation as string,
+        filter.for_type ?? []
+       )
+
+       filteredData.value = movements
+       isFiltered.value = true
+    }
+
+    function handleMutationSuccess() {
+        if (isFiltered.value && lastFilter.value) {
+            handleApplyFilter(lastFilter.value)
+        }
+    }
+
+    function handleClearFilter() {
+        filteredData.value = null
+        isFiltered.value = false
+    }
+
     function handleOpenModalEditMovementsExpense(movements: TMovementsFormatted) {
 
         //Usamos structuredClone + toRaw para evitar mutar o objeto reativo do Vue
@@ -229,9 +270,11 @@
     <div class="container-main">
 
         <cardAddMovimentsExpenses v-model="modalAddExpenses" />
-        <CardDeletTransaction :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="editDraft" v-model="cardDeletTransaction" />
-        <CardSettleTransactionModal v-model="cardPostValueTransaction" :draft="editDraft" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" />
-        <CardEdtiMovementsExpenses :draft="editDraft"  v-model="modalEditMovementesExpenses"/>
+        <CardDeletTransaction @success="handleMutationSuccess" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="editDraft" v-model="cardDeletTransaction" />
+        <CardSettleTransactionModal @success="handleMutationSuccess" v-model="cardPostValueTransaction" :draft="editDraft" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" />
+        <CardEdtiMovementsExpenses @success="handleMutationSuccess" :draft="editDraft"  v-model="modalEditMovementesExpenses"/>
+
+        <filterDrawer :items="['Pendentes', 'Pagas']" :field-type-active="true"  color-button="red" @apply-filter="handleApplyFilter" @reset-filter="handleClearFilter" v-model="drawer"/>
         
         <div class="text-center bnt-options">
             
@@ -274,9 +317,10 @@
                 NOVA DESPESA
                 </v-btn>
                 <v-btn
-                color="primary"
+                color="red"
                 prepend-icon="mdi-filter"
                 class="text-none rounded-xl"
+                @click="drawer = true"
                 >
                 Filtro
                 </v-btn>
@@ -517,5 +561,6 @@
 
   
 }
+
 
 </style>

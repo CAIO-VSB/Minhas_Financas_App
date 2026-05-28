@@ -27,8 +27,13 @@
   const form = ref()
   const dialog = ref(false)
   const newInitialBalance = ref()
+
   const props = defineProps<{
     draft: TAccount | null
+  }>()
+
+  const  emit = defineEmits<{
+    success: []
   }>()
 
   const selectRules = ref([
@@ -63,6 +68,7 @@
       invalidate(QUERY_KEYS.accounts.all)
       invalidate(QUERY_KEYS.accounts.getBalanceForAccount)
       modelValue.value = false
+      emit("success")
     },
 
     onError: (error) => {

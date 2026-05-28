@@ -11,9 +11,12 @@
     import { useHttpMovements } from '~/composables/useHttp/useHttpMovements'
     import type { TMovements } from '~~/types/movements/TMovements'
     import type { TOptionAction } from '~~/types/option_action/TOptionAction'
+    import type { TMovementsOnlyRenevue } from '~~/types/movements/TMovementsOnlyRevenue'
+    import type { TMovementsByFilter } from "~~/types/movements/TMovementsByFilter"
     import CardSettleTransactionModal from '~/components/forms/CardSettleTransactionModal.vue'
     import CardEditMovementsRevenue from '~/components/forms/CardEditMovementsRevenue.vue'
     import CardDeletTransaction from '~/components/forms/CardDeletTransaction.vue'
+    import FilterDrawer from './components/FilterDrawer.vue'
 
     type TMovementsFormatted = Omit<TMovements, 'value_transaction' | 'date_transaction'> & {
         value_transaction: string,
@@ -27,7 +30,7 @@
         route: string
     }
 
-    const { getMoviments, patchMovements, getCurrentBalance } = useHttpMovements()
+    const { getMoviments, patchMovements, getCurrentBalance, getMovimentsOnlyRevenuesByFilter } = useHttpMovements()
     const { notifyError, notifyInfo, notifySuccess } = useNotify()
     const { invalidate } = useInvalidate()
     const { getOnlyRevenues } = useHttpMovements()
@@ -43,6 +46,14 @@
     const cardPostValueTransaction = ref(false)
 
     const cardDeletTransaction = ref(false)
+
+    const isFiltered = ref(false)
+
+    const filteredData = ref<TMovementsOnlyRenevue[] | null>(null)
+
+    const lastFilter = ref<TMovementsByFilter | null>(null)
+
+    const drawer = ref(false)
 
     const search = ref('')
 
@@ -66,10 +77,31 @@
     async function handleMovementesForPeriod() {
         await nextTick()
         refetch()
+        isFiltered.value = false
     }
 
+    async function handleApplyFilter(filter: TMovementsByFilter) {
+
+       lastFilter.value = filter
+       const movements = await getMovimentsOnlyRevenuesByFilter(
+        filter.start_day as string,
+        filter.end_day as string,
+        filter.categorie_id ?? [],
+        filter.accounts_id ?? [],
+        filter.situation as string,
+        filter.for_type ?? []
+       )
+
+       filteredData.value = movements
+       isFiltered.value = true
+    }
+
+    const tableData = computed(() => {
+        return isFiltered.value ? filteredData.value : data.value
+    })
+
     const transitionsFformatted = computed(() => {
-        return data.value?.map(item => ({
+        return tableData.value?.map(item => ({
             ...item,
             date_transaction: new Date(item.date_transaction ?? "").toLocaleDateString("pt-BR"),
             value_transaction: new Intl.NumberFormat('pt-br', {style: 'currency', currency: 'BRL'}).format(item.value_transaction ?? 0.00)
@@ -125,6 +157,17 @@
     const ColorButtonOption = computed(() => {
         return currentItem.value?.color
     })
+
+    function handleMutationSuccess() {
+        if (isFiltered.value && lastFilter.value) {
+            handleApplyFilter(lastFilter.value)
+        }
+    }
+
+    function handleClearFilter() {
+        filteredData.value = null
+        isFiltered.value = false
+    }
 
     function getTitleRouter(item: option) {
         navigateTo(item.route)
@@ -226,9 +269,11 @@
     <div class="container-main">
 
         <cardAddMovimentsRevenue v-model="modalAddRevenue" />
-        <CardDeletTransaction :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="editDraft" v-model="cardDeletTransaction" />
-        <CardEditMovementsRevenue :draft="editDraft" v-model="modalEditMovementsRevenue"/>
-        <CardSettleTransactionModal v-model="cardPostValueTransaction" :draft="editDraft" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" />
+        <CardDeletTransaction @success="handleMutationSuccess" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="editDraft" v-model="cardDeletTransaction" />
+        <CardEditMovementsRevenue @success="handleMutationSuccess" :draft="editDraft" v-model="modalEditMovementsRevenue"/>
+        <CardSettleTransactionModal @success="handleMutationSuccess" v-model="cardPostValueTransaction" :draft="editDraft" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" />
+
+        <filterDrawer :items="[ 'Recebidas', 'Pendentes']" :field-type-active="true" color-button="green" @apply-filter="handleApplyFilter" @reset-filter="handleClearFilter" v-model="drawer"/>
 
         <div class="text-center bnt-options">
             
@@ -273,9 +318,10 @@
                 </v-btn>
 
                 <v-btn
-                color="primary"
+                color="green"
                 prepend-icon="mdi-filter"
                 class="text-none rounded-xl"
+                @click="drawer = true"
                 >
                 Filtro
                 </v-btn>

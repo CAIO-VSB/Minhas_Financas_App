@@ -2,12 +2,18 @@
 
     import { useHttpCategories } from '~/composables/useHttp/useHttpCategories'
     import { useHttpAccounts } from "~/composables/useHttp/useHttpAccounts"
-    import { useInvalidate } from "~/composables/useInvalidate"
     import type { TMovementsByFilter } from '~~/types/movements/TMovementsByFilter'
 
     const emit = defineEmits<{
         applyFilter: [filter: TMovementsByFilter],
         resetFilter: [reset: true]
+    }>()
+
+    const props = defineProps<{
+        colorButton: string,
+        textColor?: string,
+        fieldTypeActive: boolean,
+        items: string[]
     }>()
 
     const { getCategoriesOnlyActive } = useHttpCategories()
@@ -241,13 +247,14 @@
                 variant="underlined"
                 clearable
                 label="Situação"
-                :items="['Recebidas', 'Pagas', 'Pendentes']"
+                :items="props.items"
                 v-model="filterFrom.situation"
                 ></v-select>
             </div>
 
             <div>
                 <v-select
+                :disabled="props.fieldTypeActive"
                 clearable
                 variant="underlined"
                 label="Tipos"
@@ -268,7 +275,7 @@
                 ></v-btn>
 
                 <v-btn
-                color="primary"
+                :color="props.colorButton"
                 text="Aplicar filtros"
                 variant="elevated"
                 @click="submitForm"

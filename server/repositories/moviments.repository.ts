@@ -59,7 +59,6 @@ export const movementsRespository = {
 
     async findMovementsByFilter(userId: string, start_day: string, end_day: string, categorie_id: number[], accounts_id: number[], situation: string, for_type: string[]) {
 
-        console.log("Valores recebidos no backEnd", userId, start_day, end_day, categorie_id, accounts_id, situation, for_type)
 
         const categorieParam = categorie_id.length > 0 ? categorie_id : null
         const accountsParam = accounts_id.length > 0 ? accounts_id : null
@@ -86,6 +85,76 @@ export const movementsRespository = {
 
         const text =
         `SELECT * FROM fn_movements_filter($1, $2, $3, $4, $5, $6, $7) ORDER BY date_transaction ASC`
+
+        const movementsByFilter = client.query(text, [userId, startParam, endParam, categorieParam, accountsParam, situationParam, forTypeParam])
+
+        return (await movementsByFilter).rows
+    },
+
+    async findOnlyExpensesByFilter(userId: string, start_day: string, end_day: string, categorie_id: number[], accounts_id: number[], situation: string, for_type: string[]) {
+
+        console.log("Valores recebidos no backEnd somente receitas", userId, start_day, end_day, categorie_id, accounts_id, situation, for_type)
+
+        const categorieParam = categorie_id.length > 0 ? categorie_id : null
+        const accountsParam = accounts_id.length > 0 ? accounts_id : null
+        let situationParam = situation || null
+        let forTypeParam = for_type.length > 0 ? for_type : null
+        const startParam = start_day || null
+        const endParam = end_day || null
+
+        if (situationParam === "Recebidas") {
+            situationParam = "recebido"
+        } else if (situationParam === "Pagas") {
+            situationParam = "pago"
+        } else if (situationParam === "Pendentes") {
+            situationParam = "pendente"
+        }
+
+        if (forTypeParam) {
+            forTypeParam = forTypeParam.map(type => {
+                if (type === 'Receitas') return 'Receita'
+                if (type === 'Despesas') return 'Despesa'
+                return type
+            })
+        }
+
+        const text =
+        `SELECT * FROM fn_movements_only_expenses_by_filter($1, $2, $3, $4, $5, $6, $7) ORDER BY date_transaction ASC`
+
+        const movementsByFilter = client.query(text, [userId, startParam, endParam, categorieParam, accountsParam, situationParam, forTypeParam])
+
+        return (await movementsByFilter).rows
+    },
+
+    async findOnlyRevenuesByFilter(userId: string, start_day: string, end_day: string, categorie_id: number[], accounts_id: number[], situation: string, for_type: string[]) {
+
+        console.log("Valores recebidos no backEnd somente receitas", userId, start_day, end_day, categorie_id, accounts_id, situation, for_type)
+
+        const categorieParam = categorie_id.length > 0 ? categorie_id : null
+        const accountsParam = accounts_id.length > 0 ? accounts_id : null
+        let situationParam = situation || null
+        let forTypeParam = for_type.length > 0 ? for_type : null
+        const startParam = start_day || null
+        const endParam = end_day || null
+
+        if (situationParam === "Recebidas") {
+            situationParam = "recebido"
+        } else if (situationParam === "Pagas") {
+            situationParam = "pago"
+        } else if (situationParam === "Pendentes") {
+            situationParam = "pendente"
+        }
+
+        if (forTypeParam) {
+            forTypeParam = forTypeParam.map(type => {
+                if (type === 'Receitas') return 'Receita'
+                if (type === 'Despesas') return 'Despesa'
+                return type
+            })
+        }
+
+        const text =
+        `SELECT * FROM fn_movements_only_revenues_by_filter($1, $2, $3, $4, $5, $6, $7) ORDER BY date_transaction ASC`
 
         const movementsByFilter = client.query(text, [userId, startParam, endParam, categorieParam, accountsParam, situationParam, forTypeParam])
 

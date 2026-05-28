@@ -1,14 +1,16 @@
 <script setup lang="ts">
 
     const props = defineProps<{
-        colorBotton: string,
-        titleBotton: string,
-        title: string,
-        text: string,
-        draft: TMovements | null
+      colorBotton: string,
+      titleBotton: string,
+      title: string,
+      text: string,
+      draft: TMovements | null
     }>()
 
-    console.log("Valor chegando no compoente", props.draft)
+    const  emit = defineEmits<{
+      success: []
+    }>()
 
     import type { TMovements } from "~~/types/movements/TMovements"
     import { useInvalidate } from "~/composables/useInvalidate"
@@ -32,6 +34,7 @@
       invalidate(QUERY_KEYS.movements.only_revenues)
       invalidate(QUERY_KEYS.movements.current_balance)
       invalidate(QUERY_KEYS.accounts.getBalanceForAccount)
+      emit("success")
     },
 
     onError: (error) => {
