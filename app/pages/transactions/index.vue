@@ -11,12 +11,14 @@
     import type { TMovements } from '~~/types/movements/TMovements'
     import type { TOptionAction } from '~~/types/option_action/TOptionAction'
     import type { TMovementsByFilter } from "~~/types/movements/TMovementsByFilter"
+    import type { TPeriod } from "~~/types/period/TPeriod"
     import FilterDrawer from './components/FilterDrawer.vue'
     import CardEditMovementsRevenue from '~/components/forms/CardEditMovementsRevenue.vue'
     import CardEdtiMovementsExpenses from '~/components/forms/CardEdtiMovementsExpenses.vue'
     import { useInvalidate } from "~/composables/useInvalidate"
     import CardSettleTransactionModal from '~/components/forms/CardSettleTransactionModal.vue'
     import CardDeletTransaction from '~/components/forms/CardDeletTransaction.vue'
+    import DateInput from '~/components/ui/DateInput.vue'
 
     type TMovementsFormatted = Omit<TMovements, 'value_transaction' | 'date_transaction'> & {
         value_transaction: string,
@@ -79,6 +81,7 @@
     })
 
     async function handleMovementesForPeriod() {
+        console.log("Ta caindo aqui?")
         await nextTick()
         refetch()
         isFiltered.value = false
@@ -215,6 +218,7 @@
 
     })
 
+    
     function handleMutationSuccess() {
         if (isFiltered.value && lastFilter.value) {
             handleApplyFilter(lastFilter.value)
@@ -226,6 +230,11 @@
         isFiltered.value = false
     }
 
+    function handleGetPeriod(value: TPeriod) {
+        period.value = value
+        refetch()
+        isFiltered.value = false
+    }
 
     function handleOpenModalEditMovementsRevenue(movements: TMovementsFormatted) {
 
@@ -444,7 +453,7 @@
             <template v-slot:text>
 
             <div style="margin-bottom: 12px;">
-                <VueDatePicker @update:model-value="handleMovementesForPeriod" :teleport="true" :locale="ptBR" v-model="period" month-picker :formats="{ month: 'LLLL' }" />
+                <DateInput  @apply-filter-month="handleGetPeriod"></DateInput>
             </div>
 
             <v-text-field
@@ -479,7 +488,7 @@
 
                 <template v-slot:item.value_transaction="{item}">
                     <v-chip :color="item.type_transaction ===  'Receita' ? 'green' : 'red'">
-                    {{ item.value_transaction }}
+                        {{ item.value_transaction }}
                     </v-chip>
                 </template>
 
@@ -561,6 +570,10 @@
 .icon-help:hover {
     transform: scale(1.3);
     cursor: pointer;
+}
+
+:deep(.v-table > .v-table_wrapper > table > thead > tr > th) {
+    display: none !important;
 }
 
 
