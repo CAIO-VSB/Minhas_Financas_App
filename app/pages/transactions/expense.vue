@@ -10,15 +10,16 @@
     import CardEdtiMovementsExpenses from '~/components/forms/CardEdtiMovementsExpenses.vue'
     import CardSettleTransactionModal from '~/components/forms/CardSettleTransactionModal.vue'
     import CardDeletTransaction from '~/components/forms/CardDeletTransaction.vue'
+    import DateInput from "~~/app/components/ui/DateInput.vue"
     import { useInvalidate } from "~/composables/useInvalidate"
     import { useHttpMovements } from '~/composables/useHttp/useHttpMovements'
     import type { TMovements } from '~~/types/movements/TMovements'
     import type { TMovementsOnlyExpenses } from '~~/types/movements/TMovementsOnlyExpenses'
     import type { TMovementsByFilter } from "~~/types/movements/TMovementsByFilter"
     import type { TOptionAction } from '~~/types/option_action/TOptionAction'
-    import { VueDatePicker } from '@vuepic/vue-datepicker'
-    import { ptBR } from 'date-fns/locale'
+    import type { TPeriod } from '~~/types/period/TPeriod'
 
+    
     type TMovementsFormatted = Omit<TMovements, 'value_transaction' | 'date_transaction'> & {
         value_transaction: string,
         date_transaction: string
@@ -74,12 +75,11 @@
         queryFn: () =>  getOnlyExpenses(period.value.month, period.value.year),
     })
 
-    async function handleMovementesForPeriod() {
-        await nextTick()
+    function handleGetPeriod(value: TPeriod) {
+        period.value = value
         refetch()
         isFiltered.value = false
     }
-
 
     const tableData = computed(() => {
         return isFiltered.value ? filteredData.value : data.value
@@ -374,7 +374,7 @@
             <template v-slot:text>
 
             <div style="margin-bottom: 10px;">
-                <VueDatePicker @update:model-value="handleMovementesForPeriod" :teleport="true" :locale="ptBR" v-model="period" month-picker :formats="{ month: 'LLLL' }" />
+                <DateInput @apply-filter-month="handleGetPeriod" ></DateInput>
             </div>
 
             <v-text-field
@@ -416,7 +416,7 @@
                             transition="slide-y-transition"
                             >
                              <template v-slot:activator="{ props }">
-                                <v-icon class="hover:scale-120 border-1 rounded-full"  v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
+                                <v-icon class="hover:scale-150"  v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
                             </template>
                             <v-list>
                                 <v-list-item

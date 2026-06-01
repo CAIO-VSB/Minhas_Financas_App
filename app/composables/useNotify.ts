@@ -13,7 +13,7 @@ export function useNotify() {
         useNotification().info({
             title: title,
             message: message,
-            position: "bottomCenter",
+            position: "topCenter",
             timeout: timer
         })
     }

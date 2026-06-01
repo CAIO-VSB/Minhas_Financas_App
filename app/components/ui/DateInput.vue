@@ -76,23 +76,23 @@
         
         <v-expand-transition>
             <div v-show="!expanded" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
-                <v-btn icon="mdi-chevron-left" variant="text" @click="prevMonth" />
+                <v-btn style="color: #2196F3;" icon="mdi-chevron-left" variant="text" @click="prevMonth" />
                 <span
                     @click="expanded = true"
-                    style="cursor: pointer; font-size: 16px; font-weight: 500; text-transform: capitalize; border: 1.5px solid #2196F3; color: #2196F3; padding: 4px 16px; border-radius: 20px;"
+                    style="cursor: pointer; font-size: 16px; font-weight: 500; text-transform: capitalize; border: 2.1px solid #2196F3; color: #2196F3; padding: 4px 16px; border-radius: 20px;"
                 >
                     {{ monthLabel }}
                 </span>
-                <v-btn icon="mdi-chevron-right" variant="text" @click="nextMonth" />
+                <v-btn style="color: #2196F3;" icon="mdi-chevron-right" variant="text" @click="nextMonth" />
             </div>
         </v-expand-transition>
 
         <v-expand-transition>
             <div v-show="expanded">
                 <div style="display: flex; align-items: center; justify-content: center; gap: 24px; margin-bottom: 1rem;">
-                    <v-btn icon="mdi-chevron-left" variant="text" @click="changeYear(-1)" />
-                    <span style="font-size: 16px; font-weight: 500;">{{ currentYear }}</span>
-                    <v-btn icon="mdi-chevron-right" variant="text" @click="changeYear(1)" />
+                    <v-btn style="color: #2196F3;" icon="mdi-chevron-left" variant="text" @click="changeYear(-1)" />
+                    <span style="font-size: 16px; font-weight: 500; color: #2196F3;">{{ currentYear }}</span>
+                    <v-btn style="color: #2196F3;" icon="mdi-chevron-right" variant="text" @click="changeYear(1)" />
                 </div>
 
                 

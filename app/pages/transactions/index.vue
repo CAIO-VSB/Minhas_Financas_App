@@ -5,8 +5,6 @@
         layout: "layout-dashboard"
     })
 
-    import { VueDatePicker } from '@vuepic/vue-datepicker'
-    import { ptBR } from 'date-fns/locale'
     import { useHttpMovements } from '~/composables/useHttp/useHttpMovements'
     import type { TMovements } from '~~/types/movements/TMovements'
     import type { TOptionAction } from '~~/types/option_action/TOptionAction'
@@ -80,12 +78,6 @@
         queryFn: getCurrentBalance
     })
 
-    async function handleMovementesForPeriod() {
-        console.log("Ta caindo aqui?")
-        await nextTick()
-        refetch()
-        isFiltered.value = false
-    }
 
     async function handleApplyFilter(filter: TMovementsByFilter) {
 
@@ -497,7 +489,7 @@
                             transition="slide-y-transition"
                             >
                             <template v-slot:activator="{ props }">
-                                <v-icon class="hover:scale-120 border-1 rounded-full"  v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
+                                <v-icon class="hover:scale-150"  v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
                             </template>
                             <v-list>
                                 <v-list-item

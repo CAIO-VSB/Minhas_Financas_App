@@ -5,14 +5,14 @@
         layout: "layout-dashboard"
     })
 
-    import { VueDatePicker } from '@vuepic/vue-datepicker'
-    import { ptBR } from 'date-fns/locale'
     import CardAddMovimentsRevenue from '~/components/forms/CardAddMovimentsRevenue.vue'
     import { useHttpMovements } from '~/composables/useHttp/useHttpMovements'
+    import DateInput from "~~/app/components/ui/DateInput.vue"
     import type { TMovements } from '~~/types/movements/TMovements'
     import type { TOptionAction } from '~~/types/option_action/TOptionAction'
     import type { TMovementsOnlyRenevue } from '~~/types/movements/TMovementsOnlyRevenue'
     import type { TMovementsByFilter } from "~~/types/movements/TMovementsByFilter"
+    import type { TPeriod } from '~~/types/period/TPeriod'
     import CardSettleTransactionModal from '~/components/forms/CardSettleTransactionModal.vue'
     import CardEditMovementsRevenue from '~/components/forms/CardEditMovementsRevenue.vue'
     import CardDeletTransaction from '~/components/forms/CardDeletTransaction.vue'
@@ -74,8 +74,8 @@
         queryFn: () => getOnlyRevenues(period.value.month, period.value.year),
     })
 
-    async function handleMovementesForPeriod() {
-        await nextTick()
+    function handleGetPeriod(value: TPeriod) {
+        period.value = value
         refetch()
         isFiltered.value = false
     }
@@ -366,7 +366,7 @@
             <template v-slot:text>
 
             <div style="margin-bottom: 10px;">
-                <VueDatePicker @update:model-value="handleMovementesForPeriod" :teleport="true" :locale="ptBR" v-model="period" month-picker :formats="{ month: 'LLLL' }" />
+                <DateInput @apply-filter-month="handleGetPeriod" ></DateInput>
             </div>
 
             <v-text-field
@@ -410,7 +410,7 @@
                             transition="slide-y-transition"
                             >
                             <template v-slot:activator="{ props }">
-                                <v-icon class="hover:scale-120 border-1 rounded-full"  v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
+                                <v-icon class="hover:scale-150 "  v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
                             </template>
                             <v-list>
                                 <v-list-item

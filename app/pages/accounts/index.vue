@@ -8,7 +8,6 @@
 
   import CardAddAccount from "~/components/forms/CardAddAccount.vue"
   import BaseModal from "~/components/ui/BaseModal.vue"
-  import BaseFab from "~/components/ui/BaseFab.vue"
   import BaseEmpty from "~/components/ui/BaseEmpty.vue"
   import CardEditAccount from "~/components/forms/CardEditAccount.vue"
   import type { TAccount } from "~~/types/account/TAccount.types"
@@ -23,7 +22,6 @@
   
   const modalAddAccount = ref(false)
   const modalEditAccount = ref(false)
-  const errorModal = ref(false)
   const activeFilterAccounts = ref<boolean>(true)
   const editDraft = ref<TAccount | null>(null)
 
@@ -51,6 +49,14 @@
 
   })
 
+  const generalBalance = computed(() => {
+
+    const totalSaldo = balanceForId.value?.reduce((acc, conta) => {
+      return Number(acc) + Number(conta.saldo_atual) 
+    }, 0)
+
+    return new Intl.NumberFormat('pt-br', {style: "currency", currency: 'BRL'}).format(totalSaldo ?? 0.00)
+  })
 
   function handleOpenModalAddAccount() {
     modalAddAccount.value = true
@@ -90,154 +96,194 @@
 
 <template>
 
-  <div class="!mt-15 card">
-    <v-card class="mx-auto" max-width="750" min-height="400"
-    >
-      <template #append>
-        <v-menu>
-          <template v-slot:activator="{ props }">
-            <v-btn icon="mdi-dots-vertical" variant="text" v-bind="props"></v-btn>
-          </template>
-
-          <v-list>
-            <v-list-item
-              v-for="(item, i) in options"
-              :key="i"
-              :value="i"
-              :title="item.title"
-              :prepend-icon="item.icon"
-              @click="activeFilterAccounts = item.value"
-            >
-              
-            </v-list-item>
-          </v-list>
-        </v-menu>
-      </template>
-    
-      <template v-slot:title>
-        <span class="title-card">Contas</span>
-      </template>
-
-      <template v-slot:subtitle>
-        <span class="sub-title-card">Lista de contas cadastradas</span>
-      </template>
-
-      <v-divider></v-divider>
-
-      <v-skeleton-loader 
-      v-if="isPending"
-      v-for="n in 5" 
-      :key="n" 
-      type="list-item-avatar"
-      class="mb-2"
-      />
-
-      <v-list lines="two" item-props>
-        <v-list-item
-          v-for="(account, index) in filteredAccounts || []"
-          :key="account.id"
-          :style="{ boxShadow: `inset 0.15rem 0 0 ${account.color}`, marginBottom: '10px' }"
+  <div class="text-center btn-add-account-layout">     
+    <div class="btn-add-account">
+        <v-btn
+        color="blue"
+        prepend-icon="mdi-plus"
+        class="text-none rounded-xl"
+        @click="handleOpenModalAddAccount"
         >
+        NOVA CONTA 
+        </v-btn>
+    </div>
+  </div>
+    
+  <div class="accounts-layout">
 
-          <template #title>
-            <div>
-              <p :class="{'text-disabled': !account.active}" style="padding-bottom: 4px;">{{ account.name_identifier }} </p>
+    <div class="accounts-list">
+      <v-card class="mx-auto" width="100%" max-width="750" min-height="400"
+      >
+        <template #append>
+          <v-menu>
+            <template v-slot:activator="{ props }">
+              <v-btn icon="mdi-dots-vertical" variant="text" v-bind="props"></v-btn>
+            </template>
 
-            </div>
-          </template>
-
-          <template #prepend>
-            <div class="img-container">
-              <img class="img" :src="account.url_image" alt="img" />
-            </div>
-          </template>
-
-          <template #subtitle>
-            <div  class="subtitle">
-              <p style="padding-bottom: 12px;">{{ account.type_account }}</p>
-              <div class="valor-saldo">
-                <span>Saldo atual</span> <span class="saldo">{{ balanceFormated?.find(item => item.id === account.id)?.saldo_atual }}</span>
-              </div>
-            </div>
-          </template>
-
-          <v-divider></v-divider>
-
-          <template #append>
-            <v-btn
-              @click="handleOpenModalEditAccount(account)"
-              icon="mdi-square-edit-outline"
-              variant="plain"
-            ></v-btn>
-            <v-tooltip activator="parent" location="end">
-              Editar conta
-            </v-tooltip>
-          </template>
-        </v-list-item>
-      </v-list>
-
-      <div v-if="data?.length === 0">
-        <BaseEmpty
-          headline="Nenhuma conta cadastrada"
-          title="Você ainda não possui contas registradas"
-          text="No momento, não há contas para exibição.
-          Cadastre uma nova conta para começar a organizar e acompanhar suas movimentações financeiras."
-        />
-      </div>
-
-        <CardAddAccount v-model="modalAddAccount" />
-
-        <CardEditAccount
-        :draft="editDraft"
-        v-model="modalEditAccount"
-        @Close="handleCloseEditAccount"
-        />
-
-    </v-card>
-
-    <div class="fab-wrapper">
-      <v-tooltip text="Nova conta" location="left">
-        <template #activator="{ props }">
-          <BaseFab 
-          v-bind="props"
-          color="blue"
-          icon="mdi-plus"
-          size="65"
-          @click="handleOpenModalAddAccount"
-          />
+            <v-list>
+              <v-list-item
+                v-for="(item, i) in options"
+                :key="i"
+                :value="i"
+                :title="item.title"
+                :prepend-icon="item.icon"
+                @click="activeFilterAccounts = item.value"
+              >
+                
+              </v-list-item>
+            </v-list>
+          </v-menu>
         </template>
-      </v-tooltip>
+      
+        <template v-slot:title>
+
+          <span class="title-card">Contas</span>
+        </template>
+
+        <template v-slot:subtitle>
+          <span class="sub-title-card">Lista de contas cadastradas</span>
+        </template>
+
+        <v-divider></v-divider>
+
+        <v-skeleton-loader 
+        v-if="isPending"
+        v-for="n in 5" 
+        :key="n" 
+        type="list-item-avatar"
+        class="mb-2"
+        />
+
+        <v-list lines="two" item-props>
+          <v-list-item
+            v-for="(account, index) in filteredAccounts || []"
+            :key="account.id"
+            :style="{ boxShadow: `inset 0.15rem 0 0 ${account.color}`, marginBottom: '10px' }"
+          >
+
+            <template #title>
+              <div>
+                <p :class="{'text-disabled': !account.active}" style="padding-bottom: 4px;">{{ account.name_identifier }} </p>
+              </div>
+            </template>
+
+            <template #prepend>
+              <div class="img-container">
+                <img class="img" :src="account.url_image" alt="img" />
+              </div>
+            </template>
+
+            <template #subtitle>
+              <div class="subtitle">
+                <p style="padding-bottom: 12px;">{{ account.type_account }}</p>
+                <div class="accounts-balance-for-account">
+                  <span>Saldo atual</span> <span class="balance">{{ balanceFormated?.find(item => item.id === account.id)?.saldo_atual }}</span>
+                </div>
+              </div>
+            </template>
+            
+
+            <v-divider></v-divider>
+
+            <template #append>
+              <v-btn
+                @click="handleOpenModalEditAccount(account)"
+                icon="mdi-square-edit-outline"
+                variant="plain"
+              ></v-btn>
+              <v-tooltip activator="parent" location="end">
+                Editar conta
+              </v-tooltip>
+            </template>
+          </v-list-item>
+        </v-list>
+
+        <div v-if="data?.length === 0">
+          <BaseEmpty
+            headline="Nenhuma conta cadastrada"
+            title="Você ainda não possui contas registradas"
+            text="No momento, não há contas para exibição.
+            Cadastre uma nova conta para começar a organizar e acompanhar suas movimentações financeiras."
+          />
+        </div>
+
+          <CardAddAccount v-model="modalAddAccount" />
+
+          <CardEditAccount
+          :draft="editDraft"
+          v-model="modalEditAccount"
+          @Close="handleCloseEditAccount"
+          />
+
+      </v-card>
+      
     </div>
 
-    <BaseModal :text="error?.message" title="Atenção (error)" :model-value="errorModal" />
-  </div>
+    
+    <div class="accounts-balance">
+      <v-card  :loading="isPending">
+        <template #subtitle>
+          <span >Saldo atual</span>
+        </template>
+        <div class="accounts-general-balance">
+            <span style="margin-left: 6px;">{{ generalBalance }}</span>
+        </div>
+        <template #append>
+            <v-tooltip  text="Saldo total das contas ativas">
+                <template v-slot:activator="{ props }">
+                  <v-icon class="icon-help" v-bind="props" size="20px" icon="mdi-information-outline"></v-icon>
+                </template>
+            </v-tooltip>
+        </template>
+      </v-card>
+    </div>
 
+  </div>
 
 </template>
 
 
 <style lang="scss" scoped>
 
-.fab-wrapper {
-  position: fixed;
-  bottom: 25px;
-  right: 24px;
-  z-index: 9999;
-}
-
-.card {
+.accounts-layout {
   margin: 10px;
+  display: flex;
+  margin-top: 60px;
+  gap: 10px;
+  justify-content: center;
+
+  @media (max-width: 1200px) {
+    flex-direction: column;
+    padding: 0 10px;
+    margin-top: 40px;
+  }
 }
 
-.img-container {
-  margin-right: 10px;
+.accounts-list {
+  min-width: 0;
+  width: 600px;
+
+    @media (max-width: 1200px) {
+    width: 100%;
+  }
+  
+}
+
+.accounts-balance  {
+  width: 290px;
+  flex-shrink: 0;
+  @media (max-width: 1200px) {
+    width: 100%;
+  }
 }
 
 .img {
   border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  margin-right: 5px;
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  flex-shrink: 0;
+  margin-right: 12px;
 }
 
 .text-disabled {
@@ -249,18 +295,48 @@
   flex-direction: column;
 }
 
-.valor-saldo {
+.accounts-balance-for-account {
   display: flex;
-  gap: 40px;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.saldo {
-  width: 65%;
+.balance {
+  flex: 1;
+  text-align: center;
+  font-size: clamp(0.9rem, 2vw, 1.1rem);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.accounts-general-balance {
+  font-size: clamp(0.9rem, 2vw, 1.1rem);
   display: flex;
-  justify-content: center;
-  font-size: 1.1rem;
-  font-weight: 900;
-  color: black;
+  gap: 20px;
+  padding-left: 10px;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.btn-add-account-layout {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding-right: 20px;
+}
+
+.btn-add-account {
+  display: flex;
+  margin-top: 24px;
+  gap: 20px;
+  margin-right: 20px;
+  margin-bottom: 16px;
+
+  @media (max-width: 600px) {
+    margin-top: 20px;
+    margin-right: 10px;
+  }
 }
 
 

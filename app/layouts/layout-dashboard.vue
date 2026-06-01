@@ -27,7 +27,7 @@
 </script>
 
 <template>
-  <v-card>
+  <v-card style="height: 100vh; overflow: hidden;">
     <v-layout>
       <v-navigation-drawer
         v-model="drawer"
@@ -183,7 +183,7 @@
         </template>
       </v-navigation-drawer>
 
-      <v-main style="height: 100vh; background-color: #f2f2f2;">
+      <v-main style="height: 100vh; background-color: #f2f2f2; overflow-y: auto;">
         <div class=" title-router flex align-center">
           <v-btn
             icon="mdi-menu"

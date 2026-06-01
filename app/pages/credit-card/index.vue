@@ -57,7 +57,6 @@
   onSuccess: () => {
     invalidate(QUERY_KEYS.creditCards.all)
     invalidate(QUERY_KEYS.creditCards.disable)
-    notifySuccess("Sucesso", "Cartão de crédito editado com sucesso", 6000)
   },
 
   onError: (error) => {
@@ -124,6 +123,7 @@
 
     if (typeof option.value === "boolean") {
       payload.active = option.value
+      notifySuccess("Sucesso", "Operação realizada com sucesso", 6000)
     }
 
     mutate(payload)

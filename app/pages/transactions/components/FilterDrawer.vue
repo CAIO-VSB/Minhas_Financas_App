@@ -2,7 +2,9 @@
 
     import { useHttpCategories } from '~/composables/useHttp/useHttpCategories'
     import { useHttpAccounts } from "~/composables/useHttp/useHttpAccounts"
+    import { differenceInDays } from 'date-fns'
     import type { TMovementsByFilter } from '~~/types/movements/TMovementsByFilter'
+    
 
     const emit = defineEmits<{
         applyFilter: [filter: TMovementsByFilter],
@@ -13,11 +15,13 @@
         colorButton: string,
         textColor?: string,
         fieldTypeActive: boolean,
-        items: string[]
+        items: string[],
+        loadingButton?: boolean
     }>()
 
     const { getCategoriesOnlyActive } = useHttpCategories()
     const { getAccountsOnlyActive } = useHttpAccounts()
+    const { notifyError, notifyInfo, notifySuccess } = useNotify()
     const { nameRules, selectRules, dateRules, currencyRules } = useValidateFields()
 
     const { data:categories, isPending:categorieIsPending } = useQuery({
@@ -80,12 +84,22 @@
 
     function submitForm() {
 
+        if (!startDate.value || !endDate.value) {
+            notifyInfo("Atenção", "Informe o período para consulta", 7000)
+            return
+        }
+
+        const diff = differenceInDays(endDate.value, startDate.value)
+
+        if (diff > 90) {
+            notifyInfo("Atenção", "O período máximo de consulta é 90 dias", 7000)
+            return
+        }
+
         if (startDate && endDate) {
             filterFrom.value.start_day = startDate.value ? new Date(startDate.value).toISOString().split('T')[0] : null
             filterFrom.value.end_day = endDate.value ? new Date(endDate.value).toISOString().split('T')[0] : null
         }
-    
-        console.log("Objeto a ser enviado", filterFrom.value)
 
         emit("applyFilter", filterFrom.value)
 
@@ -272,13 +286,17 @@
                 text="Limpar e sair"
                 variant="elevated"
                 @click="resetForm"
+                class="text-none rounded-xl"
+                v-tooltip:bottom-end="'Tooltip at the bottom end'"
                 ></v-btn>
 
                 <v-btn
+                v-tooltip="'Tooltip'"
                 :color="props.colorButton"
                 text="Aplicar filtros"
                 variant="elevated"
                 @click="submitForm"
+                class="text-none rounded-xl"
                 ></v-btn>
             </v-card-actions>
 
