@@ -1,5 +1,5 @@
 import { auth } from "~~/auth"
-import { categoriesRepository } from "~~/server/repositories/categories.respository"
+import { categoriesRepository } from "~~/server/repositories/categories.repository"
 
 export default defineEventHandler( async (event) => {
 

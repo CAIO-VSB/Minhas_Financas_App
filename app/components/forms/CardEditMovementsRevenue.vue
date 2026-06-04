@@ -53,6 +53,8 @@
     const menuAccounts = ref(false)
     const modalAddCategorie = ref(false)
     const modalAddAccount = ref(false)
+    const switchValue = ref()
+    const labelSwitch = ref("Receita recebida")
 
     watch(menuCategorias, (val) => {
       if (!val) searchCategorias.value = ""
@@ -78,6 +80,20 @@
 
     watch(menuAccounts, (val) => {
       if (!val) searchAccounts.value = ""
+    })
+
+    watch(() => props.draft, (val) => {
+      if (props.draft) switchValue.value = val?.status_transaction
+    })
+
+    watch(switchValue, (val) => {
+      if (val === 'recebido') {
+        labelSwitch.value = "Receita recebida"
+        if (props.draft) props.draft.status_transaction = switchValue.value
+      } else if (val === "pendente") {
+        labelSwitch.value = "Receita pendente"
+        if (props.draft) props.draft.status_transaction = switchValue.value
+      }
     })
 
     const filterCategorias = computed(() => {
@@ -157,11 +173,11 @@
           <v-divider></v-divider>
           <v-card-text>
 
-            <CurrencyInput input-color="#2E7D32" base-color="#2E7D32" color="#2E7D32" :rules="currencyRules"  text-color="green" autocomplete="off" label="Valor*" v-model="props.draft.value_transaction" />
+            <CurrencyInput prepend-icon="mdi-cash" input-color="#2E7D32" base-color="#2E7D32" color="#2E7D32" :rules="currencyRules"  text-color="green" autocomplete="off" label="Valor*" v-model="props.draft.value_transaction" />
 
-            <v-date-input :rules="dateRules" autocomplete="off" name="date" prepend-icon="" label="Data*" variant="underlined" v-model="props.draft.date_transaction"></v-date-input>
+            <v-date-input prepend-icon="mdi-calendar" :rules="dateRules" autocomplete="off" name="date" label="Data*" variant="underlined" v-model="props.draft.date_transaction"></v-date-input>
 
-            <v-text-field :rules="nameRules" :counter="45" maxlength="45"  autocomplete="name" name="name" label="Descrição*" variant="underlined" v-model="props.draft.description_transaction"></v-text-field>
+            <v-text-field prepend-icon="mdi-pencil" :rules="nameRules" :counter="45" maxlength="45"  autocomplete="name" name="name" label="Descrição*" variant="underlined" v-model="props.draft.description_transaction"></v-text-field>
 
             <v-select
               autocomplete="off"
@@ -175,6 +191,7 @@
               label="Categoria*"
               persistent-hint
               :rules="selectRules"
+              prepend-icon="mdi-shape"
               >
          
                 <template v-slot:selection="{item}">
@@ -223,6 +240,7 @@
                   hint="O valor será creditado nesta conta"
                   persistent-hint
                   autocomplete="off"
+                  prepend-icon="mdi-bank"
                 >
 
                   <template v-slot:selection="{item}">
@@ -261,12 +279,12 @@
                   </template>
                 </v-select>
 
-                <v-text-field v-model="props.draft.observation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="underlined"></v-text-field >
+                <v-text-field prepend-icon="mdi-note-text" v-model="props.draft.observation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="underlined"></v-text-field >
 
               <v-switch
-                v-model="props.draft.status_transaction"
+                v-model="switchValue"
                 color="success"
-                label="Receita recebida"
+                :label="labelSwitch"
                 hide-details
                 false-value="pendente"
                 true-value="recebido"

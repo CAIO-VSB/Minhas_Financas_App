@@ -1,6 +1,5 @@
 import { auth } from "~~/auth"
-import client from "~/utils/db"
-import { accountsRepository } from "~~/server/repositories/account.repository"
+import { transferRepository } from "~~/server/repositories/transfer.repository"
 
 export default defineEventHandler( async (event) => {
 
@@ -15,18 +14,18 @@ export default defineEventHandler( async (event) => {
         })
     }
 
-    const { active } = getQuery(event)
+    const { month, year } = getQuery(event)
 
+    const monthNumber = Number(month) + 1
+    const yearNumber = Number(year)
+        
     try {
 
-        return await accountsRepository.findAll(
-            session.session.userId,
-            active !== undefined ? active === "true" : undefined 
-        )
+        return await transferRepository.findAll(session.session.userId, monthNumber, yearNumber)
 
     } catch (error) {
 
-        console.log("Erro ao tentar buscar contas", error)
+        console.log("Erro ao buscar transferências", error)
 
         throw createError({
             status: 500,

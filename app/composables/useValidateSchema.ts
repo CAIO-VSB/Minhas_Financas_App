@@ -3,12 +3,14 @@ import { singIn, singUp, passwordValidate, emailValidate } from "~~/schemas/auth
 import { schemaCategories } from "~~/schemas/categories.schema"
 import { schemaCreditCard } from "~~/schemas/creditCard.schema"
 import { schemaMovements } from "~~/schemas/movements.schema"
+import { schemaTransfer } from "~~/schemas/transfer.schema"
 import type { TAccount } from "~~/types/account/TAccount.types"
 import type { TUser } from "~~/types/auth/Tauth.types"
 import type { TCategorie } from "~~/types/categorie/TCategorie"
 import type { TCreditCard } from "~~/types/credit_card/TCredit-card"
 import type { TRecoveryForm, TLoginForm, TResetForm } from "~~/types/user/Tuser.types"
 import type { TMovements } from "~~/types/movements/TMovements"
+import type { TTransfer } from "~~/types/transfer/TTransfer"
 
 //Tipo para validar o retorno de cada função
 type ValidateResult<T> = 
@@ -117,6 +119,18 @@ export function useValidateSchemas() {
         return {success: true, data: result.data}
     }
 
+    const validateSchemaTransfer = (data: TTransfer):ValidateResult<TTransfer> => {
+        
+        const result = schemaTransfer.safeParse(data)
+
+        if (!result.success) {
+            console.log("Erro ao validar schema de tranferências", result.error)
+            return {success: false}
+        }
+
+        return {success: true, data: result.data}
+    }
+
     return {
         validateSchemaAccount,
         validateSchemaCategorie,
@@ -125,7 +139,8 @@ export function useValidateSchemas() {
         validateSchemaSignIn,
         validateSchemaSignUp,
         validateShemaCrediCard,
-        validateSchemaMovements
+        validateSchemaMovements,
+        validateSchemaTransfer
     }
 
 }

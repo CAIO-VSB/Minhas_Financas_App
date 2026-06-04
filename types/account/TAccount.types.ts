@@ -10,5 +10,5 @@ export type TAccount = {
     color?: string | undefined,
     name_color?: string,
 
-    saldo_atual: number | null
+    saldo_atual?: number | null
 }

@@ -98,13 +98,13 @@
       ...raw
     }
 
-    if (props.draft.type_transaction === "Receita") {
+    if (props.draft.type_transaction === "receita") {
       payload.status_transaction = "recebido"
       modelValue.value = false
       notifySuccess("Sucesso", "Receita efetivada com sucesso", 6000)
     }
    
-    if (props.draft.type_transaction === "Despesa") {
+    if (props.draft.type_transaction === "despesa") {
       payload.status_transaction = "pago"
       modelValue.value = false
       notifySuccess("Sucesso", "Despesa efetivada com sucesso", 6000)

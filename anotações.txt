@@ -11,3 +11,7 @@ const { invalidate } = useInvalidate()
 Lista de coisas a ser fazer (para não cair no esquecimento)
 
 -- Tentar componetizar a sideBar - Prioridade baixa
+
+
+74
+80

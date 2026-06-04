@@ -1,4 +1,5 @@
 import client from "~/utils/db"
+import type { TAccount } from "~~/types/account/TAccount.types"
 
 export const accountsRepository = {
 
@@ -33,7 +34,7 @@ export const accountsRepository = {
             (SELECT value_transaction
             FROM movements
             WHERE accounts_id = a.id
-            AND type_transaction = 'Saldo inicial'
+            AND type_transaction = 'saldo inicial'
             AND is_deleted = false
             LIMIT 1) AS initial_balance
 			FROM banks_accounts a
@@ -46,14 +47,12 @@ export const accountsRepository = {
         const accountsBalance = client.query(text, values)
 
        const result = (await accountsBalance).rows
-        console.log("initial_balance retornado:", result.map(r => ({ id: r.id, initial_balance: r.initial_balance, saldo_atual: r.saldo_atual })))
-        return result
-      
-        return (await accountsBalance).rows 
+    
+       return result
 
     },
 
-    async create(userId: string, data: {id?: number, name_identifier: string, url_image: string, name_bank: string, type_account: string, active: boolean, color: string, initial_balance?: number}) {
+    async create(userId: string, data: TAccount) {
 
         const text = 
         `INSERT INTO banks_accounts(user_id, name_identifier, url_image, name_bank, type_account, active, color)
@@ -72,7 +71,7 @@ export const accountsRepository = {
             VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
             RETURNING id, user_id, type_transaction, value_transaction, date_transaction, description_transaction, categorie_id, accounts_id, observation, url_recibo, status_transaction, is_deleted`
 
-            const valuesMovements = [userId, 'Saldo inicial', data.initial_balance, new Date(), 'Saldo inicial', null, accountsId, null, null, 'Saldo inicial', false]
+            const valuesMovements = [userId, 'saldo inicial', data.initial_balance, new Date(), 'saldo inicial', 74, accountsId, null, null, 'Lançamento de saldo inicial', false]
 
             const movements = client.query(textMovements, valuesMovements)
 
@@ -83,7 +82,7 @@ export const accountsRepository = {
 
     },
 
-    async update(userId: string, data: {name_identifier: string, url_image: string, name_bank: string, type_account: string, active: boolean, color: string, id?: number, initial_balance?: number}) {
+    async update(userId: string, data: TAccount) {
 
     console.log("initial_balance recebido:", data.initial_balance)
     console.log("entrou no if?", data.initial_balance !== undefined)
@@ -112,7 +111,7 @@ export const accountsRepository = {
 
             //Deleto o valor antigo para setar o novo, caso contrário, ficaria duas transações no banco
             const text = 
-            `DELETE FROM movements WHERE accounts_id = $1 AND type_transaction = 'Saldo inicial'`
+            `DELETE FROM movements WHERE accounts_id = $1 AND type_transaction = 'saldo inicial'`
 
             await client.query(text, [accountsId])
 
@@ -121,7 +120,7 @@ export const accountsRepository = {
             VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
             RETURNING id, user_id, type_transaction, value_transaction, date_transaction, description_transaction, categorie_id, accounts_id, observation, url_recibo, status_transaction, is_deleted`
 
-            const valuesMovements = [userId, 'Saldo inicial', data.initial_balance, new Date(), 'Saldo inicial', null, accountsId, null, null, 'Saldo inicial', false]
+            const valuesMovements = [userId, 'saldo inicial', data.initial_balance, new Date(), 'saldo inicial', 74, accountsId, null, null, 'saldo inicial', false]
 
             await client.query(textMovements, valuesMovements)
 

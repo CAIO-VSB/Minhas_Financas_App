@@ -287,11 +287,9 @@
                 variant="elevated"
                 @click="resetForm"
                 class="text-none rounded-xl"
-                v-tooltip:bottom-end="'Tooltip at the bottom end'"
                 ></v-btn>
 
                 <v-btn
-                v-tooltip="'Tooltip'"
                 :color="props.colorButton"
                 text="Aplicar filtros"
                 variant="elevated"

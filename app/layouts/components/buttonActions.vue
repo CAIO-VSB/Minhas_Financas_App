@@ -3,7 +3,8 @@
 
   import { mergeProps } from 'vue'
   import CardAddMovimentsRevenue  from '~/components/forms/CardAddMovimentsRevenue.vue'
-  import CardAddMovimentsExpenses from '~/components/forms/CardAddMovimentsExpenses.vue';
+  import CardAddMovimentsExpenses from '~/components/forms/CardAddMovimentsExpenses.vue'
+  import CardAddTransfer from '~/components/forms/CardAddTransfer.vue';
 
   const props = defineProps<{
     rail: boolean
@@ -11,6 +12,7 @@
 
   const modalAddRevenue = ref(false)
   const modalExpenses = ref(false)
+  const modalTranfer = ref(false)
 
   const items = [
     { title: 'Receita', icon: "mdi-arrow-up-circle-outline", value: "receita" },
@@ -31,6 +33,10 @@
       return
     }
 
+    if (data === "transfer") {
+      modalTranfer.value = true
+    }
+
   }
 
 
@@ -39,6 +45,7 @@
 
 <template>
   <div class="text-center">
+    
     <v-menu position="center" transition="fab-transition" >
       <template v-slot:activator="{ props: menu }">
         <v-tooltip location="top">
@@ -86,6 +93,7 @@
     <CardAddMovimentsRevenue v-model="modalAddRevenue" />
 
     <CardAddMovimentsExpenses v-model="modalExpenses" />
-    
+  
+    <CardAddTransfer  v-model="modalTranfer" />
   </div>
 </template>

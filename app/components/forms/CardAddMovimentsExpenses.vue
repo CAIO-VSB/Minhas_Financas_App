@@ -47,7 +47,7 @@
   const labelSwitch = ref("Despesa paga")
 
   const movementsForm = ref<TMovements>({
-    type_transaction: "Despesa",
+    type_transaction: "despesa",
     value_transaction: null,
     date_transaction: null,
     description_transaction: "",

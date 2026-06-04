@@ -1,4 +1,5 @@
 import client from "~/utils/db"
+import type { TCreditCard } from "~~/types/credit_card/TCredit-card"
 
 export const creditCardRespository = {
 
@@ -18,7 +19,7 @@ export const creditCardRespository = {
 
     },
 
-    async create(userId: string, data: { accounts_id: number, name_identifier: string, url_logo: string, due_day: number, closing_day: number, limit_card: number, active: boolean, four_digits: string}) {
+    async create(userId: string, data: TCreditCard) {
 
         const text = 
         `INSERT INTO credit_cards(user_id, accounts_id, name_identifier, url_logo, due_day, closing_day, limit_card, active, four_digits) 
@@ -34,7 +35,7 @@ export const creditCardRespository = {
 
     },
 
-    async update(data: {accounts_id: number, name_identifier: string, url_logo: string, due_day: number, closing_day: number, limit_card: number, active: boolean, four_digits: string, id?: number}) {
+    async update(data: TCreditCard) {
 
         const text = `
         UPDATE credit_cards

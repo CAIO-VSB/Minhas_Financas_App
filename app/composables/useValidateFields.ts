@@ -29,8 +29,9 @@ export function useValidateFields() {
 
     const currencyRules = ref([
         (val: string) => !!val || "Campo obrigatório",
-        (val: string) => {const num = parseFloat(val.replace(/[^0-9,.-]/g, "").replace(",", ".")) 
-            return (!isNaN(num) && num >= 0) || "O valor não pode ser negativo"
+        (val: string) => {
+            const num = parseFloat(val.replace(/[^0-9,.-]/g, "").replace(",", "."))
+            return (!isNaN(num) && num > 0) || "Deve ter um valor diferente de 0"
         }
     ])
 

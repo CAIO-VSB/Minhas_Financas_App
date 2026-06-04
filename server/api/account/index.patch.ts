@@ -1,6 +1,6 @@
 import { schemaAccount } from "~~/schemas/account.schema"
 import { auth } from "~~/auth"
-import { accountsRepository } from "~~/server/repositories/account.respository"
+import { accountsRepository } from "~~/server/repositories/account.repository"
 
 export default defineEventHandler( async (event) => {
 

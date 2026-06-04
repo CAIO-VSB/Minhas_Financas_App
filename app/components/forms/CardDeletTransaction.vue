@@ -34,6 +34,7 @@
       invalidate(QUERY_KEYS.movements.only_revenues)
       invalidate(QUERY_KEYS.movements.current_balance)
       invalidate(QUERY_KEYS.accounts.getBalanceForAccount)
+      invalidate(QUERY_KEYS.tranfer.all)
       emit("success")
     },
 

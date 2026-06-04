@@ -1,8 +1,9 @@
 import client from "~/utils/db"
+import type { TMovements } from "~~/types/movements/TMovements"
 
 export const movementsRespository = {
 
-    async create(userId: string, data: {id?: number, type_transaction: string, value_transaction: number, date_transaction: Date, description_transaction: string, categorie_id: number, accounts_id: number, observation?: string, url_recibo?: string, status_transaction: string, is_deleted?: boolean}) {
+    async create(userId: string, data: TMovements) {
 
         const text = 
         `INSERT INTO movements(user_id, type_transaction, value_transaction, date_transaction, description_transaction, categorie_id, accounts_id, observation, url_recibo, status_transaction, is_deleted) 
@@ -59,6 +60,7 @@ export const movementsRespository = {
 
     async findMovementsByFilter(userId: string, start_day: string, end_day: string, categorie_id: number[], accounts_id: number[], situation: string, for_type: string[]) {
 
+        console.log("Valor que chouy", start_day, end_day, categorie_id, accounts_id, for_type)
 
         const categorieParam = categorie_id.length > 0 ? categorie_id : null
         const accountsParam = accounts_id.length > 0 ? accounts_id : null
@@ -93,8 +95,6 @@ export const movementsRespository = {
 
     async findOnlyExpensesByFilter(userId: string, start_day: string, end_day: string, categorie_id: number[], accounts_id: number[], situation: string, for_type: string[]) {
 
-        console.log("Valores recebidos no backEnd somente receitas", userId, start_day, end_day, categorie_id, accounts_id, situation, for_type)
-
         const categorieParam = categorie_id.length > 0 ? categorie_id : null
         const accountsParam = accounts_id.length > 0 ? accounts_id : null
         let situationParam = situation || null
@@ -112,8 +112,8 @@ export const movementsRespository = {
 
         if (forTypeParam) {
             forTypeParam = forTypeParam.map(type => {
-                if (type === 'Receitas') return 'Receita'
-                if (type === 'Despesas') return 'Despesa'
+                if (type === 'Receitas') return 'receita'
+                if (type === 'Despesas') return 'despesa'
                 return type
             })
         }
@@ -147,8 +147,8 @@ export const movementsRespository = {
 
         if (forTypeParam) {
             forTypeParam = forTypeParam.map(type => {
-                if (type === 'Receitas') return 'Receita'
-                if (type === 'Despesas') return 'Despesa'
+                if (type === 'Receitas') return 'receita'
+                if (type === 'Despesas') return 'despesa'
                 return type
             })
         }
@@ -161,7 +161,7 @@ export const movementsRespository = {
         return (await movementsByFilter).rows
     },
 
-    async update(data: {id?: number, type_transaction?: string, value_transaction: number, date_transaction: Date, description_transaction: string, categorie_id: number, accounts_id: number, observation?: string, url_recibo?: string, status_transaction: string, is_deleted?: boolean}) {
+    async update(data: TMovements) {
 
         const text = 
         `UPDATE movements 

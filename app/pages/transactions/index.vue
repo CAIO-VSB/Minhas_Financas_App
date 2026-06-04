@@ -128,7 +128,7 @@
         
         const row = currentBalance.value?.[0]
 
-         console.log("currentBalance.value:", currentBalance.value)
+        console.log("currentBalance.value:", currentBalance.value)
 
         const formated = new Intl.NumberFormat('pt-BR', {
             style: 'currency',
@@ -259,12 +259,12 @@
 
     function handleOptionClick(option: TOptionAction, data: TMovementsFormatted) {
 
-        if (option.value === "edit" && data.type_transaction === "Receita") {
+        if (option.value === "edit" && data.type_transaction === "receita") {
             handleOpenModalEditMovementsRevenue(data)
             return 
         }
 
-        if (option.value === "edit" && data.type_transaction === "Despesa") {
+        if (option.value === "edit" && data.type_transaction === "despesa") {
             handleOpenModalEditMovementsExpense(data)
             return 
         }
@@ -277,7 +277,7 @@
             date_transaction: new Date(raw.date_transaction.split('/').reverse().join('-') + 'T00:00:00'),
         }
 
-        if (option.value === "efetivar" && data.type_transaction === "Receita") {
+        if (option.value === "efetivar" && data.type_transaction === "receita") {
             editDraft.value = payload
             labelOptions.value.colorButton = "green"
             labelOptions.value.textButton = "Receber"
@@ -285,7 +285,7 @@
             labelOptions.value.text = "Ao efetivar essa receita será adicionado o valor na Conta."
             cardPostValueTransaction.value = true
             return
-        } else if (option.value === "efetivar" && data.type_transaction === "Despesa") {
+        } else if (option.value === "efetivar" && data.type_transaction === "despesa") {
             editDraft.value = payload
             labelOptions.value.colorButton = "red"
             labelOptions.value.textButton = "Pagar"
@@ -293,7 +293,7 @@
             labelOptions.value.text = "Ao efetivar essa despesa será descontado o valor na Conta."
             cardPostValueTransaction.value = true
             return
-        } else if (option.value === "delete" && data.type_transaction === "Receita") {
+        } else if (option.value === "delete" && data.type_transaction === "receita") {
             editDraft.value = payload
             payload.is_deleted = true
             labelOptions.value.colorButton = "green"
@@ -302,7 +302,7 @@
             labelOptions.value.text = "Essa ação não poderá ser desfeita. O valor será removido da conta."
             cardDeletTransaction.value = true
             return
-        } else if (option.value === "delete" && data.type_transaction === "Despesa") {
+        } else if (option.value === "delete" && data.type_transaction === "despesa") {
             editDraft.value = payload
             payload.is_deleted = true
             labelOptions.value.colorButton = "red"
@@ -379,7 +379,7 @@
                 <v-skeleton-loader v-if="isPendingCurrentBalance" type="list-item-avatar"></v-skeleton-loader>
                 <div v-else  class="main-value-formated">
                     <v-icon icon="mdi-bank"></v-icon>
-                    <span>{{ balanceCurrent?.saldo_atual }}</span>
+                    <span>{{ balanceCurrent.saldo_atual }}</span>
                 </div>
                 <template #append>
                     <v-tooltip  text="O cálculo do saldo atual é independente do período selecionado, considerando o saldo inicial das contas ativas juntamente com todas as movimentações efetivadas de entrada e saída">
@@ -422,7 +422,7 @@
                 <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
                  <div v-else  class="main-value-formated">
                     <v-icon color="blue" icon="mdi-scale-balance"></v-icon>
-                    <span>R$ {{ sumary?.balanco_mensal }}</span>
+                    <span>{{ sumary?.balanco_mensal }}</span>
                 </div>
                 <template #append>
                     <v-tooltip text="O balanço mensal é calculado com base na soma de todas as receitas efetivadas menos todas as despesas efetivadas do período selecionado.">
@@ -468,18 +468,18 @@
 
                 <template v-slot:item.status_transaction="{ item }">
                     <v-icon 
-                    :color="item.status_transaction === 'recebido' || item.status_transaction === 'pago' ? 'green' : 'red'"
-                    :icon="item.status_transaction === 'recebido' || item.status_transaction === 'pago' ? 'mdi-check-circle' : 'mdi-alert-circle'"
+                    :color="item.status_transaction === 'recebido' || item.status_transaction === 'entrada' || item.status_transaction === 'saida' || item.status_transaction === 'pago' ? 'green' : 'red'"
+                    :icon="item.status_transaction === 'recebido' || item.status_transaction === 'saida' || item.status_transaction === 'entrada' || item.status_transaction === 'pago' ? 'mdi-check-circle' : 'mdi-alert-circle'"
                     >
                     </v-icon>
                     <v-tooltip
                         activator="parent"
                         location="top"
-                    >{{ item.status_transaction === 'recebido' || item.status_transaction === 'pago' ? 'Efetivada' : 'Pendente' }}</v-tooltip>
+                    >{{ item.status_transaction === 'recebido' || item.status_transaction === 'entrada' ||  item.status_transaction === 'pago' ? 'Efetivada' : 'Pendente' }}</v-tooltip>
                 </template>
 
                 <template v-slot:item.value_transaction="{item}">
-                    <v-chip :color="item.type_transaction ===  'Receita' ? 'green' : 'red'">
+                    <v-chip :color="item.type_transaction ===  'receita' || item.type_transaction === 'transferencia_entrada' ? 'green' : 'red'">
                         {{ item.value_transaction }}
                     </v-chip>
                 </template>
@@ -489,7 +489,7 @@
                             transition="slide-y-transition"
                             >
                             <template v-slot:activator="{ props }">
-                                <v-icon class="hover:scale-150"  v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
+                                <v-icon class="hover:scale-150 hover:bg-gray-200 rounded-xl"  v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
                             </template>
                             <v-list>
                                 <v-list-item

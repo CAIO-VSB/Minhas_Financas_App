@@ -18,5 +18,8 @@ export const QUERY_KEYS = {
         only_expenses: ['only-expenses'],
         current_balance: ['current-balance'],
         movements_by_filter: ['movements-by-filter']
+    },
+    tranfer: {
+        all: ['tranfer']
     }
 }

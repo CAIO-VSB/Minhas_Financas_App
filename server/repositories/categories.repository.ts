@@ -1,12 +1,13 @@
 import client from "~/utils/db"
+import type { TCategorie } from "~~/types/categorie/TCategorie"
 
 export const categoriesRepository = {
     
     async findAll(userId: string, active?: boolean) {
 
     const text = active !== undefined
-        ? `SELECT * FROM categories WHERE (user_id IS NULL OR user_id = $1) AND active = $2 ORDER BY user_id IS NULL, name_identifier ASC`
-        : `SELECT * FROM categories WHERE (user_id IS NULL OR user_id = $1) ORDER BY user_id IS NULL, name_identifier ASC`
+        ? `SELECT * FROM categories WHERE categories.id NOT IN (74, 80) AND (user_id IS NULL OR user_id = $1) AND active = $2 ORDER BY  name_identifier ASC`
+        : `SELECT * FROM categories WHERE categories.id NOT IN (74, 80) AND (user_id IS NULL OR user_id = $1) ORDER BY name_identifier ASC`
 
         const params = active !== undefined ? [userId, active === true] : [userId]
 
@@ -16,7 +17,7 @@ export const categoriesRepository = {
 
     },
 
-    async create(userId: string, data: {name_identifier: string, url_icon: string, active: boolean, type_categorie: string}) {
+    async create(userId: string, data: TCategorie) {
 
         const text = `
         INSERT INTO categories(user_id, name_identifier, url_icon, active, type_categorie) 
@@ -31,7 +32,7 @@ export const categoriesRepository = {
         
     },
 
-    async update(data: {name_identifier: string, url_icon: string, active: boolean, type_categorie: string, id?: number}) {
+    async update(data: TCategorie) {
 
         const text = `
             UPDATE categories

@@ -1,6 +1,6 @@
 import { auth } from "~~/auth"
 import client from "~/utils/db"
-import { creditCardRespository } from "~~/server/repositories/creditCard.respository"
+import { creditCardRespository } from "~~/server/repositories/creditCard.repository"
 
 export default defineEventHandler( async (event) => {
 

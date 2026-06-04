@@ -5,14 +5,17 @@
         layout: "layout-dashboard"
     })
 
-
+    import { useHttpTransfer } from '~/composables/useHttp/useHttpTransfer'
     import { useHttpMovements } from '~/composables/useHttp/useHttpMovements'
-    import type { TMovements } from '~~/types/movements/TMovements'
+    import DateInput from '~/components/ui/DateInput.vue'
+    import type { TTransfer } from '~~/types/transfer/TTransfer'
     import type { TOptionAction } from '~~/types/option_action/TOptionAction'
+    import type { TPeriod } from '~~/types/period/TPeriod'
+    import CardAddTransfer from '~/components/forms/CardAddTransfer.vue'
 
-    type TMovementsFormatted = Omit<TMovements, 'value_transaction' | 'date_transaction'> & {
+    type TTransferFormatted = Omit<TTransfer, 'value_transaction' | 'date_transfer'> & {
         value_transaction: string,
-        date_transaction: string
+        date_transfer: string
     }
     
     type option = {
@@ -22,23 +25,88 @@
         route: string
     }
 
-    const { getMoviments } = useHttpMovements()
+    const { getTransfer } = useHttpTransfer()
+    const { getMoviments, patchMovements, getCurrentBalance, getMovimentsByFilter } = useHttpMovements()
+
+
 
     const route = useRoute()
-
     const search = ref('')
-  
-    const { data, isPending } = useQuery({
-        queryKey: QUERY_KEYS.movements.all,
-        queryFn: getMoviments,
+    const modalAddTransfer = ref(false)
+    const period = ref({
+        month: new Date().getMonth(),
+        year: new Date().getFullYear(),
     })
 
 
-    const transitionsFformatted = computed(() => {
-        return data.value?.map(item => ({
+    const { data:movements, isPending:isPendingMovements, refetch:RefetchMovements } = useQuery({
+        queryKey: QUERY_KEYS.movements.all,
+        queryFn: () => getMoviments(period.value.month, period.value.year)
+    })
+
+    const { data:currentBalance, isPending:isPendingCurrentBalance } = useQuery({
+        queryKey: QUERY_KEYS.movements.current_balance,
+        queryFn: getCurrentBalance
+    })
+  
+    const { data, isPending, refetch } = useQuery({
+        queryKey: QUERY_KEYS.tranfer.all,
+        queryFn: () => getTransfer(period.value.month, period.value.year),
+    })
+
+    function handleGetPeriod(value: TPeriod) {
+        period.value = value
+        refetch()
+        RefetchMovements()
+    }
+
+    const transitionsformatted = computed(() => {
+        return movements.value?.map(item => ({
             ...item,
             date_transaction: new Date(item.date_transaction ?? "").toLocaleDateString("pt-BR"),
             value_transaction: new Intl.NumberFormat('pt-br', {style: 'currency', currency: 'BRL'}).format(item.value_transaction ?? 0.00)
+        }))
+    })
+
+    const sumary = computed(() => {
+
+        const row = transitionsformatted.value?.[0]
+
+        const formated = new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+        })
+
+        return {
+            receitas: formated.format(row?.t_receitas ?? 0.00),
+            despesas: formated.format(row?.t_despesas ?? 0.00),
+            balanco_mensal: formated.format(row?.balanco_mensal ?? 0.00),
+            saldo_atual: formated.format(row?.saldo_atual ?? 0.00)
+        }
+    })
+
+    const balanceCurrent = computed(() => {
+        
+        const row = currentBalance.value?.[0]
+
+        console.log("currentBalance.value:", currentBalance.value)
+
+        const formated = new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+        })
+
+        return {
+            saldo_atual: formated.format(row?.saldo_atual ?? 0.00)
+        }
+
+    })
+    
+    const transitionsFformatted = computed(() => {
+        return data.value?.map(item => ({
+            ...item,
+            date_transfer: new Date(item.date_transfer ?? "").toLocaleDateString("pt-BR"),
+            value_transaction: new Intl.NumberFormat('pt-br', {style: 'currency', currency: 'BRL'}).format(item.value_transfer ?? 0.00)
         }))
         
     })
@@ -51,16 +119,11 @@
     ]
         
     const headers = [
-        {
-            align: 'center' as const,
-            key: 'status_transaction',
-            title: 'Situação',
-        },
-        { key: 'date_transaction', title: 'Data'  },
-        { key: 'description_transaction', title: 'Descrição' },
-        { key: 'categorie_name', title: 'Categoria' },
-        { key: 'account_name', title: 'Conta' },
-        { key: 'value_transaction', title: 'Valor' },
+        { key: 'date_transfer', title: 'Data'  },
+        { key: 'observation', title: 'Observação' },
+        { key: 'account_origin_name', title: 'De' },
+        { key: 'account_destination_name', title: 'Para' },
+        { key: 'value_transfer', title: 'Valor' },
         { key: 'actions', title: 'Ações' },
     ]
 
@@ -80,14 +143,9 @@
         navigateTo(item.route)
     }
 
-    function getOptions(moviments: TMovementsFormatted): TOptionAction [] {
+    function getOptions(transfer: TTransfer): TOptionAction [] {
         return [
-        {
-            title: moviments.status_transaction === 'pendente' ? 'Efetivar' : 'Editar',
-            icon: moviments.status_transaction === 'pendente' ? "mdi-check-all" : "mdi-circle-edit-outline",
-            value: moviments.status_transaction === 'pendente' ? 'efetivar' : 'editar'
-        },
-        { title: 'Anexar arquivo',  value: "arquivo", icon: "mdi-paperclip" },
+        { title: 'Editar',  value: "edit", icon: "mdi-pencil" },
         { title: 'Deletar', value: "delete", icon: "mdi-delete-forever" }
         ]
     } 
@@ -136,26 +194,73 @@
                 :color="ColorButtonOption"
                 prepend-icon="mdi-plus"
                 class="text-none rounded-xl"
+                @click="modalAddTransfer = true"
                 >
                 NOVA TRANSFERÊNCIA
                 </v-btn>
                 
-                <v-btn
-                color="primary"
-                prepend-icon="mdi-filter"
-                class="text-none rounded-xl"
-                >
-                Filtro
-                </v-btn>
             </div>
 
         </div>
 
         <div class="main-cards">
-            <v-card text="Saldo Atual"></v-card>
-            <v-card text="Receitas"></v-card>
-            <v-card text="Despesas"></v-card>
-            <v-card text="Balanco Mensal"></v-card>
+            <v-card subtitle="Saldo Atual">
+                <v-skeleton-loader v-if="isPendingCurrentBalance" type="list-item-avatar"></v-skeleton-loader>
+                <div v-else  class="main-value-formated">
+                    <v-icon icon="mdi-bank"></v-icon>
+                    <span>{{ balanceCurrent.saldo_atual }}</span>
+                </div>
+                <template #append>
+                    <v-tooltip  text="O cálculo do saldo atual é independente do período selecionado, considerando o saldo inicial das contas ativas juntamente com todas as movimentações efetivadas de entrada e saída">
+                        <template v-slot:activator="{ props }">
+                            <v-icon class="icon-help" v-bind="props" size="20px" icon="mdi-information-outline"></v-icon>
+                        </template>
+                    </v-tooltip>
+                </template>
+            </v-card>
+            <v-card :loading="isPending" subtitle="Receitas">
+                 <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
+                 <div v-else class="main-value-formated">
+                    <v-icon color="green" icon="mdi-arrow-up-bold-circle"></v-icon>
+                    <span>{{ sumary?.receitas }}</span>
+                </div>
+                <template #append>
+                    <v-tooltip text="O cálculo do total de receitas considera todas as movimentações de entrada efetivadas vinculadas às contas ativas.">
+                        <template v-slot:activator="{ props }">
+                            <v-icon class="icon-help" v-bind="props" size="20px" icon="mdi-information-outline"></v-icon>
+                        </template>
+                    </v-tooltip>
+                </template>
+            </v-card>
+            <v-card :loading="isPending" subtitle="Despesas">
+                <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
+                 <div v-else  class="main-value-formated">
+                    <v-icon color='red' icon="mdi-arrow-down-bold-circle"></v-icon>
+                    <span> {{ sumary?.despesas }}</span>
+                </div>
+
+                <template #append>
+                    <v-tooltip text="O cálculo do total de despesas considera todas as movimentações de saída efetivadas vinculadas às contas ativas.">
+                        <template v-slot:activator="{ props }">
+                            <v-icon class="icon-help" v-bind="props" size="20px" icon="mdi-information-outline"></v-icon>
+                        </template>
+                    </v-tooltip>
+                </template>
+            </v-card>
+            <v-card :loading="isPending" subtitle="Balanco Mensal">
+                <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
+                 <div v-else  class="main-value-formated">
+                    <v-icon color="blue" icon="mdi-scale-balance"></v-icon>
+                    <span>{{ sumary?.balanco_mensal }}</span>
+                </div>
+                <template #append>
+                    <v-tooltip text="O balanço mensal é calculado com base na soma de todas as receitas efetivadas menos todas as despesas efetivadas do período selecionado.">
+                        <template v-slot:activator="{ props }">
+                            <v-icon class="icon-help" v-bind="props" size="20px" icon="mdi-information-outline"></v-icon>
+                        </template>
+                    </v-tooltip>
+                </template>
+            </v-card>
         </div>
         
         <div class="container-table">
@@ -176,6 +281,11 @@
                 v-else
             >
             <template v-slot:text>
+
+            <div style="margin-bottom: 12px;">
+                <DateInput  @apply-filter-month="handleGetPeriod"></DateInput>
+            </div>
+
             <v-text-field
                 v-model="search"
                 label="Pesquisar"
@@ -190,27 +300,40 @@
                 :items="transitionsFformatted"
                 :search="search"
                 hide-no-data
+                mobile-breakpoint="md"
                 >
 
-                <template v-slot:item.status_transaction="{ item }">
-                    <v-icon 
-                    :color="item.status_transaction === 'recebido' || item.status_transaction === 'pago' ? 'green' : 'red'"
-                    :icon="item.status_transaction === 'recebido' || item.status_transaction === 'pago' ? 'mdi-check-circle' : 'mdi-alert-circle'"
-                    >
-                    </v-icon>
-                    <v-tooltip
-                        activator="parent"
-                        location="top"
-                    >{{ item.status_transaction === 'recebido' || item.status_transaction === 'pago' ? 'Efetivada' : 'Pendente' }}</v-tooltip>
+                <template v-slot:item.account_origin_name="{ item }">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <v-avatar size="30">
+                            <v-img :src="item.logo_origem"></v-img>
+                        </v-avatar>
+                        <span>{{ item.account_origin_name }}</span>
+                    </div>
+                </template>
+
+                <template v-slot:item.account_destination_name="{ item }">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <v-avatar size="30">
+                            <v-img :src="item.logo_destino"></v-img>
+                        </v-avatar>
+                        <span>{{ item.account_destination_name }}</span>
+                    </div>
+                </template>
+
+                <template v-slot:item.value_transfer="{item}">
+                    <v-chip color="#2196F3">
+                        {{ item.value_transfer}}
+                    </v-chip>
                 </template>
 
                 <template v-slot:item.actions="{ item }">
-                    <v-btn icon variant="text" size="small">
+                    
                         <v-menu
                             transition="slide-y-transition"
                             >
                             <template v-slot:activator="{ props }">
-                                <v-icon v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
+                                <v-icon  class="hover:scale-150 hover:bg-gray-200 rounded-xl"  v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
                             </template>
                             <v-list>
                                 <v-list-item
@@ -223,14 +346,13 @@
                                 </v-list-item>
                             </v-list>
                         </v-menu>
-                    </v-btn>
                 </template>
                 </v-data-table>
             </v-card>
         </div>
     </div>
 
-    
+    <cardAddTransfer v-model="modalAddTransfer"/>
 
 </template>
 
@@ -271,6 +393,14 @@
     overflow-y: auto;
     max-height: calc(100vh - 220px);
     height: fit-content;
+}
+
+.main-value-formated {
+    font-size: 1.2rem;
+    display: flex;
+    gap: 20px;
+    padding-left: 10px;
+    margin-bottom: 10px;
 }
 
 :deep(.v-data-table-header__content) {

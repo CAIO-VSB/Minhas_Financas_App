@@ -416,7 +416,7 @@
                             transition="slide-y-transition"
                             >
                              <template v-slot:activator="{ props }">
-                                <v-icon class="hover:scale-150"  v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
+                                <v-icon class="hover:scale-150 hover:bg-gray-200 rounded-xl"  v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
                             </template>
                             <v-list>
                                 <v-list-item

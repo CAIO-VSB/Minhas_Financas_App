@@ -1,6 +1,6 @@
 import { auth } from "~~/auth"
 import { schemaCategories } from "~~/schemas/categories.schema"
-import { categoriesRepository } from "~~/server/repositories/categories.respository"
+import { categoriesRepository } from "~~/server/repositories/categories.repository"
 
 export default defineEventHandler( async (event) => {
 
