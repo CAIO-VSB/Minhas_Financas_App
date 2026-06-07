@@ -218,7 +218,7 @@
         editDraft.value = {
             ...rawMovements,
             value_transaction: Number(rawMovements.value_transaction.replace(/[^\d,]/g, '').replace(',', '.')),
-            date_transaction: new Date(rawMovements.date_transaction.split('/').reverse().join('-') + 'T00:00:00'),
+            date_transaction: new Date(rawMovements.date_transaction.split('/').reverse().join('-') + 'T00:00:00') ,
         }
 
         modalEditMovementsRevenue.value = true

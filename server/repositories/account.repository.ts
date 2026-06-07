@@ -82,11 +82,7 @@ export const accountsRepository = {
 
     },
 
-    async update(userId: string, data: TAccount) {
-
-    console.log("initial_balance recebido:", data.initial_balance)
-    console.log("entrou no if?", data.initial_balance !== undefined)
-
+    async update(userId: string, data: TAccount, id: number) {
 
         const text = `
             UPDATE banks_accounts
@@ -101,7 +97,7 @@ export const accountsRepository = {
             RETURNING *
         `
 
-        const values = [data.name_identifier, data.url_image, data.name_bank, data.type_account, data.color, data.active,  data.id]
+        const values = [data.name_identifier, data.url_image, data.name_bank, data.type_account, data.color, data.active,  id]
 
         const updateAccount = client.query(text, values)
 

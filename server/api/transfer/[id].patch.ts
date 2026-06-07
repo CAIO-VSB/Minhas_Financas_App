@@ -1,6 +1,6 @@
 import { auth } from "~~/auth"
-import { schemaMovements } from "~~/schemas/movements.schema"
-import { movementsRespository } from "~~/server/repositories/moviments.repository"
+import { transferRepository } from "~~/server/repositories/transfer.repository"
+import { schemaTransfer } from "~~/schemas/transfer.schema"
 
 export default defineEventHandler( async (event) => {
 
@@ -14,23 +14,33 @@ export default defineEventHandler( async (event) => {
             statusMessage: "Unauthorized"
         })
     }
-        
-    const result = await readValidatedBody(event, body => schemaMovements.safeParse(body))
+
+    const result = await readValidatedBody(event, body => schemaTransfer.safeParse(body))
 
     if (!result.success) {
-        console.log("Erro de validação:", result.error.issues)
         throw createError({
             status: 422,
             statusMessage: "Unprocessable Entity"
         })
     }
 
+    const id = Number(getRouterParam(event, "id"))
+
+    if (id === null) {
+        throw createError({
+            status: 404,
+            statusMessage: "Transferência não encontrada"
+        })
+    }
+        
     try {
 
-        return await movementsRespository.update(result.data)
+        return await transferRepository.update(id, result.data)
 
     } catch (error) {
-        console.log("Erro ao editar movimentação " + error)
+
+        console.log("Erro ao editar transferências", error)
+
         throw createError({
             status: 500,
             statusMessage: "Internal Server Error"

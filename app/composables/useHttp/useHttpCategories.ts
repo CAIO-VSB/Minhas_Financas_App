@@ -15,15 +15,14 @@ export function useHttpCategories() {
         return $fetch<TCategorie>("/api/categories", {method: "POST", body: data})
     }
 
-    const patchCategorie = async (data: TCategorie) => {
-        return $fetch<TCategorie>("/api/categories", {method: "PATCH", body: data})
+    const patchCategorieById = async (id: number, data: TCategorie) => {
+        return $fetch<TCategorie>(`/api/categories/${id}`, {method: "PATCH", body: data})
     }
-
 
     return {
         postCategorie,
         getAllCategories,
-        patchCategorie,
+        patchCategorieById,
         getCategoriesOnlyActive
     }
 }

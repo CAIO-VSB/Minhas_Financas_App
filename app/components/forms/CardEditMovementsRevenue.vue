@@ -1,161 +1,158 @@
 <script lang="ts" setup>
+  import CurrencyInput from "~/components/ui/CurrencyInput.vue"
 
+  import { useHttpCategories } from '~/composables/useHttp/useHttpCategories'
+  import { useHttpAccounts } from "~/composables/useHttp/useHttpAccounts"
+  import { useHttpMovements } from "~/composables/useHttp/useHttpMovements"
 
-    import CurrencyInput from "~/components/ui/CurrencyInput.vue"
+  import { useValidateSchemas } from "~/composables/useValidateSchema"
+  import { useValidateFields } from "~/composables/useValidateFields"
+  import { useInvalidate } from "~/composables/useInvalidate"
 
-    import { useHttpCategories } from '~/composables/useHttp/useHttpCategories'
-    import { useHttpAccounts } from "~/composables/useHttp/useHttpAccounts"
-    import { useHttpMovements } from "~/composables/useHttp/useHttpMovements"
+  import CardAddCategorie from '~/components/forms/CardAddCategorie.vue'
+  import CardAddAccount from "~/components/forms/CardAddAccount.vue"
 
-    import { useValidateSchemas } from "~/composables/useValidateSchema"
-    import { useValidateFields } from "~/composables/useValidateFields"
-    import { useInvalidate } from "~/composables/useInvalidate"
+  import type { TMovements } from "~~/types/movements/TMovements"
 
-    import CardAddCategorie from '~/components/forms/CardAddCategorie.vue'
-    import CardAddAccount from "~/components/forms/CardAddAccount.vue"
+  const { notifyError, notifyInfo, notifySuccess } = useNotify()
+  const { getCategoriesOnlyActive } = useHttpCategories()
+  const { getAccountsOnlyActive } = useHttpAccounts()
+  const { validateSchemaMovements } = useValidateSchemas()
+  const { patchMovementsById } = useHttpMovements()
+  const { invalidate } = useInvalidate()
+  const { nameRules, selectRules, dateRules, currencyRules } = useValidateFields()
 
-    import type { TMovements } from "~~/types/movements/TMovements"
+  const { data:categories } = useQuery({
+    queryKey: QUERY_KEYS.categories.active,
+    queryFn: getCategoriesOnlyActive,
+  })
 
-    const { notifyError, notifyInfo, notifySuccess } = useNotify()
-    const { getCategoriesOnlyActive } = useHttpCategories()
-    const { getAccountsOnlyActive } = useHttpAccounts()
-    const { validateSchemaMovements } = useValidateSchemas()
-    const { patchMovements } = useHttpMovements()
-    const { invalidate } = useInvalidate()
-    const { nameRules, selectRules, dateRules, currencyRules } = useValidateFields()
+  const { data:accounts } = useQuery({
+    queryKey: QUERY_KEYS.accounts.active,
+    queryFn: getAccountsOnlyActive,
+  })
 
-    const { data:categories } = useQuery({
-      queryKey: QUERY_KEYS.categories.active,
-      queryFn: getCategoriesOnlyActive,
-    })
+  const props = defineProps<{
+    draft: TMovements | null
+  }>()
 
-    const { data:accounts } = useQuery({
-      queryKey: QUERY_KEYS.accounts.active,
-      queryFn: getAccountsOnlyActive,
-    })
+  const  emit = defineEmits<{
+    success: []
+  }>()
 
-    const props = defineProps<{
-      draft: TMovements | null
-    }>()
+  const form = ref()
+  const modelValue = defineModel<boolean>()
+  const menuCategorias = ref(false)
+  const modelCategorias = ref<number | null>(null)
+  const searchCategorias = ref("")
+  const searchAccounts = ref("")
+  const modelAccounts = ref<number | null>(null)
+  const menuAccounts = ref(false)
+  const modalAddCategorie = ref(false)
+  const modalAddAccount = ref(false)
+  const switchValue = ref()
+  const labelSwitch = ref("Receita recebida")
 
+  watch(menuCategorias, (val) => {
+    if (!val) searchCategorias.value = ""
+  })
+
+  //Watch reponsável por mostrar a categoria e conta atual
+  watch(() => props.draft, (newDraft) => {
+    if (newDraft) {
+      modelCategorias.value = newDraft.categorie_id ?? null
+      modelAccounts.value = newDraft.accounts_id ?? null
+    }
+  }, {immediate: true})
+
+  //Watch responsável por atualizar a categoria escolhida pelo usário no ato da edição
+  watch(modelCategorias, (val) => {
+    if (props.draft) props.draft.categorie_id = val
+  })
+
+  //Watch responsável por atualizar a conta escolhida pelo usário no ato da edição
+  watch(modelAccounts, (val) => {
+    if (props.draft) props.draft.accounts_id = val
+  })
+
+  watch(menuAccounts, (val) => {
+    if (!val) searchAccounts.value = ""
+  })
+
+  watch(() => props.draft, (val) => {
+    if (props.draft) switchValue.value = val?.status_transaction
+  })
+
+  watch(switchValue, (val) => {
+    if (val === 'recebido') {
+      labelSwitch.value = "Receita recebida"
+      if (props.draft) props.draft.status_transaction = switchValue.value
+    } else if (val === "pendente") {
+      labelSwitch.value = "Receita pendente"
+      if (props.draft) props.draft.status_transaction = switchValue.value
+    }
+  })
+
+  const filterCategorias = computed(() => {
+    return categories.value?.filter(item => item.name_identifier.toLowerCase().includes(searchCategorias.value.toLowerCase()))
+  })
+
+  const filterAccounts = computed(() => {
+    return accounts.value?.filter(item => item.name_identifier.toLowerCase().includes(searchAccounts.value?.toLowerCase() ?? ''))
+  })
+
+  function resetForm() {
+    modelAccounts.value = null
+    modelCategorias.value = null    
+    modelValue.value = false
+  }
+
+  const  { mutate, isPending  } = useMutation({
     
-    const  emit = defineEmits<{
-      success: []
-    }>()
+    mutationFn: (payload: TMovements) => patchMovementsById(payload.id!, payload),
+
+    onSuccess: () => {
+    invalidate(QUERY_KEYS.accounts.all)
+    invalidate(QUERY_KEYS.movements.all)
+    invalidate(QUERY_KEYS.movements.only_revenues)
+    invalidate(QUERY_KEYS.movements.current_balance)
+    notifySuccess("Sucesso", "Receita editada com sucesso", 6000)
+    resetForm()
+    emit("success")
+    modelValue.value = false
+    },
+
+    onError: (error) => {
+    notifyError("😢", "Ops! Algo deu errado ao editar a receita. Tente novamente ou entre em contato com o suporte. Detalhes: " + error.message)
+    },
+
+  })
+
+async function handleEditMovementRevenue() {
   
-    const form = ref()
-    const modelValue = defineModel<boolean>()
-    const menuCategorias = ref(false)
-    const modelCategorias = ref<number | null>(null)
-    const searchCategorias = ref("")
-    const searchAccounts = ref("")
-    const modelAccounts = ref<number | null>(null)
-    const menuAccounts = ref(false)
-    const modalAddCategorie = ref(false)
-    const modalAddAccount = ref(false)
-    const switchValue = ref()
-    const labelSwitch = ref("Receita recebida")
+  try {
 
-    watch(menuCategorias, (val) => {
-      if (!val) searchCategorias.value = ""
-    })
+    if(!props.draft) {
+      notifyError("Ops!", "Algo não parece certo. Confira os dados e tente novamente.")
+      return
+    } 
 
-    //Watch reponsável por mostrar a categoria e conta atual
-    watch(() => props.draft, (newDraft) => {
-      if (newDraft) {
-        modelCategorias.value = newDraft.categorie_id ?? null
-        modelAccounts.value = newDraft.accounts_id ?? null
+    const formValid = await form.value.validate()
+    const resultSchema = validateSchemaMovements(props.draft)
+  
+    console.log("Valor sendo enviado" + JSON.stringify(props.draft))
+  
+    if (formValid) {
+      if (resultSchema.success) {  
+        mutate(props.draft)
       }
-    }, {immediate: true})
-
-    //Watch responsável por atualizar a categoria escolhida pelo usário no ato da edição
-    watch(modelCategorias, (val) => {
-      if (props.draft) props.draft.categorie_id = val
-    })
-
-    //Watch responsável por atualizar a conta escolhida pelo usário no ato da edição
-    watch(modelAccounts, (val) => {
-      if (props.draft) props.draft.accounts_id = val
-    })
-
-    watch(menuAccounts, (val) => {
-      if (!val) searchAccounts.value = ""
-    })
-
-    watch(() => props.draft, (val) => {
-      if (props.draft) switchValue.value = val?.status_transaction
-    })
-
-    watch(switchValue, (val) => {
-      if (val === 'recebido') {
-        labelSwitch.value = "Receita recebida"
-        if (props.draft) props.draft.status_transaction = switchValue.value
-      } else if (val === "pendente") {
-        labelSwitch.value = "Receita pendente"
-        if (props.draft) props.draft.status_transaction = switchValue.value
-      }
-    })
-
-    const filterCategorias = computed(() => {
-      return categories.value?.filter(item => item.name_identifier.toLowerCase().includes(searchCategorias.value.toLowerCase()))
-    })
-
-    const filterAccounts = computed(() => {
-      return accounts.value?.filter(item => item.name_identifier.toLowerCase().includes(searchAccounts.value?.toLowerCase() ?? ''))
-    })
-
-    function resetForm() {
-      modelAccounts.value = null
-      modelCategorias.value = null    
-      modelValue.value = false
     }
 
-    const  { mutate, isPending  } = useMutation({
-      
-      mutationFn: patchMovements,
+  } catch (err) {
 
-      onSuccess: () => {
-      invalidate(QUERY_KEYS.accounts.all)
-      invalidate(QUERY_KEYS.movements.all)
-      invalidate(QUERY_KEYS.movements.only_revenues)
-      invalidate(QUERY_KEYS.movements.current_balance)
-      notifySuccess("Sucesso", "Receita editada com sucesso", 6000)
-      resetForm()
-      emit("success")
-      modelValue.value = false
-      },
-
-      onError: (error) => {
-      notifyError("😢", "Ops! Algo deu errado ao editar a receita. Tente novamente ou entre em contato com o suporte. Detalhes: " + error.message)
-      },
-
-    })
-
-  async function handleEditMovementRevenue() {
-    
-    try {
-
-      if(!props.draft) {
-        notifyError("Ops!", "Algo não parece certo. Confira os dados e tente novamente.")
-        return
-      } 
-
-      const formValid = await form.value.validate()
-      const resultSchema = validateSchemaMovements(props.draft)
-    
-      console.log("Valor sendo enviado" + JSON.stringify(props.draft))
-    
-      if (formValid) {
-        if (resultSchema.success) {  
-          mutate(props.draft)
-        }
-      }
-
-    } catch (err) {
-
-      notifyInfo("Error", "Erro ao editar receita" + err)
-    } 
-  }
+    notifyInfo("Error", "Erro ao editar receita" + err)
+  } 
+}
 
 
 </script>
@@ -288,6 +285,8 @@
                 hide-details
                 false-value="pendente"
                 true-value="recebido"
+                true-icon="mdi-check"
+                false-icon="mdi-close"
               ></v-switch> 
 
             <small class="text-caption text-medium-emphasis"

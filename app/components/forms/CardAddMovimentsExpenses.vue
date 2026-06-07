@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 
-
   import CurrencyInput from "~/components/ui/CurrencyInput.vue"
-
+  
+  import { format } from 'date-fns'
   import { useHttpCategories } from '~/composables/useHttp/useHttpCategories'
   import { useHttpAccounts } from "~/composables/useHttp/useHttpAccounts"
   import { useHttpMovements } from "~/composables/useHttp/useHttpMovements"
@@ -48,8 +48,8 @@
 
   const movementsForm = ref<TMovements>({
     type_transaction: "despesa",
-    value_transaction: null,
-    date_transaction: null,
+    value_transaction: 0.00,
+    date_transaction: new Date(),
     description_transaction: "",
     categorie_id: null,
     accounts_id: null,
@@ -97,12 +97,12 @@
     modelCategorias.value = null
     movementsForm.value.accounts_id = null
     movementsForm.value.categorie_id = null
-    movementsForm.value.date_transaction = null
     movementsForm.value.description_transaction = ""
     movementsForm.value.observation = ""
-    movementsForm.value.value_transaction = null
+    movementsForm.value.value_transaction = 0.00
     movementsForm.value.url_recibo = ""
     movementsForm.value.status_transaction = 'pago'
+    movementsForm.value.date_transaction = new Date()
     
     modelValue.value = false
   }
@@ -302,6 +302,8 @@
                 hide-details
                 false-value="pendente"
                 true-value="pago"
+                true-icon="mdi-check"
+                false-icon="mdi-close"
               ></v-switch> 
 
             <small class="text-caption text-medium-emphasis"

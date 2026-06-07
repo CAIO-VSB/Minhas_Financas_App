@@ -1,4 +1,4 @@
-import type { TMovements } from "~~/types/movements/TMovements"
+import type { TMovements, TMovementsSummary } from "~~/types/movements/TMovements"
 import type { TMovementsOnlyRenevue } from "~~/types/movements/TMovementsOnlyRevenue"
 import type { TMovementsOnlyExpenses } from "~~/types/movements/TMovementsOnlyExpenses"
 
@@ -9,7 +9,7 @@ export function useHttpMovements() {
     }
 
     const getMoviments = async (month: number, year: number) => {
-        return $fetch<TMovements []>("/api/movements", {method: "GET", query: { month, year}})
+        return $fetch<TMovementsSummary []>("/api/movements", {method: "GET", query: { month, year}})
     }
 
     const getOnlyRevenues = async (month: number, year: number) => {
@@ -33,11 +33,11 @@ export function useHttpMovements() {
     }
 
     const getCurrentBalance = async () => {
-        return $fetch<Pick<TMovements, "saldo_atual"> []>("/api/movements/index.getOnlyCurrentBalance", {method: "GET"})
+        return $fetch<Pick<TMovementsSummary, "saldo_atual"> []>("/api/movements/index.getOnlyCurrentBalance", {method: "GET"})
     }
 
-    const patchMovements = async (data: TMovements) => {
-        return $fetch<TMovements>("/api/movements", {method: "PATCH", body: data},) 
+    const patchMovementsById = async (id:number, data: TMovements) => {
+        return $fetch<TMovements>(`/api/movements/${id}`, {method: "PATCH", body: data},) 
     }
 
 
@@ -46,7 +46,7 @@ export function useHttpMovements() {
         getMoviments,
         getOnlyRevenues,
         getOnlyExpenses,
-        patchMovements,
+        patchMovementsById,
         getCurrentBalance,
         getMovimentsByFilter,
         getMovimentsOnlyExpensesByFilter,

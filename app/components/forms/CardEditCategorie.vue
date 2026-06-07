@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 
-//Importações composables
   import { useSelectedIcon } from "~/composables/useCategorie/useSelectedIcon"
   import { useValidateFields } from "~/composables/useValidateFields"
   import { useHttpCategories } from "~/composables/useHttp/useHttpCategories"
@@ -15,9 +14,8 @@
   const { validateSchemaCategorie  } = useValidateSchemas()
   const { selectedIcon } = useSelectedIcon()
   const { selectedCategorie  } = useSelectedCategorie()
-  const {  patchCategorie } = useHttpCategories()  
+  const {  patchCategorieById } = useHttpCategories()  
   const { invalidate } = useInvalidate()
-
 
   const items = ref([
     'Despesa',
@@ -28,13 +26,10 @@
     draft: TCategorie | null
   }>()
 
-
   const selectRules = ref([
     (val: string) => !!val || "Campo tipo é obrigatório",
   ])
 
-  const errorMessage = ref("")
-  const errorActive = ref(false)
   const modalAddIconCategorie = ref(false)
   const form = ref()
   const modelValue = defineModel<boolean>()
@@ -55,7 +50,7 @@
 
   const  { mutate, isPending  } = useMutation({
 
-    mutationFn: (payload: TCategorie) => patchCategorie(payload),
+    mutationFn: (payload: TCategorie) => patchCategorieById(payload.id!, payload),
 
     onSuccess: () => {
       invalidate(QUERY_KEYS.categories.all)
@@ -77,22 +72,21 @@
     }
 
     try {
-        const formValid = await form.value.validate()
-        const resultSchema = validateSchemaCategorie(props.draft)
+      const formValid = await form.value.validate()
+      const resultSchema = validateSchemaCategorie(props.draft)
 
-        console.log("Objeto a ser envidado" + JSON.stringify(props.draft))
-        
-        if (formValid) {
-          if (resultSchema.success) {  
-            mutate(props.draft)
-          }
+      console.log("Objeto a ser envidado" + JSON.stringify(props.draft))
+      
+      if (formValid) {
+        if (resultSchema.success) {  
+          mutate(props.draft)
         }
+      }
     } catch (err) {
       console.log("Erro ao criar conta" + err)
     }
 
   }
-
 
 </script>
 
@@ -139,6 +133,8 @@
                 v-model="props.draft.active"
                 color="success"
                 label="Ativo"
+                true-icon="mdi-check"
+                false-icon="mdi-close"
                 hide-details
               ></v-switch>
 
@@ -171,7 +167,6 @@
         </v-card>
       </v-dialog>
     </v-form>
-    <BaseModal :model-value="errorActive" title="Error" :text="errorMessage" />
     <CardAddIconCategorie v-model="modalAddIconCategorie" />
   </div>
 </template>

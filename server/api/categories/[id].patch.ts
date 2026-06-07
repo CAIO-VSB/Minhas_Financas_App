@@ -1,5 +1,4 @@
 import { auth } from "~~/auth"
-import client from "~/utils/db"
 import { schemaCategories } from "~~/schemas/categories.schema"
 import { categoriesRepository } from "~~/server/repositories/categories.repository"
 
@@ -24,11 +23,19 @@ export default defineEventHandler( async (event) => {
             statusMessage: "Unprocessable Entity"
         })
     }
-    
 
+    const id = Number(getRouterParam(event, "id"))
+
+    if (id === null) {
+        throw createError({
+            status: 404,
+            statusMessage: "Transferência não encontrada"
+        })
+    }
+    
     try {
 
-        return await categoriesRepository.update(result.data)
+        return await categoriesRepository.update(id, result.data)
 
     } catch (error) {
 

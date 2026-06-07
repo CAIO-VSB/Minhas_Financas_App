@@ -35,7 +35,7 @@ export const creditCardRespository = {
 
     },
 
-    async update(data: TCreditCard) {
+    async update(id: number, data: TCreditCard) {
 
         const text = `
         UPDATE credit_cards
@@ -51,7 +51,7 @@ export const creditCardRespository = {
         WHERE id = $9
         RETURNING *
         `
-        const values = [data.accounts_id, data.name_identifier, data.url_logo, data.due_day, data.closing_day, data.limit_card, data.active, data.four_digits, data.id]
+        const values = [data.accounts_id, data.name_identifier, data.url_logo, data.due_day, data.closing_day, data.limit_card, data.active, data.four_digits, id]
 
         const newCategorie = client.query(text, values)
 

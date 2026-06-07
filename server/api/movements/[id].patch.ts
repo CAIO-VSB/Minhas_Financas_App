@@ -1,13 +1,13 @@
 import { auth } from "~~/auth"
-import { schemaCreditCard } from "~~/schemas/creditCard.schema"
-import { creditCardRespository } from "~~/server/repositories/creditCard.repository"
+import { schemaMovements } from "~~/schemas/movements.schema"
+import { movementsRespository } from "~~/server/repositories/moviments.repository"
 
 export default defineEventHandler( async (event) => {
 
     const session = await auth.api.getSession({
         headers: event.headers
     })
-    
+
     if (!session?.session.token) {
         throw createError({
             status: 401,
@@ -15,23 +15,31 @@ export default defineEventHandler( async (event) => {
         })
     }
         
-    const result = await readValidatedBody(event, body => schemaCreditCard.safeParse(body))
+    const result = await readValidatedBody(event, body => schemaMovements.safeParse(body))
 
     if (!result.success) {
-        console.log(result)
+        console.log("Erro de validação:", result.error.issues)
         throw createError({
             status: 422,
             statusMessage: "Unprocessable Entity"
         })
     }
 
+    const id = Number(getRouterParam(event, "id"))
+
+    if (id === null) {
+        throw createError({
+            status: 404,
+            statusMessage: "Transferência não encontrada"
+        })
+    }
 
     try {
 
-       return await creditCardRespository.update(result.data)
+        return await movementsRespository.update(id, result.data)
 
     } catch (error) {
-        console.log("Erro ao modificar cartão de crédito ", error)
+        console.log("Erro ao editar movimentação " + error)
         throw createError({
             status: 500,
             statusMessage: "Internal Server Error"

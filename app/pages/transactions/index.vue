@@ -1,28 +1,26 @@
 <script setup lang="ts">
-
     definePageMeta({
         title: "Transações",
         layout: "layout-dashboard"
     })
 
+    import { format } from 'date-fns'
     import { useHttpMovements } from '~/composables/useHttp/useHttpMovements'
-    import type { TMovements } from '~~/types/movements/TMovements'
+    import { useHttpTransfer } from '~/composables/useHttp/useHttpTransfer'
+    import type { TMovementsSummary, TMovementsWithTransfer } from '~~/types/movements/TMovements'
     import type { TOptionAction } from '~~/types/option_action/TOptionAction'
     import type { TMovementsByFilter } from "~~/types/movements/TMovementsByFilter"
     import type { TPeriod } from "~~/types/period/TPeriod"
+    import type { TTransfer } from '~~/types/transfer/TTransfer'
+    import { useInvalidate } from "~/composables/useInvalidate"
     import FilterDrawer from './components/FilterDrawer.vue'
     import CardEditMovementsRevenue from '~/components/forms/CardEditMovementsRevenue.vue'
     import CardEdtiMovementsExpenses from '~/components/forms/CardEdtiMovementsExpenses.vue'
-    import { useInvalidate } from "~/composables/useInvalidate"
     import CardSettleTransactionModal from '~/components/forms/CardSettleTransactionModal.vue'
     import CardDeletTransaction from '~/components/forms/CardDeletTransaction.vue'
+    import CardEditTransfer  from '~/components/forms/CardEditTransfer.vue'
     import DateInput from '~/components/ui/DateInput.vue'
 
-    type TMovementsFormatted = Omit<TMovements, 'value_transaction' | 'date_transaction'> & {
-        value_transaction: string,
-        date_transaction: string
-    }
-    
     type option = {
         title: string,
         color: string,
@@ -31,38 +29,29 @@
     }
 
     const { getMoviments, patchMovements, getCurrentBalance, getMovimentsByFilter } = useHttpMovements()
+    const { getTransferById } = useHttpTransfer()
     const { notifyError, notifyInfo, notifySuccess } = useNotify()
     const { invalidate } = useInvalidate()
 
     const route = useRoute()
-
     const search = ref('')
-
     const drawer = ref(false)
-
     const cardPostValueTransaction = ref(false)
-
     const modalEditMovementsRevenue = ref(false)
-
     const modalEditMovementesExpenses = ref(false)
-
+    const modalEditTransfer = ref(false)
     const cardDeletTransaction = ref(false)
-
     const isFiltered = ref(false)
-
     const lastFilter = ref<TMovementsByFilter | null>(null)
-
-    const filteredData = ref<TMovements[] | null>(null)
-
+    const filteredData = ref<TMovementsSummary[] | null>(null)
     const labelOptions = ref({
         colorButton: "",
         textButton: "",
         title: "",
         text: ""
     })
-
-    const editDraft = ref<TMovements | null>(null)
-
+    const editDraft = ref<TMovementsSummary | null>(null)
+    const editDraftTransfer = ref<TTransfer | null>(null)
     const period = ref({
         month: new Date().getMonth(),
         year: new Date().getFullYear(),
@@ -77,7 +66,6 @@
         queryKey: QUERY_KEYS.movements.current_balance,
         queryFn: getCurrentBalance
     })
-
 
     async function handleApplyFilter(filter: TMovementsByFilter) {
 
@@ -99,46 +87,22 @@
         return isFiltered.value ? filteredData.value : data.value
     })
 
-    const transitionsformatted = computed(() => {
-        return tableData.value?.map(item => ({
-            ...item,
-            date_transaction: new Date(item.date_transaction ?? "").toLocaleDateString("pt-BR"),
-            value_transaction: new Intl.NumberFormat('pt-br', {style: 'currency', currency: 'BRL'}).format(item.value_transaction ?? 0.00)
-        }))
-    })
-
-    const sumary = computed(() => {
-
-        const row = transitionsformatted.value?.[0]
-
-        const formated = new Intl.NumberFormat('pt-BR', {
-            style: 'currency',
-            currency: 'BRL',
-        })
+    const summary = computed(() => {
+        const row = data.value?.[0]
 
         return {
-            receitas: formated.format(row?.t_receitas ?? 0.00),
-            despesas: formated.format(row?.t_despesas ?? 0.00),
-            balanco_mensal: formated.format(row?.balanco_mensal ?? 0.00),
-            saldo_atual: formated.format(row?.saldo_atual ?? 0.00)
+            receitas: Number(row?.t_receitas ?? 0),
+            despesas: Number(row?.t_despesas ?? 0),
+            balancoMensal: Number(row?.balanco_mensal ?? 0),
+            saldoAtual: Number(row?.saldo_atual ?? 0)
         }
     })
 
-    const balanceCurrent = computed(() => {
-        
+    const balanceCurrent = computed(() => {        
         const row = currentBalance.value?.[0]
-
-        console.log("currentBalance.value:", currentBalance.value)
-
-        const formated = new Intl.NumberFormat('pt-BR', {
-            style: 'currency',
-            currency: 'BRL',
-        })
-
-        return {
-            saldo_atual: formated.format(row?.saldo_atual ?? 0.00)
-        }
-
+       
+        return formatCurrency(row?.saldo_atual ?? 0.00)
+        
     })
     
     const itemsRouter = [
@@ -174,16 +138,16 @@
         navigateTo(item.route)
     }
 
-    function getOptions(moviments: TMovementsFormatted): TOptionAction [] {
+    function getOptions(movements: TMovementsSummary): TOptionAction [] {
 
         const options = [
-            moviments.status_transaction === "pendente" ? {
+            movements.status_transaction === "pendente" ? {
                 title: "Efetivar",
                 icon: "mdi-check-all",
                 value: "efetivar"
             } : null,
             { title: 'Editar', value: "edit", icon: "mdi-circle-edit-outline" },
-            { title: 'Anexar arquivo',  value: "arquivo", icon: "mdi-paperclip" },
+            movements.type_transaction !== "transferencia_entrada" && movements.type_transaction !== "transferencia_saida" ? {title: "Anexar arquivo", value: "arquivo", icon: "mdi-paperclip"} : null,
             { title: 'Deletar', value: "delete", icon: "mdi-delete-forever" },
         ]
 
@@ -193,7 +157,7 @@
 
     const  { mutate } = useMutation({
 
-        mutationFn: (payload: TMovements) => patchMovements(payload),
+        mutationFn: (payload: TMovementsSummary) => patchMovements(payload),
 
         onSuccess: () => {
             invalidate(QUERY_KEYS.movements.all)
@@ -201,7 +165,6 @@
             invalidate(QUERY_KEYS.movements.only_revenues)
             invalidate(QUERY_KEYS.movements.current_balance)
             invalidate(QUERY_KEYS.accounts.getBalanceForAccount)
-
         },
 
         onError: (error) => {
@@ -228,36 +191,45 @@
         isFiltered.value = false
     }
 
-    function handleOpenModalEditMovementsRevenue(movements: TMovementsFormatted) {
+    function handleOpenModalEditMovementsRevenue(movements: TMovementsSummary) {
 
         //Usamos structuredClone + toRaw para evitar mutar o objeto reativo do Vue
         const rawMovements =  structuredClone(toRaw(movements))
 
-        editDraft.value = {
-            ...rawMovements,
-            value_transaction: Number(rawMovements.value_transaction.replace(/[^\d,]/g, '').replace(',', '.')),
-            date_transaction: new Date(rawMovements.date_transaction.split('/').reverse().join('-') + 'T00:00:00'),
-        }
+        editDraft.value = parseMovementToEdit(rawMovements)
 
         modalEditMovementsRevenue.value = true
     }
 
-    function handleOpenModalEditMovementsExpense(movements: TMovementsFormatted) {
+    function handleOpenModalEditMovementsExpense(movements: TMovementsSummary) {
 
         //Usamos structuredClone + toRaw para evitar mutar o objeto reativo do Vue
         const rawMovements =  structuredClone(toRaw(movements))
 
-        editDraft.value = {
-            ...rawMovements,
-            value_transaction: Number(rawMovements.value_transaction.replace(/[^\d,]/g, '').replace(',', '.')),
-            date_transaction: new Date(rawMovements.date_transaction.split('/').reverse().join('-') + 'T00:00:00'),
-        }
+        editDraft.value = parseMovementToEdit(rawMovements)
 
         modalEditMovementesExpenses.value = true
     }
 
+    async function handleOpenModalEditTransfer(transfer: TMovementsWithTransfer) {
 
-    function handleOptionClick(option: TOptionAction, data: TMovementsFormatted) {
+        if (!transfer.transfer_id) {
+            notifyError("Erro", "Transferência não encontrada")
+            return
+        }
+
+        const Datatransfer = await getTransferById(transfer.transfer_id)
+
+        //Usamos structuredClone + toRaw para evitar mutar o objeto reativo do Vue
+        const rawTransfer =  structuredClone(toRaw(Datatransfer))
+
+        editDraftTransfer.value = parseTransferToEdit(rawTransfer)
+        
+        modalEditTransfer.value = true
+    }
+
+
+    function handleOptionClick(option: TOptionAction, data: TMovementsSummary) {
 
         if (option.value === "edit" && data.type_transaction === "receita") {
             handleOpenModalEditMovementsRevenue(data)
@@ -269,12 +241,18 @@
             return 
         }
 
+       if (option.value === "edit" && (data.type_transaction === "transferencia_entrada" || data.type_transaction === "transferencia_saida")) {
+            handleOpenModalEditTransfer(data)
+            return
+       }
+
+
         const raw = structuredClone(toRaw(data))
 
-        const payload: TMovements = {
+        const payload: TMovementsSummary = {
             ...raw,
-            value_transaction: Number(raw.value_transaction.replace(/[^\d,]/g, '').replace(',', '.')),
-            date_transaction: new Date(raw.date_transaction.split('/').reverse().join('-') + 'T00:00:00'),
+            value_transaction: Number(raw.value_transaction ?? 0),
+            date_transaction: new Date(raw.date_transaction ?? "")
         }
 
         if (option.value === "efetivar" && data.type_transaction === "receita") {
@@ -327,6 +305,7 @@
         <CardSettleTransactionModal @success="handleMutationSuccess" v-model="cardPostValueTransaction" :draft="editDraft" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" />
         <CardEdtiMovementsExpenses @success="handleMutationSuccess" :draft="editDraft"  v-model="modalEditMovementesExpenses"/>
         <CardEditMovementsRevenue @success="handleMutationSuccess" :draft="editDraft" v-model="modalEditMovementsRevenue"/>
+        <CardEditTransfer :draft="editDraftTransfer" v-model="modalEditTransfer"/>
         
         <filterDrawer :items="[ 'Recebidas', 'Pagas', 'Pendentes']" :field-type-active="false" color-button="primary" @apply-filter="handleApplyFilter" @reset-filter="handleClearFilter" v-model="drawer"/>
           
@@ -379,7 +358,7 @@
                 <v-skeleton-loader v-if="isPendingCurrentBalance" type="list-item-avatar"></v-skeleton-loader>
                 <div v-else  class="main-value-formated">
                     <v-icon icon="mdi-bank"></v-icon>
-                    <span>{{ balanceCurrent.saldo_atual }}</span>
+                    <span>{{ balanceCurrent }}</span>
                 </div>
                 <template #append>
                     <v-tooltip  text="O cálculo do saldo atual é independente do período selecionado, considerando o saldo inicial das contas ativas juntamente com todas as movimentações efetivadas de entrada e saída">
@@ -393,7 +372,7 @@
                  <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
                  <div v-else class="main-value-formated">
                     <v-icon color="green" icon="mdi-arrow-up-bold-circle"></v-icon>
-                    <span>{{ sumary?.receitas }}</span>
+                    <span>{{ formatCurrency(summary.receitas) }}</span>
                 </div>
                 <template #append>
                     <v-tooltip text="O cálculo do total de receitas considera todas as movimentações de entrada efetivadas vinculadas às contas ativas.">
@@ -407,7 +386,7 @@
                 <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
                  <div v-else  class="main-value-formated">
                     <v-icon color='red' icon="mdi-arrow-down-bold-circle"></v-icon>
-                    <span> {{ sumary?.despesas }}</span>
+                    <span> {{ formatCurrency(summary.despesas) }}</span>
                 </div>
 
                 <template #append>
@@ -422,7 +401,7 @@
                 <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
                  <div v-else  class="main-value-formated">
                     <v-icon color="blue" icon="mdi-scale-balance"></v-icon>
-                    <span>{{ sumary?.balanco_mensal }}</span>
+                    <span>{{ formatCurrency(summary.balancoMensal) }}</span>
                 </div>
                 <template #append>
                     <v-tooltip text="O balanço mensal é calculado com base na soma de todas as receitas efetivadas menos todas as despesas efetivadas do período selecionado.">
@@ -460,10 +439,10 @@
             </template>
                 <v-data-table
                 :headers="headers"
-                :items="transitionsformatted"
+                :items="tableData!"
                 :search="search"
                 :loading="isPending"
-                mobile-breakpoint="md"
+                 
                 >
 
                 <template v-slot:item.status_transaction="{ item }">
@@ -480,8 +459,12 @@
 
                 <template v-slot:item.value_transaction="{item}">
                     <v-chip :color="item.type_transaction ===  'receita' || item.type_transaction === 'transferencia_entrada' ? 'green' : 'red'">
-                        {{ item.value_transaction }}
+                        {{ formatCurrency(item.value_transaction) }}
                     </v-chip>
+                </template>
+
+                <template v-slot:item.date_transaction="{item}"> 
+                    {{ formatDate(item.date_transaction) }}
                 </template>
 
                 <template v-slot:item.actions="{ item }">

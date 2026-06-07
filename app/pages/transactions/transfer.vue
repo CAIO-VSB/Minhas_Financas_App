@@ -13,10 +13,10 @@
     import type { TPeriod } from '~~/types/period/TPeriod'
     import CardAddTransfer from '~/components/forms/CardAddTransfer.vue'
 
-    type TTransferFormatted = Omit<TTransfer, 'value_transaction' | 'date_transfer'> & {
-        value_transaction: string,
-        date_transfer: string
-    }
+    // type TTransferFormatted = Omit<TTransfer, 'value_transaction' | 'date_transfer'> & {
+    //     value_transaction: string,
+    //     date_transfer: string
+    // }
     
     type option = {
         title: string,
@@ -27,8 +27,6 @@
 
     const { getTransfer } = useHttpTransfer()
     const { getMoviments, patchMovements, getCurrentBalance, getMovimentsByFilter } = useHttpMovements()
-
-
 
     const route = useRoute()
     const search = ref('')
@@ -402,6 +400,7 @@
     padding-left: 10px;
     margin-bottom: 10px;
 }
+
 
 :deep(.v-data-table-header__content) {
     font-weight: 800;

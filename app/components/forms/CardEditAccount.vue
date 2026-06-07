@@ -14,7 +14,7 @@
   import { useInvalidate } from "~/composables/useInvalidate"
   import CurrencyInput from "~/components/ui/CurrencyInput.vue"
 
-  const { patchAccount } = useHttpAccounts()
+  const { patchAccountById } = useHttpAccounts()
 
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
   const { nameRules} = useValidateFields()
@@ -61,7 +61,7 @@
 
   const  { mutate, isPending } = useMutation({
 
-    mutationFn: patchAccount,
+    mutationFn: (payload: TAccount) => patchAccountById(payload.id!, payload),
 
     onSuccess: () => {
       notifySuccess("Sucesso", "Conta editada com sucesso", 6000)
@@ -248,6 +248,8 @@
                 v-model="props.draft.active"
                 color="success"
                 label="Ativo"
+                true-icon="mdi-check"
+                false-icon="mdi-close"
                 hide-details
               ></v-switch>
 

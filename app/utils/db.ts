@@ -1,4 +1,4 @@
-import { Pool } from 'pg'
+import { Pool, types } from 'pg'
 
 const client = new Pool({
     user: process.env.USER_DATABASE,
@@ -7,6 +7,7 @@ const client = new Pool({
     password: process.env.PASSWORD_DATABASE,
     port: 5432
 })
+
 
 export default client
 

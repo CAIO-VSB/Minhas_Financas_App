@@ -19,15 +19,15 @@ export function useHttpAccounts() {
         return $fetch<TAccount>("/api/account", {method: "POST", body: data})
     }
 
-    const patchAccount = async (data: TAccount) => {
-        return $fetch<TAccount>("/api/account", {method: "PATCH", body: data})
+    const patchAccountById = async (id: number, data: TAccount) => {
+        return $fetch<TAccount>(`/api/account/${id}`, {method: "PATCH", body: data})
     }
 
 
     return {
         postAccount,
         getAllAccounts,
-        patchAccount,
+        patchAccountById,
         getAccountsOnlyActive,
         getBalanceForAccount
     }

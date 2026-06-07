@@ -1,10 +1,5 @@
 <script setup lang="ts">
 
-    definePageMeta({
-        title: "Visão Geral",
-        layout: "layout-dashboard"
-    })
-
     import type { TPeriod} from "~~/types/period/TPeriod"
    
     const emit = defineEmits<{

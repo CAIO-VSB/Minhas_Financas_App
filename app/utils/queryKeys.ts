@@ -20,6 +20,6 @@ export const QUERY_KEYS = {
         movements_by_filter: ['movements-by-filter']
     },
     tranfer: {
-        all: ['tranfer']
+        all: ['transfer']
     }
 }

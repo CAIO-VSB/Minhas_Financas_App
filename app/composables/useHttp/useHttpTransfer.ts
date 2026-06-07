@@ -11,8 +11,23 @@ export function useHttpTransfer() {
         return await $fetch<TTransfer []>("/api/transfer", {method: "GET", query: {month, year}})
     }
 
+    const patchTransfer = async(data: TTransfer) => {
+        return await $fetch<TTransfer>("/api/transfer", {method: "PATCH", body: data})
+    }
+
+    const getTransferById = async(id: number) => {
+        return await $fetch<TTransfer>(`/api/transfer/${id}`, {method: "GET"})
+    }
+
+    const patchTransferById = async(id: number, data: TTransfer) => {
+        return await $fetch<TTransfer>(`/api/transfer/${id}`, {method: "PATCH", body: data})
+    }
+
     return {
       postTransfer,
-      getTransfer
+      getTransfer,
+      patchTransfer,
+      getTransferById,
+      patchTransferById
     }
 }

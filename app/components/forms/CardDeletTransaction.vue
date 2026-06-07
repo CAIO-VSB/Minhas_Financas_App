@@ -18,7 +18,7 @@
 
 
     const { invalidate } = useInvalidate()
-    const { patchMovements } = useHttpMovements()
+    const { patchMovementsById } = useHttpMovements()
     const { notifyError, notifyInfo, notifySuccess } = useNotify()
 
 
@@ -26,7 +26,7 @@
 
    const  { mutate } = useMutation({
 
-    mutationFn: (payload: TMovements) => patchMovements(payload),
+    mutationFn: (payload: TMovements) => patchMovementsById(payload.id!, payload),
 
     onSuccess: () => {
       invalidate(QUERY_KEYS.movements.all)
@@ -58,13 +58,13 @@
       ...raw
     }
 
-    if (props.draft.type_transaction === "Receita") {
+    if (props.draft.type_transaction === "receita") {
       payload.is_deleted = true
       modelValue.value = false
       notifySuccess("Sucesso", "Receita deletada com sucesso", 6000)
     }
    
-    if (props.draft.type_transaction === "Despesa") {
+    if (props.draft.type_transaction === "despesa") {
       payload.is_deleted = true
       modelValue.value = false
       notifySuccess("Sucesso", "Despesa deletada com sucesso", 6000)

@@ -12,6 +12,8 @@ Lista de coisas a ser fazer (para não cair no esquecimento)
 
 -- Tentar componetizar a sideBar - Prioridade baixa
 
+listagem pode trazer dados resumidos
+edição deve buscar a entidade completa
 
 74
 80

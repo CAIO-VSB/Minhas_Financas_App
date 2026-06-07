@@ -13,6 +13,18 @@ export const transferRepository = {
         return (await query).rows
     },
 
+    async findById(id: number) {
+
+        console.log("Chegou aqui será?" + id)
+
+        const text =
+        `SELECT * FROM transfer WHERE id = $1`
+
+        const query = client.query(text, [id])
+
+        return (await query).rows[0]
+    },
+
     async create(userId: string, data: TTransfer) {
 
         await client.query('BEGIN')
@@ -43,6 +55,72 @@ export const transferRepository = {
             await client.query('COMMIT')
 
             return { message: "Transferência criada com sucesso", status: 200 }
+
+        } catch (e) {
+            await client.query('ROLLBACK')
+            throw e
+        }
+
+    },
+
+    async update(id: number, data: TTransfer) {
+
+        
+        await client.query('BEGIN')
+
+        try {
+
+            await client.query(`
+                UPDATE transfer 
+                    SET value_transfer = $1,
+                        date_transfer = $2,
+                        account_origin = $3,
+                        account_destination = $4,
+                        observation = $5,
+                        is_deleted= $6
+                    WHERE id = $7
+                `,
+                [data.value_transfer, data.date_transfer, data.account_origin, data.account_destination, data.observation ?? null, false, id]
+            )
+
+            await client.query(`
+                UPDATE movements 
+                    SET 
+                        type_transaction = $1,
+                        value_transaction = $2,
+                        date_transaction = $3,
+                        description_transaction = $4,
+                        categorie_id = $5,
+                        accounts_id = $6,
+                        observation = $7,
+                        url_recibo = $8,
+                        status_transaction = $9,
+                        is_deleted = $10
+                    WHERE transfer_id = $11 AND type_transaction = $12`,
+                ['transferencia_saida', data.value_transfer, data.date_transfer, 'Transferência de saída', 80, data.account_origin, null, null, 'saida', false, id,'transferencia_saida']
+            )
+
+            await client.query(`
+                UPDATE movements 
+                    SET 
+                        type_transaction = $1,
+                        value_transaction = $2,
+                        date_transaction = $3,
+                        description_transaction = $4,
+                        categorie_id = $5,
+                        accounts_id = $6,
+                        observation = $7,
+                        url_recibo = $8,
+                        status_transaction = $9,
+                        is_deleted = $10
+                    WHERE transfer_id = $11 AND type_transaction = $12
+                `,
+                ['transferencia_entrada', data.value_transfer, data.date_transfer, 'Transferência de entrada', 80, data.account_destination, null, null, 'entrada', false, id, 'transferencia_entrada']
+            )
+
+            await client.query('COMMIT')
+
+            return { message: "Transferência editada com sucesso", status: 200 }
 
         } catch (e) {
             await client.query('ROLLBACK')

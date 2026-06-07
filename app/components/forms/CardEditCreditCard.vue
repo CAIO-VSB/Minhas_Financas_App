@@ -12,7 +12,7 @@ import flags from "~~/shared/flags/catalog"
 
 
   const { getAllAccounts } = useHttpAccounts()
-  const { patchCreditCard } = useHttpCreditsCards()
+  const { patchCreditCardById } = useHttpCreditsCards()
   const { validateShemaCrediCard } = useValidateSchemas()
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
   const { nameRules, selectRules } = useValidateFields()
@@ -32,7 +32,7 @@ import flags from "~~/shared/flags/catalog"
   }>()
 
   const { data, error } = useQuery({
-    queryKey: ['accounts'],
+    queryKey: QUERY_KEYS.accounts.all,
     queryFn: getAllAccounts,
   })
 
@@ -49,7 +49,6 @@ import flags from "~~/shared/flags/catalog"
   const closingDayRules = ref([
     (val: number) => !!val || "Campo obrigatório"
   ])
-
 
 
   /**
@@ -85,7 +84,7 @@ import flags from "~~/shared/flags/catalog"
 
   const  { mutate, isPending  } = useMutation({
     
-    mutationFn: patchCreditCard,
+    mutationFn: (payload: TCreditCard) => patchCreditCardById(payload.id!, payload),
 
     onSuccess: () => {
       invalidate(QUERY_KEYS.creditCards.all)
@@ -357,6 +356,8 @@ import flags from "~~/shared/flags/catalog"
             color="success"
             label="Ativo"
             hide-details
+            true-icon="mdi-check"
+            false-icon="mdi-close"
             v-model="props.draft.active"
           ></v-switch>
 

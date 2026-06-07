@@ -2,7 +2,7 @@ export type TTransfer = {
     id?: number,
     user_id?: string,
     value_transfer?: number ,
-    date_transfer: string | null,
+    date_transfer: Date | null,
     account_destination: number | null,
     account_origin: number | null,
     observation?: string | null,

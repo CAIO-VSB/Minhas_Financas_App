@@ -20,7 +20,7 @@
     const { getCategoriesOnlyActive } = useHttpCategories()
     const { getAccountsOnlyActive } = useHttpAccounts()
     const { validateSchemaMovements } = useValidateSchemas()
-    const { patchMovements } = useHttpMovements()
+    const { patchMovementsById } = useHttpMovements()
     const { invalidate } = useInvalidate()
     const { nameRules, selectRules, dateRules, currencyRules } = useValidateFields()
 
@@ -114,7 +114,7 @@
 
     const  { mutate, isPending  } = useMutation({
 
-    mutationFn: patchMovements,
+    mutationFn: (payload: TMovements) => patchMovementsById(payload.id!, payload),
 
     onSuccess: () => {
       invalidate(QUERY_KEYS.accounts.all)
@@ -306,6 +306,8 @@
                 hide-details
                 false-value="pendente"
                 true-value="pago"
+                true-icon="mdi-check"
+                false-icon="mdi-close"
               ></v-switch> 
 
             <small class="text-caption text-medium-emphasis"

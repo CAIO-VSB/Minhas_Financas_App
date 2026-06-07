@@ -32,7 +32,7 @@ export const categoriesRepository = {
         
     },
 
-    async update(data: TCategorie) {
+    async update(id:number, data: TCategorie) {
 
         const text = `
             UPDATE categories
@@ -42,9 +42,8 @@ export const categoriesRepository = {
                 active = $3,
                 type_categorie = $4
             WHERE id = $5
-            RETURNING *
         ` 
-        const values = [data.name_identifier, data.url_icon, data.active, data.type_categorie, data.id]
+        const values = [data.name_identifier, data.url_icon, data.active, data.type_categorie, id]
 
         const newCategorie = client.query(text, values)
 

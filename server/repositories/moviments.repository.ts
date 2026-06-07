@@ -60,8 +60,6 @@ export const movementsRespository = {
 
     async findMovementsByFilter(userId: string, start_day: string, end_day: string, categorie_id: number[], accounts_id: number[], situation: string, for_type: string[]) {
 
-        console.log("Valor que chouy", start_day, end_day, categorie_id, accounts_id, for_type)
-
         const categorieParam = categorie_id.length > 0 ? categorie_id : null
         const accountsParam = accounts_id.length > 0 ? accounts_id : null
         let situationParam = situation || null
@@ -161,7 +159,9 @@ export const movementsRespository = {
         return (await movementsByFilter).rows
     },
 
-    async update(data: TMovements) {
+    async update(id:number, data: TMovements) {
+
+        console.log("Na ponta da bala novamente", id, data)
 
         const text = 
         `UPDATE movements 
@@ -178,7 +178,7 @@ export const movementsRespository = {
                 is_deleted = $10
             WHERE id = $11
         `
-        const values = [data.type_transaction, data.value_transaction, data.date_transaction, data.description_transaction, data.categorie_id, data.accounts_id, data.observation, data.url_recibo, data.status_transaction, data.is_deleted, data.id]
+        const values = [data.type_transaction, data.value_transaction, data.date_transaction, data.description_transaction, data.categorie_id, data.accounts_id, data.observation, data.url_recibo, data.status_transaction, data.is_deleted, id]
 
         const updateMovements = client.query(text, values)
 

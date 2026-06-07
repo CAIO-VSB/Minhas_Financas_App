@@ -26,7 +26,7 @@
   const { getAccountsOnlyActive } = useHttpAccounts()
   const { selectRules, dateRules, currencyRules } = useValidateFields()
   const { invalidate } = useInvalidate()
-  const { patchMovements } = useHttpMovements()
+  const { patchMovementsById } = useHttpMovements()
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
 
   const searchAccounts = ref("")
@@ -68,7 +68,7 @@
 
   const  { mutate } = useMutation({
 
-    mutationFn: (payload: TMovements) => patchMovements(payload),
+    mutationFn: (payload: TMovements) => patchMovementsById(payload.id!, payload),
 
     onSuccess: () => {
       invalidate(QUERY_KEYS.movements.all)
