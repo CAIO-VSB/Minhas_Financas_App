@@ -330,7 +330,7 @@
                     <v-btn
                     color="primary"
                     v-bind="props"
-                    class="text-none rounded-xl"
+                    class="text-none"
                     append-icon="mdi-arrow-down-drop-circle"
                     >
                     {{ titleButtonOption }}
@@ -356,7 +356,7 @@
                 <v-btn
                 color="primary"
                 prepend-icon="mdi-filter"
-                class="text-none rounded-xl"
+                class="text-none"
                 @click="drawer = true"
                 >
                 Filtro
@@ -383,7 +383,7 @@
             <v-card :loading="isPending" subtitle="Receitas">
                  <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
                  <div v-else class="main-value-formated">
-                    <v-icon color="green" icon="mdi-arrow-up-bold-circle"></v-icon>
+                    <v-icon color="green" icon="mdi-arrow-down-bold-circle"></v-icon>
                     <span>{{ formatCurrency(summary.receitas) }}</span>
                 </div>
                 <template #append>
@@ -397,7 +397,7 @@
             <v-card :loading="isPending" subtitle="Despesas">
                 <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
                  <div v-else  class="main-value-formated">
-                    <v-icon color='red' icon="mdi-arrow-down-bold-circle"></v-icon>
+                    <v-icon color='red' icon="mdi-arrow-up-bold-circle"></v-icon>
                     <span> {{ formatCurrency(summary.despesas) }}</span>
                 </div>
 

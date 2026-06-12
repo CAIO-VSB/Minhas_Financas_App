@@ -31,7 +31,6 @@
         <v-btn
           v-bind="props"
           append-icon="mdi-menu-down"
-          class="text-none rounded-xl"
           variant="elevated"
           color="primary"
           prepend-icon="mdi-account-settings"
@@ -54,8 +53,9 @@
 
         <div class="new-account-button">
             <v-btn
+            size="x-small"
             color="primary"
-            class="text-none rounded-xl button-singup"
+            class="button-singup"
             >
             Criar nova conta
             </v-btn>
@@ -135,7 +135,7 @@
   background-color: transparent !important;
   border: 1px solid var(--color-primary);
   color: var(--color-primary)!important;
-  font-size: clamp(0.85rem, 2.5vw, 1rem);
+  font-size: clamp(0.75rem, 2.5vw, 0.80rem);
 }
 
 .button-singup:hover {

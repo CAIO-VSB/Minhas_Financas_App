@@ -285,7 +285,6 @@
                 text="Limpar e sair"
                 variant="elevated"
                 @click="resetForm"
-                class="text-none rounded-xl"
                 ></v-btn>
 
                 <v-btn
@@ -293,7 +292,6 @@
                 text="Aplicar filtros"
                 variant="elevated"
                 @click="submitForm"
-                class="text-none rounded-xl"
                 ></v-btn>
             </v-card-actions>
 

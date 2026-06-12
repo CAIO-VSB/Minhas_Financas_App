@@ -260,7 +260,7 @@
                     <v-btn
                     :color="ColorButtonOption"
                     v-bind="props"
-                    class="text-none rounded-xl"
+                    class="text-none "
                     append-icon="mdi-arrow-down-drop-circle"
                     >
                     {{ titleButtonOption }}
@@ -287,7 +287,7 @@
                 <v-btn
                 color="success"
                 prepend-icon="mdi-plus"
-                class="text-none rounded-xl"
+                class="text-none "
                 @click="modalAddRevenue = true"
                 >
                 NOVA RECEITA
@@ -296,7 +296,7 @@
                 <v-btn
                 color="green"
                 prepend-icon="mdi-filter"
-                class="text-none rounded-xl"
+                class="text-none "
                 @click="drawer = true"
                 >
                 Filtro

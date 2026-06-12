@@ -19,7 +19,6 @@
     import type { TOptionAction } from '~~/types/option_action/TOptionAction'
     import type { TPeriod } from '~~/types/period/TPeriod'
 
-    
     type option = {
         title: string,
         color: string,
@@ -262,7 +261,7 @@
                     <v-btn
                     :color="ColorButtonOption"
                     v-bind="props"
-                    class="text-none rounded-xl"
+                    class="text-none"
                     append-icon="mdi-arrow-down-drop-circle"
                     >
                     {{ titleButtonOption }}
@@ -288,7 +287,7 @@
                 <v-btn
                 :color="ColorButtonOption"
                 prepend-icon="mdi-plus"
-                class="text-none rounded-xl"
+                class="text-none "
                 @click="modalAddExpenses = true"
                 >
                 NOVA DESPESA
@@ -296,7 +295,7 @@
                 <v-btn
                 color="red"
                 prepend-icon="mdi-filter"
-                class="text-none rounded-xl"
+                class="text-none "
                 @click="drawer = true"
                 >
                 Filtro

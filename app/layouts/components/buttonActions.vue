@@ -56,7 +56,6 @@
               color="primary"
               prepend-icon="mdi-plus"
               variant="elevated"
-              rounded="xl"
               class="text-none"
               v-bind="mergeProps(menu, tooltip)"
             >
