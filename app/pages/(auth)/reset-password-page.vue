@@ -332,7 +332,6 @@
 }
 
 .login-form {
-  background-color: $color-secundary;
   padding: 5px;
   width: 100%;
   border-radius: 25px;
@@ -345,7 +344,6 @@
 
 .button-google {
   box-shadow: none;
-  background-color: $color-secundary;
   border: 1px solid rgba(128, 128, 128, 0.425);
   border-radius: 20px;
 }
@@ -355,7 +353,6 @@
 }
 
 .button-login {
-  background-color: $color-primary !important;
   font-size: clamp(0.9rem, 2.5vw, 1rem);
 }
 

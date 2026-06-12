@@ -20,6 +20,7 @@
     import CardDeletTransaction from '~/components/forms/CardDeletTransaction.vue'
     import CardEditTransfer  from '~/components/forms/CardEditTransfer.vue'
     import DateInput from '~/components/ui/DateInput.vue'
+    import CardDeleteMovementTransfer from '~/components/forms/CardDeleteMovementTransfer.vue'
 
     type option = {
         title: string,
@@ -28,7 +29,7 @@
         route: string
     }
 
-    const { getMoviments, patchMovements, getCurrentBalance, getMovimentsByFilter } = useHttpMovements()
+    const { getMoviments, patchMovementsById, getCurrentBalance, getMovimentsByFilter } = useHttpMovements()
     const { getTransferById } = useHttpTransfer()
     const { notifyError, notifyInfo, notifySuccess } = useNotify()
     const { invalidate } = useInvalidate()
@@ -41,6 +42,7 @@
     const modalEditMovementesExpenses = ref(false)
     const modalEditTransfer = ref(false)
     const cardDeletTransaction = ref(false)
+    const cardDeleteTransfer = ref(false)
     const isFiltered = ref(false)
     const lastFilter = ref<TMovementsByFilter | null>(null)
     const filteredData = ref<TMovementsSummary[] | null>(null)
@@ -88,7 +90,7 @@
     })
 
     const summary = computed(() => {
-        const row = data.value?.[0]
+        const row = tableData.value?.[0]
 
         return {
             receitas: Number(row?.t_receitas ?? 0),
@@ -157,7 +159,7 @@
 
     const  { mutate } = useMutation({
 
-        mutationFn: (payload: TMovementsSummary) => patchMovements(payload),
+        mutationFn: (payload: TMovementsSummary) => patchMovementsById(payload.id!, payload),
 
         onSuccess: () => {
             invalidate(QUERY_KEYS.movements.all)
@@ -289,6 +291,15 @@
             labelOptions.value.text = "Essa ação não poderá ser desfeita. O valor será retornado ao saldo da conta."
             cardDeletTransaction.value = true
             return
+        } else if (option.value === "delete" && (data.type_transaction === "transferencia_entrada" || data.type_transaction === "transferencia_saida")) {
+            editDraft.value = payload
+            payload.is_deleted = true
+            labelOptions.value.colorButton = "blue"
+            labelOptions.value.textButton = "Deletar"
+            labelOptions.value.title = "Deletar transferência"
+            labelOptions.value.text = "Essa ação não poderá ser desfeita."
+            cardDeleteTransfer.value = true
+            return
         }
 
         mutate(payload)
@@ -301,13 +312,14 @@
 <template>
     <div class="container-main">
 
+        <CardDeleteMovementTransfer @success="handleMutationSuccess" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="editDraft" v-model="cardDeleteTransfer" />
         <CardDeletTransaction @success="handleMutationSuccess" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="editDraft" v-model="cardDeletTransaction" />
         <CardSettleTransactionModal @success="handleMutationSuccess" v-model="cardPostValueTransaction" :draft="editDraft" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" />
         <CardEdtiMovementsExpenses @success="handleMutationSuccess" :draft="editDraft"  v-model="modalEditMovementesExpenses"/>
         <CardEditMovementsRevenue @success="handleMutationSuccess" :draft="editDraft" v-model="modalEditMovementsRevenue"/>
         <CardEditTransfer :draft="editDraftTransfer" v-model="modalEditTransfer"/>
         
-        <filterDrawer :items="[ 'Recebidas', 'Pagas', 'Pendentes']" :field-type-active="false" color-button="primary" @apply-filter="handleApplyFilter" @reset-filter="handleClearFilter" v-model="drawer"/>
+        <FilterDrawer :items="[ 'Recebidas', 'Pagas', 'Pendentes']" :field-type-active="false" color-button="primary" @apply-filter="handleApplyFilter" @reset-filter="handleClearFilter" v-model="drawer"/>
           
         <div class="text-center bnt-options">
             
@@ -442,7 +454,7 @@
                 :items="tableData!"
                 :search="search"
                 :loading="isPending"
-                 
+                mobile-breakpoint="md"
                 >
 
                 <template v-slot:item.status_transaction="{ item }">

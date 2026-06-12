@@ -297,28 +297,6 @@
           >
           </BaseModal>
         </v-form>
-
-        <BaseToast
-          :model-value="authStore.activeMessageAlert"
-          :timeout="4000"
-          timer="#ffffe0"
-          :text="authStore.typeMessage"
-          color="yellow"
-          color-icon="black"
-          icon="mdi mdi-alert-rhombus"
-        >
-        </BaseToast>
-
-        <BaseToast
-          :model-value="successMessage"
-          :timeout="4000"
-          timer="#d4f7dc"
-          color="#21BA45"
-          text="Redirecionando para a página de login..."
-          color-icon="white"
-          icon="mdi mdi-check-decagram"
-        >
-        </BaseToast>
       </div>
     </div>
   </div>

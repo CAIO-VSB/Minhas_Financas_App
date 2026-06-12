@@ -51,7 +51,6 @@
     if (props.draft) props.draft.account_destination = val
   })
 
-
   watch([modelAccountOrigin, modelAccountDestination], ([origin, destination]) => {
     if (origin === destination) {
       modelAccountOrigin.value = null
@@ -67,6 +66,15 @@
     modelAccountDestination.value = null
     modelAccountOrigin.value = null
   }
+
+  
+  const accountsFilteredOrigin = computed(() => {
+    return accounts.value?.filter(item => item.id !== modelAccountDestination.value)
+  })
+
+  const accountsFilteredDestination = computed(() => {
+    return accounts.value?.filter(item => item.id !== modelAccountOrigin.value)
+  })
 
   const  { mutate, isPending  } = useMutation({
 
@@ -92,20 +100,20 @@
 
     try {
 
-      if(!props.draft) {
-        notifyError("Ops!", "Algo não parece certo. Confira os dados e tente novamente.")
-        return
-      } 
-        const formValid = await form.value.validate()
-        const resultSchema = validateSchemaTransfer(props.draft)
+    if(!props.draft) {
+      notifyError("Ops!", "Algo não parece certo. Confira os dados e tente novamente.")
+      return
+    } 
+      const formValid = await form.value.validate()
+      const resultSchema = validateSchemaTransfer(props.draft)
 
-        console.log("Objeto a ser envidado" + JSON.stringify(props.draft))
-        
-        if (formValid) {
-          if (resultSchema.success) {  
-            mutate(props.draft)
-          }
+      console.log("Objeto a ser envidado" + JSON.stringify(props.draft))
+      
+      if (formValid) {
+        if (resultSchema.success) {  
+          mutate(props.draft)
         }
+      }
     } catch (err) {
       notifyError("Error", "Erro ao criar tranferência. Tente novamente")
     }
@@ -132,7 +140,7 @@
               
               <v-date-input :rules="dateRules" v-model="props.draft.date_transfer" prepend-icon="mdi-calendar"  autocomplete="off" name="date" label="Data*" variant="underlined" ></v-date-input>
 
-              <v-select v-model="modelAccountOrigin"  prepend-icon="mdi-bank-transfer-out" :rules="selectRules" item-value="id" item-title="name_identifier" color="primary" label="Conta origem*" :items="accounts" variant="underlined">      
+              <v-select v-model="modelAccountOrigin" clearable  prepend-icon="mdi-bank-transfer-out" :rules="selectRules" item-value="id" item-title="name_identifier" color="primary" label="Conta origem*" :items="accountsFilteredOrigin" variant="underlined">      
                  <template v-slot:selection="{item}">
                     <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
                       <v-img  :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
@@ -151,7 +159,7 @@
                   </template>
               </v-select>
 
-              <v-select v-model="modelAccountDestination" prepend-icon="mdi-bank-transfer-in" :rules="selectRules" item-value="id" item-title="name_identifier"  color="primary" label="Conta destino*" :items="accounts" variant="underlined">
+              <v-select v-model="modelAccountDestination" clearable prepend-icon="mdi-bank-transfer-in" :rules="selectRules" item-value="id" item-title="name_identifier"  color="primary" label="Conta destino*" :items="accountsFilteredDestination" variant="underlined">
                  <template v-slot:selection="{item}">
                     <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
                       <v-img  :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>

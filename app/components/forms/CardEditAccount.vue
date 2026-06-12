@@ -192,6 +192,14 @@
 
               <CurrencyInput prepend-icon="mdi-bank"  autocomplete="off" hint="Salo lançado no ato do cadastro" v-model="props.draft.initial_balance" label="Saldo inicial" ></CurrencyInput>
 
+              <CurrencyInput 
+                prepend-icon="mdi-bank-check"
+                hint="Saldo calculado com base nas movimentações"
+                :model-value="props.draft.saldo_atual ?? 0"
+                label="Saldo atual"
+                :readonly="true"
+                :allow-negative="true"
+            />
               <v-text-field
                 label="Nome da conta *"
                 variant="underlined"

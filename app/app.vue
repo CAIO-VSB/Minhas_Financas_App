@@ -1,5 +1,4 @@
 <script setup>
-  import '@vuepic/vue-datepicker/dist/main.css'
 </script>
 
 <template>
@@ -13,8 +12,10 @@
 
 <style>
 
+
+
 body, html {
-  font-family: "Sora", sans-serif !important; 
+  font-family: var(--font-main); 
 }
 
 ::-webkit-scrollbar-track {

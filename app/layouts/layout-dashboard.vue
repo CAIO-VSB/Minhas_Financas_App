@@ -6,14 +6,12 @@
     title: string
   }
  
-  import defaultUser from "@/assets/default-user.webp"
+  import logo from "@/assets/logo.jpg"
   import InfoUser from './components/InfoUser.vue'
   import ButtonActions from './components/buttonActions.vue'
   
   const { $authClient } = useNuxtApp()
  
-  const { data: session } = await $authClient.getSession()
-
   const drawer = ref(true)
   const rail = ref(false)
   const openedGroups = ref(['Groups'])
@@ -33,7 +31,7 @@
         v-model="drawer"
         :rail="rail"
         @click="rail = false"
-        style="height: 100vh;"
+        style="height: 100vh; background-color: #fafaf9;"
         :width="350"
     
       >
@@ -41,21 +39,11 @@
           <v-list-item
           >
             <template #prepend>
-              <client-only>
-               <v-avatar :image="session?.user.image || defaultUser"></v-avatar>
-              </client-only>
+               <v-avatar :image="logo"></v-avatar>
             </template>
             
             <template #title>
-              <client-only>
-                {{ session?.user.name }}
-              </client-only>
-            </template>
-
-            <template #subtitle>
-              <client-only>
-                {{ session?.user.email }}
-              </client-only>
+              <span style="color: #1a4a6b; font-size: 1.1rem; font-weight: 800;">Minhas finanças</span>
             </template>
 
             <template v-slot:append>
@@ -183,7 +171,7 @@
         </template>
       </v-navigation-drawer>
 
-      <v-main style="height: 100vh; background-color: #f2f2f2; overflow-y: auto;">
+      <v-main style="height: 100vh; background-color: #f4f4f5; overflow-y: auto;">
         <div class=" title-router flex align-center">
           <v-btn
             icon="mdi-menu"

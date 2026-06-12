@@ -1,6 +1,5 @@
 <script setup lang="ts">
 
-
   import defaultUser from "@/assets/default-user.webp"
 
   const { $authClient } = useNuxtApp()
@@ -123,24 +122,24 @@
 }
 
 .title-logged-as {
-  font-size: 0.75rem;
+  font-size: clamp(0.74rem, 4vw, 0.90rem);
   display: flex;
   flex-direction: column;
 }
 
 .subtitle-logged-as {
-  font-size: 0.85rem;
+  font-size: clamp(0.74rem, 4vw, 0.90rem);
 }
 
 .button-singup {
   background-color: transparent !important;
-  border: 1px solid $color-primary;
-  color: $color-primary !important;
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary)!important;
   font-size: clamp(0.85rem, 2.5vw, 1rem);
 }
 
 .button-singup:hover {
-  background-color: $color-primary !important;
+  background-color: var(--color-primary)!important;
   color: white !important;
 }
 

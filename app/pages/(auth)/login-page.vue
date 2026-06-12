@@ -211,31 +211,6 @@
           </div>
         </v-form>
 
-        <div>
-          <Toasts
-            color="error-primary"
-            :text="authStore.typeMessage"
-            timer="#E57373"
-            v-model="authStore.activeMessageError"
-            icon="mdi-alert"
-            size="x-large"
-            color-icon="white"
-          >
-          </Toasts>
-        </div>
-
-        <div>
-          <Toasts
-            color="alert-primary"
-            :text="authStore.typeMessage"
-            timer="#F0F4C3"
-            v-model="authStore.activeMessageAlert"
-            icon="mdi-information"
-            size="x-large"
-            color-icon="black"
-          >
-          </Toasts>
-        </div>
       </div>
     </div>
   </div>
@@ -255,23 +230,19 @@
 
 .side-left {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  background-color: $color-secundary;
   z-index: 3;
 }
 
 .side-right {
   box-shadow: 2px 4px 12px rgba(0, 0, 0, 0.5);
-  background-color: $color-primary;
   z-index: 3;
 }
 
 .login-title {
-  color: $color-primary-title;
   font-size: clamp(1.5rem, 2.5vw, 2rem);
 }
 
 .login-form {
-  background-color: $color-secundary;
   padding: 5px;
   width: 100%;
   border-radius: 25px;
@@ -283,17 +254,14 @@
 }
 
 .link-senha {
-  color: $color-primary-link;
   font-size: clamp(0.85rem, 2.5vw, 1rem);
 }
 
 .link-senha:hover {
-  color: $color-primary-title;
 }
 
 .button-google {
   box-shadow: none;
-  background-color: $color-secundary;
   border: 1px solid rgba(128, 128, 128, 0.425);
   border-radius: 20px;
 }
@@ -303,7 +271,6 @@
 }
 
 .button-login {
-  background-color: $color-primary !important;
   font-size: clamp(0.85rem, 2.5vw, 1rem);
 }
 
@@ -312,14 +279,11 @@
 }
 
 .button-singup {
-  background-color: transparent !important;
-  border: 1px solid $color-primary;
-  color: $color-primary;
+
   font-size: clamp(0.85rem, 2.5vw, 1rem);
 }
 
 .button-singup:hover {
-  background-color: $color-primary !important;
   color: white;
 }
 

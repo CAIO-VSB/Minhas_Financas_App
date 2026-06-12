@@ -12,12 +12,9 @@
     import type { TOptionAction } from '~~/types/option_action/TOptionAction'
     import type { TPeriod } from '~~/types/period/TPeriod'
     import CardAddTransfer from '~/components/forms/CardAddTransfer.vue'
+    import CardEditTransfer from '~/components/forms/CardEditTransfer.vue'
+    import CardDeleteTransfer from '~/components/forms/CardDeleteTransfer.vue'
 
-    // type TTransferFormatted = Omit<TTransfer, 'value_transaction' | 'date_transfer'> & {
-    //     value_transaction: string,
-    //     date_transfer: string
-    // }
-    
     type option = {
         title: string,
         color: string,
@@ -26,11 +23,22 @@
     }
 
     const { getTransfer } = useHttpTransfer()
-    const { getMoviments, patchMovements, getCurrentBalance, getMovimentsByFilter } = useHttpMovements()
+    const { getMoviments, getCurrentBalance } = useHttpMovements()
 
+    const editDraft = ref<TTransfer | null>(null)
+   
     const route = useRoute()
     const search = ref('')
     const modalAddTransfer = ref(false)
+    const modalEditTransfer = ref(false)
+    const cardDeleteTransfer = ref(false)
+    const labelOptions = ref({
+        colorButton: "",
+        textButton: "",
+        title: "",
+        text: ""
+    })
+
     const period = ref({
         month: new Date().getMonth(),
         year: new Date().getFullYear(),
@@ -58,28 +66,16 @@
         RefetchMovements()
     }
 
-    const transitionsformatted = computed(() => {
-        return movements.value?.map(item => ({
-            ...item,
-            date_transaction: new Date(item.date_transaction ?? "").toLocaleDateString("pt-BR"),
-            value_transaction: new Intl.NumberFormat('pt-br', {style: 'currency', currency: 'BRL'}).format(item.value_transaction ?? 0.00)
-        }))
-    })
-
+    
     const sumary = computed(() => {
 
-        const row = transitionsformatted.value?.[0]
-
-        const formated = new Intl.NumberFormat('pt-BR', {
-            style: 'currency',
-            currency: 'BRL',
-        })
+        const row = movements.value?.[0]
 
         return {
-            receitas: formated.format(row?.t_receitas ?? 0.00),
-            despesas: formated.format(row?.t_despesas ?? 0.00),
-            balanco_mensal: formated.format(row?.balanco_mensal ?? 0.00),
-            saldo_atual: formated.format(row?.saldo_atual ?? 0.00)
+            receitas: Number(row?.t_receitas ?? 0.00),
+            despesas: Number(row?.t_despesas ?? 0.00),
+            balanco_mensal: Number(row?.balanco_mensal ?? 0.00),
+            saldo_atual: Number(row?.saldo_atual ?? 0.00)
         }
     })
 
@@ -87,26 +83,10 @@
         
         const row = currentBalance.value?.[0]
 
-        console.log("currentBalance.value:", currentBalance.value)
-
-        const formated = new Intl.NumberFormat('pt-BR', {
-            style: 'currency',
-            currency: 'BRL',
-        })
-
         return {
-            saldo_atual: formated.format(row?.saldo_atual ?? 0.00)
+            saldo_atual: Number(row?.saldo_atual ?? 0.00)
         }
 
-    })
-    
-    const transitionsFformatted = computed(() => {
-        return data.value?.map(item => ({
-            ...item,
-            date_transfer: new Date(item.date_transfer ?? "").toLocaleDateString("pt-BR"),
-            value_transaction: new Intl.NumberFormat('pt-br', {style: 'currency', currency: 'BRL'}).format(item.value_transfer ?? 0.00)
-        }))
-        
     })
 
     const itemsRouter = [
@@ -148,12 +128,53 @@
         ]
     } 
 
+    function handleOpenModalEditTransfer(transfer: TTransfer) {
 
+        console.log("Está passando o id?", transfer.id)
+    
+        //Usamos structuredClone + toRaw para evitar mutar o objeto reativo do Vue
+        const rawTransfer =  structuredClone(toRaw(transfer))
+
+        editDraft.value = parseTransferToEdit(rawTransfer)
+
+        modalEditTransfer.value = true
+    }
+
+    function handleOptionClick(option: TOptionAction, data: TTransfer) {
+
+        if (option.value === "edit") {
+            handleOpenModalEditTransfer(data)
+            return 
+        }
+
+        const raw = structuredClone(toRaw(data))
+
+        const payload: TTransfer = {
+            ...raw,
+            value_transfer: Number(raw.value_transfer ?? 0),
+            date_transfer: new Date(raw.date_transfer ?? ""),
+        }
+
+        if (option.value === "delete") {
+            editDraft.value = data
+            payload.is_deleted = true
+            labelOptions.value.colorButton = "blue"
+            labelOptions.value.textButton = "Deletar"
+            labelOptions.value.title = "Deletar transferência"
+            labelOptions.value.text = "Essa ação não poderá ser desfeita."
+            cardDeleteTransfer.value = true
+            return
+        }
+    }
  
 </script>
 
 
 <template>
+    
+    <CardAddTransfer v-model="modalAddTransfer"/>
+    <CardEditTransfer :draft="editDraft" v-model="modalEditTransfer" />
+    <CardDeleteTransfer :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="editDraft" v-model="cardDeleteTransfer" />
     <div class="container-main">
 
         <div class="text-center bnt-options">
@@ -206,7 +227,7 @@
                 <v-skeleton-loader v-if="isPendingCurrentBalance" type="list-item-avatar"></v-skeleton-loader>
                 <div v-else  class="main-value-formated">
                     <v-icon icon="mdi-bank"></v-icon>
-                    <span>{{ balanceCurrent.saldo_atual }}</span>
+                    <span>{{ formatCurrency(balanceCurrent.saldo_atual) }}</span>
                 </div>
                 <template #append>
                     <v-tooltip  text="O cálculo do saldo atual é independente do período selecionado, considerando o saldo inicial das contas ativas juntamente com todas as movimentações efetivadas de entrada e saída">
@@ -220,7 +241,7 @@
                  <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
                  <div v-else class="main-value-formated">
                     <v-icon color="green" icon="mdi-arrow-up-bold-circle"></v-icon>
-                    <span>{{ sumary?.receitas }}</span>
+                    <span>{{ formatCurrency(sumary.receitas)}}</span>
                 </div>
                 <template #append>
                     <v-tooltip text="O cálculo do total de receitas considera todas as movimentações de entrada efetivadas vinculadas às contas ativas.">
@@ -234,7 +255,7 @@
                 <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
                  <div v-else  class="main-value-formated">
                     <v-icon color='red' icon="mdi-arrow-down-bold-circle"></v-icon>
-                    <span> {{ sumary?.despesas }}</span>
+                    <span> {{ formatCurrency(sumary.despesas) }}</span>
                 </div>
 
                 <template #append>
@@ -249,7 +270,7 @@
                 <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
                  <div v-else  class="main-value-formated">
                     <v-icon color="blue" icon="mdi-scale-balance"></v-icon>
-                    <span>{{ sumary?.balanco_mensal }}</span>
+                    <span>{{ formatCurrency(sumary.balanco_mensal) }}</span>
                 </div>
                 <template #append>
                     <v-tooltip text="O balanço mensal é calculado com base na soma de todas as receitas efetivadas menos todas as despesas efetivadas do período selecionado.">
@@ -295,7 +316,7 @@
             </template>
                 <v-data-table
                 :headers="headers"
-                :items="transitionsFformatted"
+                :items="data"
                 :search="search"
                 hide-no-data
                 mobile-breakpoint="md"
@@ -321,8 +342,12 @@
 
                 <template v-slot:item.value_transfer="{item}">
                     <v-chip color="#2196F3">
-                        {{ item.value_transfer}}
+                        {{ formatCurrency(item.value_transfer ?? 0.00) }}
                     </v-chip>
+                </template>
+
+                <template v-slot:item.date_transfer="{item}">
+                    {{ formatDate(item.date_transfer) }}
                 </template>
 
                 <template v-slot:item.actions="{ item }">
@@ -339,6 +364,7 @@
                                 :key="action.title"
                                 :value="action.value"
                                 :prepend-icon="action.icon"
+                                @click="handleOptionClick(action, item)"
                                 >
                                 <v-list-item-title>{{ action.title }}</v-list-item-title>
                                 </v-list-item>
@@ -349,9 +375,6 @@
             </v-card>
         </div>
     </div>
-
-    <cardAddTransfer v-model="modalAddTransfer"/>
-
 </template>
 
 <style scoped>

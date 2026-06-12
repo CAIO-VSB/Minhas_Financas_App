@@ -15,7 +15,6 @@ export const transferRepository = {
 
     async findById(id: number) {
 
-        console.log("Chegou aqui será?" + id)
 
         const text =
         `SELECT * FROM transfer WHERE id = $1`
@@ -65,6 +64,7 @@ export const transferRepository = {
 
     async update(id: number, data: TTransfer) {
 
+        console.log("valor" + id, data)
         
         await client.query('BEGIN')
 
@@ -116,6 +116,44 @@ export const transferRepository = {
                     WHERE transfer_id = $11 AND type_transaction = $12
                 `,
                 ['transferencia_entrada', data.value_transfer, data.date_transfer, 'Transferência de entrada', 80, data.account_destination, null, null, 'entrada', false, id, 'transferencia_entrada']
+            )
+
+            await client.query('COMMIT')
+
+            return { message: "Transferência editada com sucesso", status: 200 }
+
+        } catch (e) {
+            await client.query('ROLLBACK')
+            throw e
+        }
+
+    },
+
+    async updateSoftDelete(id: number, isDeleted: boolean) {
+
+        console.log("valor" + id, isDeleted)
+
+        const deleteValue = isDeleted ?? false
+        
+        await client.query('BEGIN')
+
+        try {
+
+            await client.query(`
+                UPDATE transfer 
+                    SET 
+                        is_deleted= $1
+                    WHERE id = $2
+                `,
+                [deleteValue, id]
+            )
+
+            await client.query(`
+                UPDATE movements 
+                    SET 
+                        is_deleted = $1
+                    WHERE transfer_id = $2 AND type_transaction IN ($3, $4)`,
+                [ deleteValue, id, 'transferencia_entrada', 'transferencia_saida']
             )
 
             await client.query('COMMIT')

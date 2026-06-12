@@ -1,3 +1,4 @@
+import type { TMovementsWithTransfer } from "~~/types/movements/TMovements"
 import type { TTransfer } from "~~/types/transfer/TTransfer"
 
 
@@ -23,11 +24,16 @@ export function useHttpTransfer() {
         return await $fetch<TTransfer>(`/api/transfer/${id}`, {method: "PATCH", body: data})
     }
 
+    const deleteTransferById = async(id: number, data: Pick<TTransfer, "is_deleted">) => {
+        return await $fetch<TMovementsWithTransfer>(`/api/transfer/${id}/delete`, {method: "PATCH", body: data})
+    }
+
     return {
       postTransfer,
       getTransfer,
       patchTransfer,
       getTransferById,
-      patchTransferById
+      patchTransferById,
+      deleteTransferById
     }
 }

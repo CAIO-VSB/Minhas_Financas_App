@@ -18,7 +18,7 @@
   //Importações composables
   const { getAllCategories } = useHttpCategories()
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
-  const {  patchCategorie } = useHttpCategories() 
+  const {  patchCategorieById } = useHttpCategories() 
   const { invalidate } = useInvalidate()
 
   const modalEditCategorie = ref(false)
@@ -35,7 +35,7 @@
   
   const  { mutate } = useMutation({
 
-    mutationFn: (payload: TCategorie) => patchCategorie(payload),
+    mutationFn: (payload: TCategorie) => patchCategorieById(payload.id!, payload),
 
     onSuccess: () => {
       invalidate("categories")

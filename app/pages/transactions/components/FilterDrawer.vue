@@ -5,7 +5,6 @@
     import { differenceInDays } from 'date-fns'
     import type { TMovementsByFilter } from '~~/types/movements/TMovementsByFilter'
     
-
     const emit = defineEmits<{
         applyFilter: [filter: TMovementsByFilter],
         resetFilter: [reset: true]

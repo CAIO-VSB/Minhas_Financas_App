@@ -8,7 +8,6 @@
   import alertImg from "~/assets/img-credit-card-alert.png"
   import CardAddCartao from "~/components/forms/CardAddCreditCard.vue"
   import { useHttpCreditsCards } from "~/composables/useHttp/useHttpCreditCard"
-  import { VueDatePicker } from '@vuepic/vue-datepicker';
   import { ptBR } from 'date-fns/locale';
   import BaseFab from "~/components/ui/BaseFab.vue";
   import type { TCreditCard } from "~~/types/credit_card/TCredit-card"
@@ -18,7 +17,7 @@
   import CardInfoCreditCard from "~/pages/credit-card/components/CardInfoCreditCard.vue";
   import CardMovementsCreditCard from "~/pages/credit-card/components/CardMovementsCreditCard.vue";
 
-  const { getCreditCardOnlyActive, patchCreditCard, getCreditCardOnlyDisable } = useHttpCreditsCards()
+  const { getCreditCardOnlyActive, patchCreditCardById, getCreditCardOnlyDisable } = useHttpCreditsCards()
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
   const { invalidate } = useInvalidate()
 
@@ -52,7 +51,7 @@
 
   const  { mutate } = useMutation({
 
-  mutationFn: (payload: TCreditCard) => patchCreditCard(payload),
+  mutationFn: (payload: TCreditCard) => patchCreditCardById(payload.id!, payload),
 
   onSuccess: () => {
     invalidate(QUERY_KEYS.creditCards.all)

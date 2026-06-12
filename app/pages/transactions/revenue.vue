@@ -8,7 +8,7 @@
     import CardAddMovimentsRevenue from '~/components/forms/CardAddMovimentsRevenue.vue'
     import { useHttpMovements } from '~/composables/useHttp/useHttpMovements'
     import DateInput from "~~/app/components/ui/DateInput.vue"
-    import type { TMovements } from '~~/types/movements/TMovements'
+    import type { TMovements, TMovementsSummary } from '~~/types/movements/TMovements'
     import type { TOptionAction } from '~~/types/option_action/TOptionAction'
     import type { TMovementsOnlyRenevue } from '~~/types/movements/TMovementsOnlyRevenue'
     import type { TMovementsByFilter } from "~~/types/movements/TMovementsByFilter"
@@ -18,11 +18,6 @@
     import CardDeletTransaction from '~/components/forms/CardDeletTransaction.vue'
     import FilterDrawer from './components/FilterDrawer.vue'
 
-    type TMovementsFormatted = Omit<TMovements, 'value_transaction' | 'date_transaction'> & {
-        value_transaction: string,
-        date_transaction: string
-    }
-    
     type option = {
         title: string,
         color: string,
@@ -30,8 +25,8 @@
         route: string
     }
 
-    const { getMoviments, patchMovements, getCurrentBalance, getMovimentsOnlyRevenuesByFilter } = useHttpMovements()
-    const { notifyError, notifyInfo, notifySuccess } = useNotify()
+    const { patchMovementsById,  getMovimentsOnlyRevenuesByFilter } = useHttpMovements()
+    const {  notifyInfo, notifySuccess } = useNotify()
     const { invalidate } = useInvalidate()
     const { getOnlyRevenues } = useHttpMovements()
 
@@ -100,28 +95,14 @@
         return isFiltered.value ? filteredData.value : data.value
     })
 
-    const transitionsFformatted = computed(() => {
-        return tableData.value?.map(item => ({
-            ...item,
-            date_transaction: new Date(item.date_transaction ?? "").toLocaleDateString("pt-BR"),
-            value_transaction: new Intl.NumberFormat('pt-br', {style: 'currency', currency: 'BRL'}).format(item.value_transaction ?? 0.00)
-        }))
-        
-    })
-
     const sumary = computed(() => {
 
-        const row = transitionsFformatted.value?.[0]
-
-        const formated = new Intl.NumberFormat('pt-BR', {
-            style: 'currency',
-            currency: 'BRL',
-        })
+        const row = tableData.value?.[0]
 
         return {
-            receitas_pendentes: formated.format(row?.t_receitas_pendentes ?? 0.00),
-            receitas_efetivadas: formated.format(row?.t_receitas_efetivadas ?? 0.00),
-            total_geral: formated.format(row?.total_geral_receitas ?? 0.00),
+            receitas_pendentes: Number(row?.t_receitas_pendentes ?? 0.00),
+            receitas_efetivadas: Number(row?.t_receitas_efetivadas ?? 0.00),
+            total_geral: Number(row?.total_geral_receitas ?? 0.00),
         }
     })
 
@@ -173,7 +154,7 @@
         navigateTo(item.route)
     }
 
-    function getOptions(moviments: TMovementsFormatted): TOptionAction [] {
+    function getOptions(moviments: TMovementsSummary): TOptionAction [] {
 
         const options = [
             moviments.status_transaction === "pendente" ? {
@@ -192,7 +173,7 @@
 
     const  { mutate } = useMutation({
 
-        mutationFn: (payload: TMovements) => patchMovements(payload),
+        mutationFn: (payload: TMovements) => patchMovementsById(payload.id!, payload),
 
         onSuccess: () => {
             invalidate(QUERY_KEYS.movements.all)
@@ -209,24 +190,19 @@
 
     })
 
-
-    function handleOpenModalEditMovementsRevenue(movements: TMovementsFormatted) {
+    function handleOpenModalEditMovementsRevenue(movements: TMovementsSummary) {
 
         //Usamos structuredClone + toRaw para evitar mutar o objeto reativo do Vue
         const rawMovements =  structuredClone(toRaw(movements))
 
-        editDraft.value = {
-            ...rawMovements,
-            value_transaction: Number(rawMovements.value_transaction.replace(/[^\d,]/g, '').replace(',', '.')),
-            date_transaction: new Date(rawMovements.date_transaction.split('/').reverse().join('-') + 'T00:00:00') ,
-        }
+        editDraft.value = parseMovementToEdit(rawMovements)
 
         modalEditMovementsRevenue.value = true
     }
 
-    function handleOptionClick(option: TOptionAction, data: TMovementsFormatted) {
+    function handleOptionClick(option: TOptionAction, data: TMovementsSummary) {
 
-        if (option.value === "edit" && data.type_transaction === "Receita") {
+        if (option.value === "edit" && data.type_transaction === "receita") {
             handleOpenModalEditMovementsRevenue(data)
             return 
         }
@@ -235,11 +211,11 @@
 
         const payload: TMovements = {
             ...raw,
-            value_transaction: Number(raw.value_transaction.replace(/[^\d,]/g, '').replace(',', '.')),
-            date_transaction: new Date(raw.date_transaction.split('/').reverse().join('-') + 'T00:00:00'),
+            value_transaction: Number(raw.value_transaction ?? 0),
+            date_transaction: new Date(raw.date_transaction ?? ""),
         }
 
-        if (option.value === "efetivar" && data.type_transaction === "Receita") {
+        if (option.value === "efetivar" && data.type_transaction === "receita") {
             editDraft.value = payload
             labelOptions.value.colorButton = "green"
             labelOptions.value.textButton = "Receber"
@@ -247,9 +223,9 @@
             labelOptions.value.text = "Ao efetivar essa receita será adicionado o valor na Conta."
             cardPostValueTransaction.value = true
             return
-        } else if (option.value === "delete" && data.type_transaction === "Receita") {
-            editDraft.value = payload
+        } else if (option.value === "delete" && data.type_transaction === "receita") {
             payload.is_deleted = true
+            editDraft.value = payload
             labelOptions.value.colorButton = "green"
             labelOptions.value.textButton = "Deletar"
             labelOptions.value.title = "Deseja deletar esta receita?"
@@ -268,12 +244,12 @@
 <template>
     <div class="container-main">
 
-        <cardAddMovimentsRevenue v-model="modalAddRevenue" />
+        <CardAddMovimentsRevenue v-model="modalAddRevenue" />
         <CardDeletTransaction @success="handleMutationSuccess" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="editDraft" v-model="cardDeletTransaction" />
         <CardEditMovementsRevenue @success="handleMutationSuccess" :draft="editDraft" v-model="modalEditMovementsRevenue"/>
         <CardSettleTransactionModal @success="handleMutationSuccess" v-model="cardPostValueTransaction" :draft="editDraft" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" />
 
-        <filterDrawer :items="[ 'Recebidas', 'Pendentes']" :field-type-active="true" color-button="green" @apply-filter="handleApplyFilter" @reset-filter="handleClearFilter" v-model="drawer"/>
+        <FilterDrawer :items="[ 'Recebidas', 'Pendentes']" :field-type-active="true" color-button="green" @apply-filter="handleApplyFilter" @reset-filter="handleClearFilter" v-model="drawer"/>
 
         <div class="text-center bnt-options">
             
@@ -335,7 +311,7 @@
                 <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
                 <div v-else  class="main-value-formated">
                     <v-icon color="green" icon="mdi-arrow-down-bold-circle"></v-icon>
-                    <span>{{ sumary?.receitas_pendentes }}</span>
+                    <span>{{ formatCurrency(sumary.receitas_pendentes) }}</span>
                 </div>
 
             </v-card>
@@ -343,7 +319,7 @@
                  <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
                  <div v-else class="main-value-formated">
                     <v-icon color="green" icon="mdi-arrow-up-bold-circle"></v-icon>
-                    <span>{{ sumary?.receitas_efetivadas }}</span>
+                    <span>{{ formatCurrency(sumary.receitas_efetivadas) }}</span>
                 </div>
 
             </v-card>
@@ -351,7 +327,7 @@
                 <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
                  <div v-else  class="main-value-formated">
                     <v-icon color='black' icon="mdi-scale-balance"></v-icon>
-                    <span> {{ sumary?.total_geral }}</span>
+                    <span> {{ formatCurrency(sumary.total_geral) }}</span>
                 </div>
             </v-card>
         </div>
@@ -380,7 +356,7 @@
             </template>
                 <v-data-table
                 :headers="headers"
-                :items="transitionsFformatted"
+                :items="tableData!"
                 :search="search"
                 :loading="isPending"
                 mobile-breakpoint="md"
@@ -398,11 +374,14 @@
                     >{{ item.status_transaction === 'recebido' || item.status_transaction === 'pago' ? 'Efetivada' : 'Pendente' }}</v-tooltip>
                 </template>
 
-                
                 <template v-slot:item.value_transaction="{item}">
                     <v-chip color="green">
-                    {{ item.value_transaction }}
+                    {{ formatCurrency(item.value_transaction) }}
                     </v-chip>
+                </template>
+
+                <template v-slot:item.date_transaction="{item}">
+                    {{ formatDate(item.date_transaction) }}
                 </template>
 
                 <template v-slot:item.actions="{ item }">

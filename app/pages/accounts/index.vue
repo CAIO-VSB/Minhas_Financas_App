@@ -79,10 +79,14 @@
   })
 
   function handleOpenModalEditAccount(account: TAccount) {
+
+    console.log("Valor que chega para accounts", account)
+
     modalEditAccount.value = true
     editDraft.value = {
       ...structuredClone(toRaw(account)),
-      initial_balance: account.saldo_atual ?? 0.00
+      initial_balance: account.initial_balance ?? 0.00,
+      saldo_atual:  account.saldo_atual ?? 0.00
     } 
   }
 

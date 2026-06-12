@@ -5,74 +5,61 @@
     titleBotton: string,
     title: string,
     text: string,
-    draft: TMovements | null
+    draft: TMovementsWithTransfer | null
   }>()
 
-  const  emit = defineEmits<{
-    success: []
-  }>()
-
-  import type { TMovements } from "~~/types/movements/TMovements"
+  import type {  TMovementsWithTransfer } from "~~/types/movements/TMovements"
   import { useInvalidate } from "~/composables/useInvalidate"
-  import { useHttpMovements } from '~/composables/useHttp/useHttpMovements'
-
+  import { useHttpTransfer } from '~/composables/useHttp/useHttpTransfer'
 
   const { invalidate } = useInvalidate()
-  const { patchMovementsById } = useHttpMovements()
+  const { deleteTransferById } = useHttpTransfer()
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
-
 
   const modelValue = defineModel<boolean>()
 
-  const  { mutate } = useMutation({
+   const  { mutate } = useMutation({
 
-  mutationFn: (payload: TMovements) => patchMovementsById(payload.id!, payload),
+    mutationFn: (payload: TMovementsWithTransfer) => deleteTransferById(payload.transfer_id!, {is_deleted: true}),
 
-  onSuccess: () => {
-    invalidate(QUERY_KEYS.movements.all)
-    invalidate(QUERY_KEYS.movements.only_expenses)
-    invalidate(QUERY_KEYS.movements.only_revenues)
-    invalidate(QUERY_KEYS.movements.current_balance)
-    invalidate(QUERY_KEYS.accounts.getBalanceForAccount)
-    invalidate(QUERY_KEYS.tranfer.all)
-    emit("success")
-  },
+    onSuccess: () => {
+      invalidate(QUERY_KEYS.movements.all)
+      invalidate(QUERY_KEYS.movements.only_expenses)
+      invalidate(QUERY_KEYS.movements.only_revenues)
+      invalidate(QUERY_KEYS.movements.current_balance)
+      invalidate(QUERY_KEYS.accounts.getBalanceForAccount)
+      invalidate(QUERY_KEYS.tranfer.all)
+      notifySuccess("Sucesso", "Acão realizada com sucesso", 6000)
+      modelValue.value = false
+    },
 
-  onError: (error) => {
-    notifyInfo("Atenção", `Erro ao editar transação. Tente novamente mais tarde ou contate o surpote técnico. Erro detalhado: ${error.message}`)
-  },
+    onError: (error) => {
+      notifyInfo("Atenção", `Erro ao editar transferência. Tente novamente mais tarde ou contate o surpote técnico. Erro detalhado: ${error.message}`)
+    },
 
-})
+  })
 
 
-async function submitForm() {
+  async function submitForm() {
 
-  if(!props.draft) {
-    notifyError("Ops!", "Algo não parece certo. Confira os dados e tente novamente.")
-    return
-  } 
+    if(!props.draft) {
+      notifyError("Ops!", "Algo não parece certo. Confira os dados e tente novamente.")
+      return
+    } 
 
-  const raw = structuredClone(toRaw(props.draft))
+    const raw = structuredClone(toRaw(props.draft))
 
-  const payload: TMovements = {
-    ...raw
+    const payload: TMovementsWithTransfer = {
+      ...raw
+    }
+
+    if (props.draft.type_transaction === "transferencia_entrada" || props.draft.type_transaction === "transferencia_saida") {
+      payload.is_deleted = true
+      mutate(payload)
+      return
+    }
+
   }
-
-  if (props.draft.type_transaction === "receita") {
-    payload.is_deleted = true
-    modelValue.value = false
-    notifySuccess("Sucesso", "Receita deletada com sucesso", 6000)
-  }
-  
-  if (props.draft.type_transaction === "despesa") {
-    payload.is_deleted = true
-    modelValue.value = false
-    notifySuccess("Sucesso", "Despesa deletada com sucesso", 6000)
-  }
-
-  mutate(payload)
-  
-}
 
 
 </script>
@@ -83,7 +70,7 @@ async function submitForm() {
   <div>
       <v-dialog
         transition="dialog-bottom-transition"
-        width="550"
+        width="450"
         v-model="modelValue"
       >
         <template v-slot:default="{ isActive }">
@@ -108,7 +95,7 @@ async function submitForm() {
 
                   <div>
                       <p style="color: rgba(0, 0, 0, 0.70);">Valor</p>
-                      <p style="color: rgba(0, 0, 0, 0.5);  text-align: center;">{{ formatCurrency(props.draft?.value_transaction ?? 0.00) }}</p>
+                      <p style="color: rgba(0, 0, 0, 0.5);  text-align: center;">{{ formatCurrency(props.draft?.value_transaction ?? 0) }}</p>
                   </div>
               </div> 
             </v-card-text>
@@ -144,8 +131,8 @@ async function submitForm() {
 <style scoped>
 
 .info {
-    display: flex;
-    gap: 10rem;
+  display: flex;
+  gap: 4rem;
 }
 
 .info > div:nth-child(1) {

@@ -178,18 +178,15 @@
 
 .side-left {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  background-color: $color-secundary;
   z-index: 3;
 }
 
 .side-right {
   box-shadow: 2px 4px 12px rgba(0, 0, 0, 0.5);
-  background-color: $color-primary;
   z-index: 3;
 }
 
 .login-title {
-  color: $color-primary-title;
   font-size: clamp(1.4rem, 2.5vw, 2rem);
 }
 
@@ -198,7 +195,6 @@
 }
 
 .login-form {
-  background-color: $color-secundary;
   padding: 5px;
   width: 100%;
   border-radius: 25px;
@@ -214,7 +210,6 @@
 }
 
 .button-login {
-  background-color: $color-primary !important;
   font-size: clamp(0.8rem, 2.5vw, 1rem);
   width: 100% !important;
 }

@@ -42,14 +42,12 @@
     transferForm.value.account_destination = newVal
   })
 
-  watch([modelAccountOrigin, modelAccountDestination], ([origin, destination]) => {
-    if (origin === destination) {
-      modelAccountOrigin.value = destination
-      modelAccountDestination.value = null
-    } else if (destination === origin) {
-      modelAccountDestination.value = origin
-      modelAccountOrigin.value = null
-    }
+  const accountsFilteredOrigin = computed(() => {
+    return accounts.value?.filter(item => item.id !== modelAccountDestination.value)
+  })
+
+  const accountsFilteredDestination = computed(() => {
+    return accounts.value?.filter(item => item.id !== modelAccountOrigin.value)
   })
 
   function resetForm() {
@@ -120,7 +118,7 @@
               
               <v-date-input :rules="dateRules" v-model="transferForm.date_transfer" prepend-icon="mdi-calendar"  autocomplete="off" name="date" label="Data*" variant="underlined" ></v-date-input>
 
-              <v-select v-model="modelAccountOrigin"  prepend-icon="mdi-bank-transfer-out" :rules="selectRules" item-value="id" item-title="name_identifier" color="primary" label="Conta origem*" :items="accounts" variant="underlined">      
+              <v-select v-model="modelAccountOrigin" clearable prepend-icon="mdi-bank-transfer-out" :rules="selectRules" item-value="id" item-title="name_identifier" color="primary" label="Conta origem*" :items="accountsFilteredOrigin" variant="underlined">      
                  <template v-slot:selection="{item}">
                     <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
                       <v-img  :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
@@ -139,7 +137,7 @@
                   </template>
               </v-select>
 
-              <v-select v-model="modelAccountDestination" prepend-icon="mdi-bank-transfer-in" :rules="selectRules" item-value="id" item-title="name_identifier"  color="primary" label="Conta destino*" :items="accounts" variant="underlined">
+              <v-select v-model="modelAccountDestination" clearable prepend-icon="mdi-bank-transfer-in" :rules="selectRules" item-value="id" item-title="name_identifier"  color="primary" label="Conta destino*" :items="accountsFilteredDestination" variant="underlined">
                  <template v-slot:selection="{item}">
                     <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
                       <v-img  :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>

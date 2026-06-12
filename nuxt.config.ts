@@ -1,6 +1,5 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
-import tailwindcss from "@tailwindcss/vite";
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -8,7 +7,7 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css',],
 
   build: {
-    transpile: ['vuetify', '@vuepic/vue-datepicker']
+    transpile: ['vuetify']
   },
 
   toast: {composableName: 'useNotification'},
@@ -48,10 +47,15 @@ export default defineNuxtConfig({
 
   app: {
     head: {
+      title: 'Minhas finanças',
       meta: [
         {name: "referrer", content: "no-referrer"}
-      ]
-    }
+      ],
+
+      link: [
+      {rel: 'icon', type: 'image/x-icon', href: '/favicon.png'}
+    ]
+    },
   },
   
   vite: {
@@ -60,19 +64,6 @@ export default defineNuxtConfig({
         transformAssetUrls
       }
     },
-
-    css: {
-      preprocessorOptions: {
-        scss: {
-        additionalData: '@use "~/assets/sass/_variables.sass" as *;'
-        },
-      },
-    },
-
-    plugins: [
-      tailwindcss(),  
-    ],
-
 
   }
 })

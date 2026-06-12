@@ -60,6 +60,8 @@ export const movementsRespository = {
 
     async findMovementsByFilter(userId: string, start_day: string, end_day: string, categorie_id: number[], accounts_id: number[], situation: string, for_type: string[]) {
 
+        console.log("Valor chegando para filtrar calica", userId, start_day, end_day, categorie_id, accounts_id, situation, for_type)
+
         const categorieParam = categorie_id.length > 0 ? categorie_id : null
         const accountsParam = accounts_id.length > 0 ? accounts_id : null
         let situationParam = situation || null

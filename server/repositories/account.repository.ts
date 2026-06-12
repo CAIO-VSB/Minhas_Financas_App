@@ -6,16 +6,20 @@ export const accountsRepository = {
     async findAll(userId: string, active?: boolean) {
         
         const text = active !== undefined
-        ? `SELECT a.*, COALESCE(v.saldo_atual, 0) AS saldo_atual
+        ? `SELECT a.*, 
+                COALESCE(v.saldo_atual, 0) AS saldo_atual,
+                COALESCE((SELECT value_transaction FROM movements WHERE accounts_id = a.id AND type_transaction = 'saldo inicial' AND is_deleted = false LIMIT 1), 0) AS initial_balance
             FROM banks_accounts a
-            LEFT JOIN vw_balance_for_account v ON v.accounts_id = a.id
-            WHERE user_id = $1 AND active = $2  
-            ORDER BY id ASC`
+                LEFT JOIN vw_balance_for_account v ON v.accounts_id = a.id
+                WHERE user_id = $1 AND active = $2  
+                ORDER BY id ASC`
 
-        : `SELECT a.*, COALESCE(v.saldo_atual, 0) AS saldo_atual
+        : `SELECT a.*, 
+                COALESCE(v.saldo_atual, 0) AS saldo_atual,
+                COALESCE((SELECT value_transaction FROM movements WHERE accounts_id = a.id AND type_transaction = 'saldo inicial' AND is_deleted = false LIMIT 1), 0) AS initial_balance
 			FROM banks_accounts a
-			LEFT JOIN vw_balance_for_account v ON v.accounts_id = a.id
-			WHERE a.user_id = $1  ORDER BY id ASC`
+			    LEFT JOIN vw_balance_for_account v ON v.accounts_id = a.id
+			    WHERE a.user_id = $1  ORDER BY id ASC`
 
         const params = active !== undefined ? [userId, active === true] : [userId]
 
@@ -27,7 +31,6 @@ export const accountsRepository = {
 
     
     async findBalanceForAccount(userId: string) {
-        
         
         const text = `
             SELECT a.*, COALESCE(v.saldo_atual, 0) AS saldo_atual,
