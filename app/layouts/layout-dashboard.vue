@@ -1,17 +1,9 @@
 <script lang="ts" setup>
 
-  type TOptions = {
-    prependIcon: string,
-    icon: string,
-    title: string
-  }
- 
   import logo from "@/assets/logo.jpg"
-  import InfoUser from './components/InfoUser.vue'
+  import InfoUser from './components/myAccount.vue'
   import ButtonActions from './components/buttonActions.vue'
-  
-  const { $authClient } = useNuxtApp()
- 
+
   const drawer = ref(true)
   const rail = ref(false)
   const openedGroups = ref(['Groups'])
@@ -21,19 +13,24 @@
     openedGroups.value = []
   })
   
+  const nav = [
+    { title: 'Visão geral', icon: 'mdi-home-analytics', value: 'Visão geral', to: '/home' },
+    { title: 'Transações', icon: 'mdi-swap-horizontal-bold', value: 'transacoes', to: '/transactions' },
+    { title: 'Cartões de crédito', icon: 'mdi-credit-card-multiple-outline', value: 'cartoes', to: '/credit-card' },
+    { title: 'Economia', icon: 'mdi-piggy-bank-outline', value: 'economia', to: undefined },
+  ]
 
 </script>
 
 <template>
-  <v-card style="height: 100vh; overflow: hidden;">
-    <v-layout>
+    <v-layout >
       <v-navigation-drawer
         v-model="drawer"
         :rail="rail"
         @click="rail = false"
-        style="height: 100vh; background-color: #fafaf9;"
-        :width="350"
-    
+        :width="380"
+        border="end"
+        color="surface"
       >
         <v-list >
           <v-list-item
@@ -43,7 +40,7 @@
             </template>
             
             <template #title>
-              <span style="color: #1a4a6b; font-size: 1.1rem; font-weight: 800;">Minhas finanças</span>
+              <span class="text-primary text-subtitle-1 font-weight-bold">Minhas finanças</span>
             </template>
 
             <template v-slot:append>
@@ -58,65 +55,38 @@
 
         <v-divider ></v-divider>
 
-        <ButtonActions style="margin-top: 10px; margin-bottom: 10px;"  :rail="rail"/>
+        <ButtonActions class="my-3" :rail="rail"/>
 
-        <v-list density="compact" nav v-model:opened="openedGroups">
+        <v-list density="comfortable" class="px-2 mt-2" nav v-model:opened="openedGroups">
             <v-list-item
-                prepend-icon="mdi-home-analytics"
-                title="Visão geral"
-                value="Visão geral"
-                to="/home"
+            v-for="item in nav"
+              :prepend-icon="item.icon"
+              :title="item.title"
+              :value="item.value"
+              :to="item.to"
+              rounded="lg"
+              color="primary"
+              class="mb-1 text-body-2"
             >
-                <v-tooltip
-                activator="parent"
-                location="start"
-                >Visão geral</v-tooltip>
-            </v-list-item>
+              <template #title>
+                <span class="text-body-1">{{ item.title }}</span>
+              </template>
 
-
-            <v-list-item
-                prepend-icon="mdi-swap-horizontal-bold"
-                title="Transações"
-                value="transacoes"
-                to="/transactions"
-            >
-                <v-tooltip
-                activator="parent"
-                location="start"
-                >Transações</v-tooltip>   
-            </v-list-item>
-
-
-            <v-list-item
-                prepend-icon="mdi-credit-card-multiple-outline"
-                title="Cartões de crédito"
-                value="cartoes"
-                to="/credit-card"
-            >
-                <v-tooltip
-                activator="parent"
-                location="start"
-                >Cartões de crédito</v-tooltip>   
-            </v-list-item>
-
-            <v-list-item
-            prepend-icon="mdi-piggy-bank-outline"
-            title="Economia"
-            value="economia"
-            >
               <v-tooltip
-                activator="parent"
-                location="start"
-              >Economia</v-tooltip>   
-          </v-list-item>
+              activator="parent"
+              location="start"
+              >{{ item.title }}</v-tooltip>
+            </v-list-item>
 
             <v-list-group value="Cadastros" >
               <template v-slot:activator="{ props }">
                   <v-list-item
                   v-bind="props"
-                  title="Cadastros"
                   prepend-icon="mdi-database-plus"
                   >
+                  <template #title>
+                    <span class="text-body-1">Cadastros</span>
+                  </template>
                   <v-tooltip
                   activator="parent"
                   location="start"
@@ -129,27 +99,47 @@
             title="Categorias"
             value="categoria"
             to="/categories"
-            ></v-list-item>
+            rounded="lg"
+            color="primary"
+            class="mb-1"
+            >
+              <template #title>
+                <span class="text-body-1">Categorias</span>
+              </template>
+          </v-list-item>
 
             <v-list-item
             prepend-icon="mdi-bank-outline"
             title="Contas bancárias"
             value="contas"
             to="/accounts"
-            ></v-list-item>
+            rounded="lg"
+            color="primary"
+            class="mb-1"
+            >
+
+            <template #title>
+              <span class="text-body-1">Contas bancárias</span>
+            </template>
+          </v-list-item>
 
             </v-list-group>
               <v-list-item
                 prepend-icon="mdi-file-chart-outline"
                 title="Relatórios"
                 value="relatorios"
+                rounded="lg"
+                color="primary"
+                class="mb-1"
             >
+              <template #title>
+                <span class="text-body-1">Relatórios</span>
+              </template>
                 <v-tooltip
                 activator="parent"
                 location="start"
                 >Relatórios</v-tooltip>   
             </v-list-item>
-
 
             <v-divider></v-divider>
 
@@ -160,10 +150,9 @@
             <v-list density="compact" nav >
                 <v-list-item
                 prepend-icon="mdi-tag-outline"
-                style="color: #777;"
                 >
                 <template #title>
-                  <p style="font-size: 0.60rem; color: #777;">Versão 1.0</p>
+                  <p class="text-caption text-medium-emphasis">Versão 1.0</p>
                 </template>
             </v-list-item>
             </v-list>
@@ -171,56 +160,43 @@
         </template>
       </v-navigation-drawer>
 
-      <v-main style="height: 100vh; background-color: #f4f4f5; overflow-y: auto;">
-        <div class=" title-router flex align-center">
+      <v-app-bar color="surface">
+
+        <template #title>
+          <span>{{ routes.meta.title }}</span>
+        </template>
+
+        <template #prepend>
           <v-btn
             icon="mdi-menu"
             variant="text"
             @click.stop="drawer = !drawer"
           ></v-btn>
-          <p class="text-title">{{ routes.meta.title }}</p>
-          <div class="info-user">
-            <infoUser />
-          </div>
-        </div>
-        <slot></slot>
-      </v-main>
+        </template>
+        
+        <template #append>
+          <div class="mr-4">
+              <infoUser />
+            </div>
+        </template>
+      </v-app-bar>
 
+      <v-main style="overflow-y: auto;" class="bg-backgroundPrimary">
+        <div class="dashboard-content ">
+          <slot></slot>
+        </div>
+      </v-main>
     </v-layout>
-  </v-card>
 </template>
 
-<style scoped >
+<style scoped>
 
-::v-deep(.v-list-item--nav .v-list-item-title) {
-  font-size: 0.95rem;
-}
-
-.title-router {
-  font-size: 1rem;
-  font-weight: 500;
-  display: flex;
-}
-
-.text-title {
-  white-space: nowrap;
-  margin-right: 12px;
-}
-
-.info-user {
-  width: 100%;
-  display: flex;
-  align-items: end;
-  justify-content: end;
-  margin-right: 60px;
-}
-
-::-webkit-scrollbar {
+.dashboard-content::-webkit-scrollbar {
   width: 5px;
   background: #F4F4F4;
 }
 
-::-webkit-scrollbar-thumb {
+.dashboard-content::-webkit-scrollbar-thumb {
   background: #dad7d7;
 }
 

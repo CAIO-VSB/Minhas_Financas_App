@@ -132,13 +132,6 @@
               <v-select prepend-icon="mdi-tag"  :rules="selectRules" v-model="categorieForm.type_categorie" color="primary" persistent-hint hint="Selecione o tipo de categoria" label="Tipo *" :items="items" variant="underlined">
               </v-select>
 
-              <v-switch
-                v-model="categorieForm.active"
-                color="success"
-                label="Ativo"
-                hide-details
-              ></v-switch>
-
             </form>
 
             <small class="text-caption text-medium-emphasis"

@@ -95,9 +95,9 @@
             return
         }
 
-        if (startDate && endDate) {
-            filterFrom.value.start_day = startDate.value ? new Date(startDate.value).toISOString().split('T')[0] : null
-            filterFrom.value.end_day = endDate.value ? new Date(endDate.value).toISOString().split('T')[0] : null
+        if (startDate?.value && endDate?.value) {
+            filterFrom.value.start_day = new Date(startDate.value).toISOString().split('T')[0] as string
+            filterFrom.value.end_day = new Date(endDate.value).toISOString().split('T')[0] as string
         }
 
         emit("applyFilter", filterFrom.value)
@@ -283,14 +283,14 @@
             
                 <v-btn
                 text="Limpar e sair"
-                variant="elevated"
+                variant="tonal"
                 @click="resetForm"
                 ></v-btn>
 
                 <v-btn
                 :color="props.colorButton"
                 text="Aplicar filtros"
-                variant="elevated"
+                variant="tonal"
                 @click="submitForm"
                 ></v-btn>
             </v-card-actions>

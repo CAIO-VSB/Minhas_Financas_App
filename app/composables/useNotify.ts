@@ -23,7 +23,7 @@ export function useNotify() {
             message: message,
             position: "topRight",
             timeout: timer,
-            transitionIn: "bounceInDown",
+            transitionIn: "fadeInUp",
             transitionOut: "fadeOutUp",
             backgroundColor: "#eff6ff",
             titleColor: "#78350f",
@@ -38,7 +38,7 @@ export function useNotify() {
         useNotification().error({
             title: title,
             message: message,
-            position: "topCenter",
+            position: "topRight",
             timeout: timer,
             transitionIn: "fadeInUp",
             transitionOut: "fadeOut",

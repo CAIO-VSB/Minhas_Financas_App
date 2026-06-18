@@ -45,6 +45,7 @@ export default defineNuxtConfig({
     }
   },
 
+
   app: {
     head: {
       title: 'Minhas finanças',

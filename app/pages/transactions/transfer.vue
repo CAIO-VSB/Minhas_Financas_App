@@ -175,9 +175,10 @@
     <CardAddTransfer v-model="modalAddTransfer"/>
     <CardEditTransfer :draft="editDraft" v-model="modalEditTransfer" />
     <CardDeleteTransfer :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="editDraft" v-model="cardDeleteTransfer" />
-    <div class="container-main">
 
-        <div class="text-center bnt-options">
+    <div class="mt-7 container-main">
+
+        <div class="text-center d-flex ga-4 ml-4 mb-5 btn-options">
             
             <v-menu
                 transition="scale-transition"
@@ -187,6 +188,7 @@
                     :color="ColorButtonOption"
                     v-bind="props"
                     class="text-none "
+                    variant="tonal"
                     append-icon="mdi-arrow-down-drop-circle"
                     >
                     {{ titleButtonOption }}
@@ -208,11 +210,12 @@
                 </v-list>
             </v-menu>
 
-            <div class="more-option">
+            <div class="w-100 d-flex justify-sm-end ga-3 pr-4 ">
                 <v-btn
                 :color="ColorButtonOption"
                 prepend-icon="mdi-plus"
-                class="text-none "
+                class="text-none btn-add-transfer"
+                variant="tonal"
                 @click="modalAddTransfer = true"
                 >
                 NOVA TRANSFERÊNCIA
@@ -225,9 +228,17 @@
         <div class="main-cards">
             <v-card subtitle="Saldo Atual">
                 <v-skeleton-loader v-if="isPendingCurrentBalance" type="list-item-avatar"></v-skeleton-loader>
-                <div v-else  class="main-value-formated">
-                    <v-icon icon="mdi-bank"></v-icon>
-                    <span>{{ formatCurrency(balanceCurrent.saldo_atual) }}</span>
+                <div v-else class="d-flex align-center ga-2 pl-2 mb-2">
+                    <div class="pa-2 rounded-lg ">
+                        <v-avatar 
+                        color="primary"
+                        variant="tonal" 
+                        icon="mdi-bank-outline"
+                        size="40"
+                        rounded="lg"
+                        ></v-avatar>
+                    </div>
+                    <span class="text-h6 font-weight-semibold">{{ formatCurrency(balanceCurrent.saldo_atual) }}</span>
                 </div>
                 <template #append>
                     <v-tooltip  text="O cálculo do saldo atual é independente do período selecionado, considerando o saldo inicial das contas ativas juntamente com todas as movimentações efetivadas de entrada e saída">
@@ -239,9 +250,17 @@
             </v-card>
             <v-card :loading="isPending" subtitle="Receitas">
                  <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
-                 <div v-else class="main-value-formated">
-                    <v-icon color="green" icon="mdi-arrow-up-bold-circle"></v-icon>
-                    <span>{{ formatCurrency(sumary.receitas)}}</span>
+                 <div v-else class="d-flex align-center ga-2 pl-2 mb-2">
+                    <div class="pa-2 rounded-lg ">
+                        <v-avatar 
+                        color="success"
+                        variant="tonal" 
+                        icon="mdi-arrow-down-thin-circle-outline"
+                        size="40"
+                        rounded="lg"
+                        ></v-avatar>
+                    </div>
+                    <span class="text-h6 font-weight-semibold">{{ formatCurrency(sumary.receitas)}}</span>
                 </div>
                 <template #append>
                     <v-tooltip text="O cálculo do total de receitas considera todas as movimentações de entrada efetivadas vinculadas às contas ativas.">
@@ -253,9 +272,17 @@
             </v-card>
             <v-card :loading="isPending" subtitle="Despesas">
                 <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
-                 <div v-else  class="main-value-formated">
-                    <v-icon color='red' icon="mdi-arrow-down-bold-circle"></v-icon>
-                    <span> {{ formatCurrency(sumary.despesas) }}</span>
+                 <div v-else  class="d-flex align-center ga-2 pl-2 mb-2">
+                    <div class="pa-2 rounded-lg ">
+                        <v-avatar 
+                        color="error"
+                        variant="tonal" 
+                        icon="mdi-arrow-up-thin-circle-outline"
+                        size="40"
+                        rounded="lg"
+                        ></v-avatar>
+                    </div>
+                    <span class="text-h6 font-weight-semibold"> {{ formatCurrency(sumary.despesas) }}</span>
                 </div>
 
                 <template #append>
@@ -268,9 +295,17 @@
             </v-card>
             <v-card :loading="isPending" subtitle="Balanco Mensal">
                 <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
-                 <div v-else  class="main-value-formated">
-                    <v-icon color="blue" icon="mdi-scale-balance"></v-icon>
-                    <span>{{ formatCurrency(sumary.balanco_mensal) }}</span>
+                 <div v-else  class="d-flex align-center ga-2 pl-2 mb-2">
+                    <div class="pa-2 rounded-lg ">
+                        <v-avatar 
+                        color="primary"
+                        variant="tonal" 
+                        icon="mdi-scale-balance"
+                        size="40"
+                        rounded="lg"
+                        ></v-avatar>
+                    </div>
+                    <span class="text-h6 font-weight-semibold">{{ formatCurrency(sumary.balanco_mensal) }}</span>
                 </div>
                 <template #append>
                     <v-tooltip text="O balanço mensal é calculado com base na soma de todas as receitas efetivadas menos todas as despesas efetivadas do período selecionado.">
@@ -282,7 +317,7 @@
             </v-card>
         </div>
         
-        <div class="container-table">
+        <div class="w-100 pa-2 container-table">
 
             <template v-if="isPending">
                 <v-skeleton-loader 
@@ -379,9 +414,6 @@
 
 <style scoped>
 
-.container-main {
-    margin-top: 35px;
-}
 
 .main-cards {
     margin: 10px;
@@ -390,68 +422,74 @@
     gap: 16px;
 }
 
-.bnt-options {
-    display: flex;
-    margin-bottom: 20px;
-    gap: 20px;
-    margin-left: 20px;
-}
-
-.more-option {
-    width: 100%;
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    padding-right: 20px;
-}
-
 .container-table {
     width: 100%;
     padding: 10px;
 }
 
-.table {
-    overflow-y: auto;
-    max-height: calc(100vh - 220px);
-    height: fit-content;
+.icon-help:hover {
+    transform: scale(1.3);
+    cursor: pointer;
 }
-
-.main-value-formated {
-    font-size: 1.2rem;
-    display: flex;
-    gap: 20px;
-    padding-left: 10px;
-    margin-bottom: 10px;
-}
-
 
 :deep(.v-data-table-header__content) {
     font-weight: 800;
 }
 
-@media (max-width: 950px) {
-  .main-cards {
-    display: grid;
-    grid-template-columns: 1fr;
-    padding: 0 6px 0 6px;
-  }
+@media (max-width: 1200px) {
+    .main-cards {
+        display: grid;
+        grid-template-columns: 1fr;
+        padding: 0 6px 0 6px;
+    }
+
+    .container-table {
+        width: 100%;
+        padding: 10px;
+        flex: 1;
+        min-height: 0;
+    }
+
+    .container-main {
+        margin-top: 30px;
+    }
+
+    .table {
+        height: fit-content;
+    }
+
+    .btn-add-transfer {
+        font-size: clamp(0.75rem, 2.5vw, 0.75rem);
+    }
+
 }
 
 @media (max-width: 680px) {
-    .bnt-options {
+
+    .btn-options {
         display: flex;
-        margin-bottom: 20px;
-        gap: 20px;
         flex-direction: column;
-        margin: 10px;
+        padding-right: 10px;
     }
 
-    .more-option {
+    .btn-add-transfer {
         width: 100%;
-        display: flex;
-        gap: 10px;
-        flex-direction: column;
     }
+
+    .container-main {
+        margin-top: 30px;
+    }
+
+    .container-table {
+        width: 100%;
+        padding: 10px;
+    }
+
+    .table {
+        height: fit-content;
+        padding: 10px;
+    }
+
 }
 
 

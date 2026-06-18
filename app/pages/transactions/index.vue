@@ -4,7 +4,7 @@
         layout: "layout-dashboard"
     })
 
-    import { format } from 'date-fns'
+    import { useDisplay } from 'vuetify'
     import { useHttpMovements } from '~/composables/useHttp/useHttpMovements'
     import { useHttpTransfer } from '~/composables/useHttp/useHttpTransfer'
     import type { TMovementsSummary, TMovementsWithTransfer } from '~~/types/movements/TMovements'
@@ -103,7 +103,9 @@
     const balanceCurrent = computed(() => {        
         const row = currentBalance.value?.[0]
        
-        return formatCurrency(row?.saldo_atual ?? 0.00)
+        return {
+            saldo_atual: Number(row?.saldo_atual ?? 0.00)
+        }
         
     })
     
@@ -305,12 +307,11 @@
         mutate(payload)
     }
 
-
 </script>
 
 
 <template>
-    <div class="container-main">
+    <div class="mt-6 container-main">
 
         <CardDeleteMovementTransfer @success="handleMutationSuccess" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="editDraft" v-model="cardDeleteTransfer" />
         <CardDeletTransaction @success="handleMutationSuccess" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="editDraft" v-model="cardDeletTransaction" />
@@ -321,7 +322,7 @@
         
         <FilterDrawer :items="[ 'Recebidas', 'Pagas', 'Pendentes']" :field-type-active="false" color-button="primary" @apply-filter="handleApplyFilter" @reset-filter="handleClearFilter" v-model="drawer"/>
           
-        <div class="text-center bnt-options">
+        <div class="text-center d-flex ga-4 ml-4 mb-5 btn-options">
             
             <v-menu
                 transition="scale-transition"
@@ -331,6 +332,7 @@
                     color="primary"
                     v-bind="props"
                     class="text-none"
+                    variant="tonal"
                     append-icon="mdi-arrow-down-drop-circle"
                     >
                     {{ titleButtonOption }}
@@ -352,11 +354,12 @@
                 </v-list>
             </v-menu>
 
-            <div class="more-option">
+            <div class="w-100 d-flex justify-sm-end ga-3 pr-4 ">
                 <v-btn
                 color="primary"
-                prepend-icon="mdi-filter"
+                prepend-icon="mdi-filter-variant"
                 class="text-none"
+                variant="tonal"
                 @click="drawer = true"
                 >
                 Filtro
@@ -368,12 +371,20 @@
         <div class="main-cards">
             <v-card subtitle="Saldo Atual">
                 <v-skeleton-loader v-if="isPendingCurrentBalance" type="list-item-avatar"></v-skeleton-loader>
-                <div v-else  class="main-value-formated">
-                    <v-icon icon="mdi-bank"></v-icon>
-                    <span>{{ balanceCurrent }}</span>
+                <div v-else class="d-flex align-center ga-2 pl-2 mb-2">
+                    <div class="pa-2 rounded-lg ">
+                        <v-avatar 
+                        color="primary"
+                        variant="tonal" 
+                        icon="mdi-bank-outline"
+                        size="40"
+                        rounded="lg"
+                        ></v-avatar>
+                    </div>
+                    <span class="text-h6 font-weight-semibold">{{ formatCurrency(balanceCurrent.saldo_atual) }}</span>
                 </div>
                 <template #append>
-                    <v-tooltip  text="O cálculo do saldo atual é independente do período selecionado, considerando o saldo inicial das contas ativas juntamente com todas as movimentações efetivadas de entrada e saída">
+                    <v-tooltip text="O cálculo do saldo atual é independente do período selecionado, considerando o saldo inicial das contas ativas juntamente com todas as movimentações efetivadas de entrada e saída">
                         <template v-slot:activator="{ props }">
                             <v-icon class="icon-help" v-bind="props" size="20px" icon="mdi-information-outline"></v-icon>
                         </template>
@@ -382,9 +393,17 @@
             </v-card>
             <v-card :loading="isPending" subtitle="Receitas">
                  <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
-                 <div v-else class="main-value-formated">
-                    <v-icon color="green" icon="mdi-arrow-down-bold-circle"></v-icon>
-                    <span>{{ formatCurrency(summary.receitas) }}</span>
+                 <div v-else class="d-flex align-center ga-2 pl-2 mb-2">
+                    <div class="pa-2 rounded-lg ">
+                        <v-avatar 
+                        color="success"
+                        variant="tonal" 
+                        icon="mdi-arrow-down-thin-circle-outline"
+                        size="40"
+                        rounded="lg"
+                        ></v-avatar>
+                    </div>
+                    <span class="text-h6 font-weight-semibold">{{ formatCurrency(summary.receitas) }}</span>
                 </div>
                 <template #append>
                     <v-tooltip text="O cálculo do total de receitas considera todas as movimentações de entrada efetivadas vinculadas às contas ativas.">
@@ -396,9 +415,17 @@
             </v-card>
             <v-card :loading="isPending" subtitle="Despesas">
                 <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
-                 <div v-else  class="main-value-formated">
-                    <v-icon color='red' icon="mdi-arrow-up-bold-circle"></v-icon>
-                    <span> {{ formatCurrency(summary.despesas) }}</span>
+                 <div v-else class="d-flex align-center ga-2 pl-2 mb-2">
+                     <div class="pa-2 rounded-lg ">
+                        <v-avatar 
+                        color="error"
+                        variant="tonal" 
+                        icon="mdi-arrow-up-thin-circle-outline"
+                        size="40"
+                        rounded="lg"
+                        ></v-avatar>
+                    </div>
+                    <span class="text-h6 font-weight-semibold"> {{ formatCurrency(summary.despesas) }}</span>
                 </div>
 
                 <template #append>
@@ -411,9 +438,17 @@
             </v-card>
             <v-card :loading="isPending" subtitle="Balanco Mensal">
                 <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
-                 <div v-else  class="main-value-formated">
-                    <v-icon color="blue" icon="mdi-scale-balance"></v-icon>
-                    <span>{{ formatCurrency(summary.balancoMensal) }}</span>
+                 <div v-else class="d-flex align-center ga-2 pl-2 mb-2">
+                    <div class="pa-2 rounded-lg ">
+                        <v-avatar 
+                        color="primary"
+                        variant="tonal" 
+                        icon="mdi-scale-balance"
+                        size="40"
+                        rounded="lg"
+                        ></v-avatar>
+                    </div>
+                    <span class="text-h6 font-weight-semibold">{{ formatCurrency(summary.balancoMensal) }}</span>
                 </div>
                 <template #append>
                     <v-tooltip text="O balanço mensal é calculado com base na soma de todas as receitas efetivadas menos todas as despesas efetivadas do período selecionado.">
@@ -425,8 +460,7 @@
             </v-card>
         </div>
         
-        <div class="container-table">
-
+        <div class="w-100 pa-2 container-table">
             <v-card
             flat
             class="table"
@@ -455,6 +489,7 @@
                 :search="search"
                 :loading="isPending"
                 mobile-breakpoint="md"
+                items-per-page="6"
                 >
 
                 <template v-slot:item.status_transaction="{ item }">
@@ -520,117 +555,73 @@
     gap: 16px;
 }
 
-.bnt-options {
-    display: flex;
-    margin-bottom: 20px;
-    gap: 20px;
-    margin-left: 20px;
-}
-
-.more-option {
-    width: 100%;
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    padding-right: 20px;
-}
-
-.container-table {
-    width: 100%;
-    padding: 10px;
-}
-
-.table {
-    overflow-y: auto;
-    height: fit-content;
-    height: calc(100vh - 245px);
-}
-
-.main-value-formated {
-    font-size: 1.2rem;
-    display: flex;
-    gap: 20px;
-    padding-left: 10px;
-    margin-bottom: 10px;
-}
-
 .icon-help:hover {
     transform: scale(1.3);
     cursor: pointer;
 }
 
-:deep(.v-table > .v-table_wrapper > table > thead > tr > th) {
-    display: none !important;
+
+:deep(.v-card-text) {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: white;
 }
 
+:deep(.v-data-table-footer) {
+    position: sticky;
+    bottom: 0;
+    background-color: white;
+}
 
 :deep(.v-data-table-header__content) {
     font-weight: 800;
 }
 
 @media (max-width: 1200px) {
-  .main-cards {
-    display: grid;
-    grid-template-columns: 1fr;
-    padding: 0 6px 0 6px;
-  }
-
-      .container-table {
-        width: 100%;
-        height: 100vh;
-        padding: 10px;
-    }
-
-    .container-main {
-        margin-top: 30px;
-        overflow: auto;
-        height: 100vh;
-    }
-
-    .table {
-        overflow-y: auto;
-        height: fit-content;
-        height: calc(100vh - 115px);
-    }
-
-
-}
-
-@media (max-width: 680px) {
-    .bnt-options {
-        display: flex;
-        margin-bottom: 20px;
-        gap: 20px;
-        flex-direction: column;
-        margin: 10px;
-    }
-
-    .more-option {
-        width: 100%;
-        display: flex;
-        gap: 10px;
-        flex-direction: column;
+    .main-cards {
+        display: grid;
+        grid-template-columns: 1fr;
+        padding: 0 6px 0 6px;
     }
 
     .container-table {
         width: 100%;
-        height: 100vh;
         padding: 10px;
+        flex: 1;
+        min-height: 0;
     }
 
     .container-main {
         margin-top: 30px;
-        overflow: auto;
-        height: 100vh;
     }
 
     .table {
-        overflow-y: auto;
         height: fit-content;
-        height: calc(100vh - 115px);
     }
 
-  
+}
+
+@media (max-width: 680px) {
+
+    .btn-options {
+        padding-left: 2px;
+    }
+
+    .container-main {
+        margin-top: 30px;
+    }
+
+    .container-table {
+        width: 100%;
+        padding: 10px;
+    }
+
+    .table {
+        height: fit-content;
+        padding: 10px;
+    }
+
 }
 
 </style>

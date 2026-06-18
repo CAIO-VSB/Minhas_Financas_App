@@ -242,7 +242,7 @@
 
 
 <template>
-    <div class="container-main">
+    <div class="mt-7 container-main">
 
         <CardAddMovimentsRevenue v-model="modalAddRevenue" />
         <CardDeletTransaction @success="handleMutationSuccess" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="editDraft" v-model="cardDeletTransaction" />
@@ -251,7 +251,7 @@
 
         <FilterDrawer :items="[ 'Recebidas', 'Pendentes']" :field-type-active="true" color-button="green" @apply-filter="handleApplyFilter" @reset-filter="handleClearFilter" v-model="drawer"/>
 
-        <div class="text-center bnt-options">
+        <div class="text-center text-center d-flex ga-4 ml-4 mb-5 btn-container">
             
             <v-menu
                 transition="scale-transition"
@@ -261,6 +261,7 @@
                     :color="ColorButtonOption"
                     v-bind="props"
                     class="text-none "
+                    variant="tonal"
                     append-icon="mdi-arrow-down-drop-circle"
                     >
                     {{ titleButtonOption }}
@@ -282,12 +283,13 @@
                 </v-list>
             </v-menu>
 
-            <div class="more-option">
+            <div class="w-100 d-flex justify-sm-end ga-3 pr-4 btn-options">
 
                 <v-btn
                 color="success"
                 prepend-icon="mdi-plus"
-                class="text-none "
+                class="text-none btn-add-receita"
+                variant="tonal"
                 @click="modalAddRevenue = true"
                 >
                 NOVA RECEITA
@@ -296,7 +298,8 @@
                 <v-btn
                 color="green"
                 prepend-icon="mdi-filter"
-                class="text-none "
+                class="text-none btn-filter"
+                variant="tonal"
                 @click="drawer = true"
                 >
                 Filtro
@@ -309,30 +312,54 @@
          <div class="main-cards">
             <v-card subtitle="Receitas pendentes">
                 <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
-                <div v-else  class="main-value-formated">
-                    <v-icon color="green" icon="mdi-arrow-down-bold-circle"></v-icon>
-                    <span>{{ formatCurrency(sumary.receitas_pendentes) }}</span>
+                <div v-else  class="d-flex align-center ga-2 pl-2 mb-2">
+                    <div class="pa-2 rounded-lg">
+                        <v-avatar 
+                        color="green" 
+                        icon="mdi-arrow-down-thin-circle-outline"
+                        variant="tonal"
+                        size="40"
+                        rounded="lg"
+                        ></v-avatar>
+                    </div>
+                    <span class="text-h6 font-weight-semibold">{{ formatCurrency(sumary.receitas_pendentes) }}</span>
                 </div>
 
             </v-card>
             <v-card :loading="isPending" subtitle="Receitas recebidas">
                  <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
-                 <div v-else class="main-value-formated">
-                    <v-icon color="green" icon="mdi-arrow-up-bold-circle"></v-icon>
-                    <span>{{ formatCurrency(sumary.receitas_efetivadas) }}</span>
+                 <div v-else class="d-flex align-center ga-2 pl-2 mb-2">
+                    <div class="pa-2 rounded-lg">
+                        <v-avatar 
+                        color="green" 
+                        icon="mdi-arrow-up-thin-circle-outline"
+                        variant="tonal"
+                        size="40"
+                        rounded="lg"
+                        ></v-avatar>
+                    </div>
+                    <span class="text-h6 font-weight-semibold">{{ formatCurrency(sumary.receitas_efetivadas) }}</span>
                 </div>
 
             </v-card>
             <v-card :loading="isPending" subtitle="Total">
                 <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
-                 <div v-else  class="main-value-formated">
-                    <v-icon color='black' icon="mdi-scale-balance"></v-icon>
-                    <span> {{ formatCurrency(sumary.total_geral) }}</span>
+                 <div v-else  class="d-flex align-center ga-2 pl-2 mb-2">
+                    <div class="pa-2 rounded-lg">
+                        <v-avatar 
+                        color='primary' 
+                        icon="mdi-scale-balance"
+                        variant="tonal"
+                        size="40"
+                        rounded="lg"
+                        ></v-avatar>
+                    </div>
+                    <span class="text-h6 font-weight-semibold"> {{ formatCurrency(sumary.total_geral) }}</span>
                 </div>
             </v-card>
         </div>
         
-        <div class="container-table">
+        <div class=" w-100 pa-2 container-table">
 
             <v-card
                 flat
@@ -360,6 +387,7 @@
                 :search="search"
                 :loading="isPending"
                 mobile-breakpoint="md"
+                items-per-page="6"
                 >
 
                 <template v-slot:item.status_transaction="{ item }">
@@ -415,22 +443,12 @@
 
 <style scoped>
 
-.container-main {
-    margin-top: 30px;
-}
 
 .main-cards {
     margin: 10px;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 16px;
-}
-
-.bnt-options {
-    display: flex;
-    margin-bottom: 20px;
-    gap: 20px;
-    margin-left: 20px;
 }
 
 .more-option {
@@ -446,28 +464,26 @@
     padding: 10px;
 }
 
-.table {
-    overflow-y: auto;
-    height: fit-content;
-    height: calc(100vh - 245px);
-}
-
-.main-value-formated {
-    font-size: 1.2rem;
-    display: flex;
-    gap: 20px;
-    padding-left: 10px;
-    margin-bottom: 10px;
-}
-
 .icon-help:hover {
     transform: scale(1.3);
     cursor: pointer;
 }
 
-
 :deep(.v-data-table-header__content) {
     font-weight: 800;
+}
+
+:deep(.v-card-text) {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: white;
+}
+
+:deep(.v-data-table-footer) {
+    position: sticky;
+    bottom: 0;
+    background-color: white;
 }
 
 @media (max-width: 1200px) {
@@ -479,57 +495,51 @@
 
       .container-table {
         width: 100%;
-        height: 100vh;
         padding: 10px;
     }
 
     .container-main {
         margin-top: 30px;
-        overflow: auto;
-        height: 100vh;
     }
 
     .table {
-        overflow-y: auto;
         height: fit-content;
-        height: calc(100vh - 115px);
     }
 
+    .btn-filter {
+        width: 50%;
+    }
 
+    .btn-add-receita {
+        width: 50%;
+        font-size: clamp(0.75rem, 2.5vw, 0.75rem);
+    }
 }
 
 @media (max-width: 680px) {
-    .bnt-options {
-        display: flex;
-        margin-bottom: 20px;
-        gap: 20px;
+
+    .btn-container {
+        margin: 20px;        
         flex-direction: column;
-        margin: 10px;
     }
 
-    .more-option {
-        width: 100%;
-        display: flex;
-        gap: 10px;
-        flex-direction: column;
+
+    .btn-filter {
+        width: 50%;
     }
 
     .container-table {
         width: 100%;
-        height: 100vh;
         padding: 10px;
     }
 
     .container-main {
         margin-top: 30px;
-        overflow: auto;
-        height: 100vh;
     }
 
     .table {
-        overflow-y: auto;
         height: fit-content;
-        height: calc(100vh - 115px);
+        padding: 10px;
     }
 
   

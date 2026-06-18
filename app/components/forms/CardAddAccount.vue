@@ -203,13 +203,6 @@
                   </template>
               </v-text-field>
 
-              <v-switch
-                v-model="accountForm.active"
-                color="success"
-                label="Ativo"
-                hide-details
-              ></v-switch>
-
             <small class="text-caption text-medium-emphasis"
               >* Indica campos obrigatórios</small
             >

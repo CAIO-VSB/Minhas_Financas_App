@@ -29,7 +29,7 @@ export default defineEventHandler( async (event) => {
     if (id === null) {
         throw createError({
             status: 404,
-            statusMessage: "Transferência não encontrada"
+            statusMessage: "Categoria não encontrada"
         })
     }
     

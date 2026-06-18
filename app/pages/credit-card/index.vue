@@ -299,7 +299,6 @@
   display: grid;
   grid-template-columns: minmax(350px, 0.65fr) minmax(0, 1.5fr);
   gap: 5px;
-  height: 100vh;
 }
 
 .fab-wrapper {

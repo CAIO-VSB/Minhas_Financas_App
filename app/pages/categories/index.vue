@@ -7,6 +7,7 @@
   })
 
   //Imports
+  import { useDisplay } from 'vuetify'
   import { useHttpCategories } from '~/composables/useHttp/useHttpCategories'
   import type { TCategorie } from '~~/types/categorie/TCategorie'
   import BaseFab from "~/components/ui/BaseFab.vue"
@@ -14,6 +15,9 @@
   import CardAddCategorie from '~/components/forms/CardAddCategorie.vue'
   import { useInvalidate } from "~/composables/useInvalidate"
   import type { TOptionAction } from "~~/types/option_action/TOptionAction"
+  const { width, mobile } = useDisplay()
+
+ 
 
   //Importações composables
   const { getAllCategories } = useHttpCategories()
@@ -28,6 +32,7 @@
   const selectedTypeCategorie = ref("")
 
   
+
   const {isPending, data } = useQuery({
     queryKey: QUERY_KEYS.categories.all,
     queryFn: getAllCategories,
@@ -47,6 +52,7 @@
     },
 
   })
+
 
   /**
    * Função que intera no array e retorna o total Receitas
@@ -216,7 +222,6 @@
   <div class="container">
 
     <div class="filter-card">
-      
       <v-card
         class="mx-auto"
         >
@@ -261,7 +266,7 @@
 
     <div class="card-list">
           
-      <v-list lines="two" item-props>
+      <v-list style="height: 100%;" lines="two" item-props>
 
         <v-list-subheader>Categorias</v-list-subheader>
         
@@ -354,24 +359,19 @@
 .container {
   display: flex;
   gap: 16px;
-  margin-top: 10px;
+  margin-top: 20px;
   justify-content: center;
-  max-width: 100%;
-  min-height: calc(100vh - 80px);
+  margin-bottom: 10px;
 }
 
 .filter-card {
   width: 20%;
-  position: sticky;
-  top: 0;
   padding: 0 5px 0 5px;
 }
 
 .card-list {
   width: 65%;
-  overflow-y: auto;
-  max-height: calc(100vh - 70px);
-  height: fit-content;
+  height: 100vh;
   border-radius: 5px;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
   align-self: flex-start;
@@ -392,22 +392,16 @@
 
   .container {
     flex-direction: column;
-    /* Ajuste feito pra compensar o gap em telas menores */
-    height: calc(100% + 34px);
   }
 
   .filter-card {
     width: 100%;
-    padding: 0 10px 0 8px;
-    position: sticky;
-    top: 0;
   }
 
   .card-list {
     width: 100%;
+    height: 100%;
     padding: 0 8px;
-    height: auto;
-    flex: 1;
   }
 
 }

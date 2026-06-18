@@ -378,13 +378,6 @@ import flags from "~~/shared/flags/catalog"
               </v-select>
             </v-col>
           </v-row>
-        
-          <v-switch
-            color="success"
-            label="Ativo"
-            hide-details
-            v-model="cardCredit.active"
-          ></v-switch>
 
           <small class="text-caption text-medium-emphasis">* Indica campos obrigatórios</small>
         </v-card-text>

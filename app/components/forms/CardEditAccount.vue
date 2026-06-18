@@ -27,6 +27,7 @@
   const form = ref()
   const dialog = ref(false)
   const newInitialBalance = ref()
+  const disableAccount = ref(false)
 
   const props = defineProps<{
     draft: TAccount | null
@@ -94,11 +95,16 @@
     newInitialBalance.value = newValue?.initial_balance
   })
 
+  watch(disableAccount, (newValue) => {
+    if (newValue === true) {
+      if (props.draft !== null) {
+        props.draft.active = false
+      } 
+    }
+  })
+
   async function handleEditAccount() {
 
-    console.log("initial_balance atual:", props.draft?.initial_balance)
-    console.log("newInitialBalance:", newInitialBalance.value)
-    console.log("são diferentes?", Number(props.draft?.initial_balance) !== Number(newInitialBalance.value))
     
     if (Number(props.draft?.initial_balance) != Number(newInitialBalance.value)) {
       dialog.value= true
@@ -138,7 +144,9 @@
 
     } catch (err) {
       console.log("Erro ao criar conta" + err)
-    } 
+    } finally {
+      disableAccount.value = false
+    }
 
   }
 
@@ -253,9 +261,9 @@
               </v-text-field>
 
               <v-switch
-                v-model="props.draft.active"
+                v-model="disableAccount"
                 color="success"
-                label="Ativo"
+                label="Arquivar"
                 true-icon="mdi-check"
                 false-icon="mdi-close"
                 hide-details

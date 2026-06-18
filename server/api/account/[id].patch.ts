@@ -4,6 +4,9 @@ import { accountsRepository } from "~~/server/repositories/account.repository"
 
 export default defineEventHandler( async (event) => {
 
+    const body = await readBody(event)
+    console.log("Body recebido:", body)
+
     const session = await auth.api.getSession({
         headers: event.headers
     })
@@ -29,7 +32,7 @@ export default defineEventHandler( async (event) => {
     if (id === null) {
         throw createError({
             status: 404,
-            statusMessage: "Transferência não encontrada"
+            statusMessage: "Conta não encontrada"
         })
     }
        

@@ -51,17 +51,18 @@
         <v-tooltip location="top">
           <template v-slot:activator="{ props: tooltip }">
             <v-scale-transition mode="out-in">
-            <v-btn
-              v-if="!rail"
+              <div class="ma-3" v-if="!rail">
+              <v-btn
+              block
               color="primary"
               prepend-icon="mdi-plus"
               variant="elevated"
-              class="text-none"
+              class="text-none "
               v-bind="mergeProps(menu, tooltip)"
             >
             Novo
             </v-btn>
-            
+              </div>            
             <v-btn
               v-else
               color="primary"

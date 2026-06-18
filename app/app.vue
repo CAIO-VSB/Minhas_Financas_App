@@ -2,7 +2,7 @@
 </script>
 
 <template>
-  <v-app>
+  <v-app class="fill-height">
     <NuxtLoadingIndicator color="#0096FF" :height="5"/>
     <NuxtLayout>
       <NuxtPage />
@@ -14,8 +14,13 @@
 
 
 
-body, html {
-  font-family: var(--font-main); 
+body, html, #__nuxt {
+  font-family: var(--font-main);
+  height: 100%;
+}
+
+body {
+  overflow: hidden;
 }
 
 ::-webkit-scrollbar-track {

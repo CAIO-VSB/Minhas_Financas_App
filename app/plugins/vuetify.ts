@@ -22,14 +22,16 @@ export default defineNuxtPlugin((app) => {
         },
         ssr: true,
         theme: {
+            defaultTheme: 'finance',
             themes: {
-                light: {
+                finance: {
                     dark: false,
                     colors: {
-                        "error-primary": '#C10015',
-                        "success-primary": "#21BA45",
-                        "alert-primary": "#F2C037"
-                    },
+                        backgroundPrimary: '#f6f7fb',
+                        surface: '#ffffff',
+                        secondary: '#f2f2f2',
+                        textSecundary: '#757575',
+                    }
                 }
             }
         }
