@@ -4,7 +4,8 @@
         layout: "layout-dashboard"
     })
 
-    import { useDisplay } from 'vuetify'
+    import { useHttpCategories } from '~/composables/useHttp/useHttpCategories'
+    import { useHttpAccounts } from "~/composables/useHttp/useHttpAccounts"
     import { useHttpMovements } from '~/composables/useHttp/useHttpMovements'
     import { useHttpTransfer } from '~/composables/useHttp/useHttpTransfer'
     import type { TMovementsSummary, TMovementsWithTransfer } from '~~/types/movements/TMovements'
@@ -30,6 +31,8 @@
     }
 
     const { getMoviments, patchMovementsById, getCurrentBalance, getMovimentsByFilter } = useHttpMovements()
+    const { getCategoriesOnlyActive } = useHttpCategories()
+    const { getAccountsOnlyActive } = useHttpAccounts()
     const { getTransferById } = useHttpTransfer()
     const { notifyError, notifyInfo, notifySuccess } = useNotify()
     const { invalidate } = useInvalidate()
@@ -57,6 +60,16 @@
     const period = ref({
         month: new Date().getMonth(),
         year: new Date().getFullYear(),
+    })
+
+    const { data:categories } = useQuery({
+      queryKey: QUERY_KEYS.categories.active,
+      queryFn: getCategoriesOnlyActive,
+    })
+
+    const { data:accounts } = useQuery({
+      queryKey: QUERY_KEYS.accounts.active,
+      queryFn: getAccountsOnlyActive,
     })
 
     const { data, isPending, refetch } = useQuery({
@@ -108,6 +121,15 @@
         }
         
     })
+
+    const lastFilterLabels = computed(() => {
+        const cats = lastFilter.value?.categorie_id?.map(id => categories.value?.find(c => c.id === id)?.name_identifier).filter(Boolean) ?? []
+        const accs = lastFilter.value?.accounts_id?.map(id => accounts.value?.find(a => a.id === id)?.name_identifier).filter(Boolean) ?? []
+
+        return { cats, accs}
+    })
+
+
     
     const itemsRouter = [
         { title: 'Todas as transações', color: "#673AB7", value: "todas",          route: "/transactions" },
@@ -320,6 +342,7 @@
         <CardEditMovementsRevenue @success="handleMutationSuccess" :draft="editDraft" v-model="modalEditMovementsRevenue"/>
         <CardEditTransfer :draft="editDraftTransfer" v-model="modalEditTransfer"/>
         
+        
         <FilterDrawer :items="[ 'Recebidas', 'Pagas', 'Pendentes']" :field-type-active="false" color-button="primary" @apply-filter="handleApplyFilter" @reset-filter="handleClearFilter" v-model="drawer"/>
           
         <div class="text-center d-flex ga-4 ml-4 mb-5 btn-options">
@@ -461,27 +484,86 @@
         </div>
         
         <div class="w-100 pa-2 container-table">
+
             <v-card
             flat
             class="table"
             :loading="isPending"
             >
-           
             <template v-slot:text>
+                
+                <v-expand-transition>
+                    <div v-show="isFiltered" class="text-center mb-2">
+                    
+                        <span class="text-h7 font-weight-semibold">Filtros:</span>
+                        <v-chip
+                        v-if="lastFilter?.start_day && lastFilter.end_day"
+                        class="ma-2"
+                        @click:close="handleClearFilter"
+                        color="primary"
+                        closable
+                        >
+                        {{ `De ${new Date(lastFilter?.start_day ?? new Date()).toLocaleDateString("pt-br", {timeZone: "UTC"})} à ${new Date(lastFilter?.end_day ?? new Date()).toLocaleDateString("pt-br", {timeZone: "UTC"})}`}}
+                        </v-chip>
 
-            <div style="margin-bottom: 12px;">
-                <DateInput  @apply-filter-month="handleGetPeriod"></DateInput>
-            </div>
+                        <v-chip
+                        v-if="lastFilterLabels.cats"
+                        class="ma-2"
+                        closable
+                        @click:close="handleClearFilter"
+                        :key="name"
+                        v-for="name in lastFilterLabels.cats"
+                        >
+                        {{ name }}
+                        </v-chip>
 
-            <v-text-field
-                v-model="search"
-                label="Pesquisar"
-                prepend-inner-icon="mdi-magnify"
-                variant="outlined"
-                hide-details
-                single-line
-                autocomplete="off"
-            ></v-text-field>
+                        <v-chip
+                        v-if="lastFilterLabels.accs"
+                        class="ma-2"
+                        closable
+                        @click:close="handleClearFilter"
+                        :key="name"
+                        v-for="name in lastFilterLabels.accs"
+                        >
+                        {{ name }}
+                        </v-chip>
+
+                        <v-chip
+                        v-if="lastFilter?.situation"
+                        class="ma-2"
+                        closable
+                        @click:close="handleClearFilter"
+                        :color="(lastFilter?.situation === 'Pagas' || lastFilter?.situation === 'Recebidas') ? 'success' : 'error'"
+                        >
+                        {{ lastFilter?.situation }}
+                        </v-chip>
+
+                        <v-chip
+                        class="ma-2"
+                        closable
+                        @click:close="handleClearFilter"
+                        color="primary"
+                        v-for="type in lastFilter?.for_type"
+                        >
+                        {{ type }}
+                        </v-chip>
+                    
+                    </div>
+                </v-expand-transition>
+
+                <div v-if="!isFiltered" style="margin-bottom: 12px;">
+                    <DateInput  @apply-filter-month="handleGetPeriod"></DateInput>
+                </div>
+
+                <v-text-field
+                    v-model="search"
+                    label="Pesquisar"
+                    prepend-inner-icon="mdi-magnify"
+                    variant="outlined"
+                    hide-details
+                    single-line
+                    autocomplete="off"
+                ></v-text-field>
             </template>
                 <v-data-table
                 :headers="headers"

@@ -79,8 +79,8 @@ export const movementsRespository = {
 
         if (forTypeParam) {
             forTypeParam = forTypeParam.map(type => {
-                if (type === 'Receitas') return 'Receita'
-                if (type === 'Despesas') return 'Despesa'
+                if (type === 'Receitas') return 'receita'
+                if (type === 'Despesas') return 'despesa'
                 return type
             })
         }

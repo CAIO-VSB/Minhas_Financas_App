@@ -4,5 +4,5 @@ export type TMovementsByFilter = {
     categorie_id: number[] | null,
     accounts_id: number[] | null,
     situation: string | null, 
-    for_type: string[] | null
+    for_type: string[] | null,
 }

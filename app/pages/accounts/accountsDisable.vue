@@ -87,8 +87,6 @@
         initial_balance: account.initial_balance ? Number(account.initial_balance) : null
       }
 
-      console.log("Valor enviado", payload)
-
       mutate(payload)
 
     } catch (e) {
@@ -116,7 +114,7 @@
     <span class="text-h6 font-weight-bold">Contas arquivadas</span>
   </div>
 
-  <div  class="pa-2 d-flex ga-7">
+  <div class="pa-2 d-flex ga-7 container-main">
     <div class="w-100">
       <v-data-table class="elevation-1" :loading="isPending" mobile-breakpoint="md" :headers="headers" :items="onlyAccountsDisable" hide-default-footer>
 
@@ -145,13 +143,13 @@
       </v-data-table>
     </div>
     
-    <v-card style="height: 120px;" class="w-33">
+    <v-card style="height: 120px;" class="w-33 card-saldo-total-archived">
       <template #subtitle>
         <span class="text-medium-emphasis">Saldo total arquivado</span>
       </template>
       <template #text>
         <div class="d-flex align-center">
-          <span class="text-h6 font-weight-bold w-100">{{ formatCurrency(totalArchived ?? 0.00) }}</span>
+          <span class="text-h6 font-weight-bold w-100 saldo-total-archived">{{ formatCurrency(totalArchived ?? 0.00) }}</span>
           <span class="w-100 d-flex justify-end"><v-avatar size="45" rounded="lg" icon="mdi-scale-unbalanced" variant="tonal" color="primary"></v-avatar></span>
         </div>
         <div>
@@ -168,6 +166,24 @@
 
 :deep(.v-data-table-header__content) {
   font-weight: 800;
+}
+
+@media (max-width: 1700px) {
+  .container-main {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card-saldo-total-archived {
+    width: 100% !important;
+  }
+  
+}
+
+@media (max-width: 480px) {
+  .saldo-total-archived {
+    font-size: 1rem !important;
+  }
 }
 
 </style>

@@ -6,13 +6,10 @@
 
   const drawer = ref(true)
   const rail = ref(false)
-  const openedGroups = ref(['Groups'])
+  const openedGroups = ref(['Cadastros'])
   const routes = useRoute()
 
-  watch(rail, () => {
-    openedGroups.value = []
-  })
-  
+
   const nav = [
     { title: 'Visão geral', icon: 'mdi-home-analytics', value: 'Visão geral', to: '/home' },
     { title: 'Transações', icon: 'mdi-swap-horizontal-bold', value: 'transacoes', to: '/transactions' },
@@ -31,6 +28,7 @@
         :width="380"
         border="end"
         color="surface"
+        class="elavation-2"
       >
         <v-list >
           <v-list-item
@@ -57,7 +55,7 @@
 
         <ButtonActions class="my-3" :rail="rail"/>
 
-        <v-list density="comfortable" class="px-2 mt-2" nav v-model:opened="openedGroups">
+        <v-list  density="comfortable" class="px-2 mt-2" nav v-model:opened="openedGroups">
             <v-list-item
             v-for="item in nav"
               :prepend-icon="item.icon"
@@ -78,22 +76,25 @@
               >{{ item.title }}</v-tooltip>
             </v-list-item>
 
-            <v-list-group value="Cadastros" >
-              <template v-slot:activator="{ props }">
-                  <v-list-item
-                  v-bind="props"
-                  prepend-icon="mdi-database-plus"
-                  >
-                  <template #title>
-                    <span class="text-body-1">Cadastros</span>
-                  </template>
-                  <v-tooltip
-                  activator="parent"
-                  location="start"
-                  >Cadastros</v-tooltip>
-                  </v-list-item>
-              </template>
+            <v-list-item
+              v-if="rail"
+              prepend-icon="mdi-database-plus"
+              rounded="lg"
+              color="primary"
+              class="cursor-pointer"
+            >
+              <v-tooltip activator="parent" location="end">Cadastros</v-tooltip>
+            </v-list-item>
+            
 
+            <v-list-group v-else value="Cadastros" >
+
+            <template v-slot:activator="{ props }">
+              <v-list-item v-bind="props" prepend-icon="mdi-database-plus" rounded="lg" color="primary">
+                <template #title><span class="text-body-1">Cadastros</span></template>
+              </v-list-item>
+            </template>
+                        
             <v-list-item
             prepend-icon="mdi-folder-outline"
             title="Categorias"

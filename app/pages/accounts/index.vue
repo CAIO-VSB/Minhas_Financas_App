@@ -6,7 +6,6 @@
     middleware: "session"
   })
 
-  
   import CardAddAccount from "~/components/forms/CardAddAccount.vue"
   import CardEditAccount from "~/components/forms/CardEditAccount.vue"
   import type { TAccount } from "~~/types/account/TAccount.types"
@@ -14,16 +13,22 @@
   import { useHttpAccounts } from "~/composables/useHttp/useHttpAccounts"
   import { useSelectedColor } from "~/composables/useAccount/useSelectedColor"
   import { useSelectedBank } from "~/composables/useAccount/useSelectedBank"
+  import { useInvalidate } from "~/composables/useInvalidate"
   import CardAddMovimentsExpenses from "~/components/forms/CardAddMovimentsExpenses.vue"
+  import type { TMovements } from "~~/types/movements/TMovements"
 
-  const { getAllAccounts, getBalanceForAccount } = useHttpAccounts()
+  const { getAllAccounts, getBalanceForAccount, patchAccountById } = useHttpAccounts()
   const { resetColor } = useSelectedColor()
   const { resetBank } = useSelectedBank()
+  const { invalidate } = useInvalidate()
+  const { notifyError, notifyInfo, notifySuccess } = useNotify()
+  
 
   const modalAddAccount = ref(false)
   const modalEditAccount = ref(false)
   const modalAddExpense = ref(false)
   const editDraft = ref<TAccount | null>(null)
+  const draftAccount = ref<Partial<TMovements> | null>(null)
 
   const { isPending, data, error } = useQuery({
     queryKey: QUERY_KEYS.accounts.all,
@@ -33,6 +38,25 @@
   const { data:balanceForId } = useQuery({
     queryKey: QUERY_KEYS.accounts.getBalanceForAccount,
     queryFn: getBalanceForAccount,
+  })
+
+  const  { mutate } = useMutation({
+
+    mutationFn: (payload: TAccount) => patchAccountById(payload.id!, payload),
+
+    onSuccess: () => {
+      invalidate(QUERY_KEYS.accounts.all)
+      invalidate(QUERY_KEYS.accounts.getBalanceForAccount)
+      notifySuccess("Sucesso", "Operação realizada com sucesso", 6000)
+    },
+
+    onError: (error) => {
+      notifyError(
+        "Não foi possível concluir a operação",
+        "Tente novamente mais tarde." 
+      )
+    },
+
   })
 
   function handleOpenModalAddAccount() {
@@ -78,6 +102,11 @@
     editDraft.value = null
   }
 
+  function handleOpenAddExpense(account: TAccount) {
+    draftAccount.value = {accounts_id: account.id}
+    modalAddExpense.value = true
+  }
+
   function handleOpenModalEditAccount(account: TAccount) {
 
     modalEditAccount.value = true
@@ -92,11 +121,21 @@
     navigateTo("/accounts/accountsDisable")
   }
 
-  function handleOptionClick(option: TOptionAction, data: TAccount) {
+  function handleOptionClick(option: TOptionAction, account: TAccount) {
 
     if (option.value === "edit") {
-      handleOpenModalEditAccount(data)
+      handleOpenModalEditAccount(account)
       return 
+    }
+
+    const payload = {
+      ...account,
+      initial_balance: account.initial_balance ? Number(account.initial_balance) : null,
+      active: false
+    }
+
+    if (option.value === 'arquivar') {
+      mutate(payload)
     }
 
   }
@@ -117,7 +156,6 @@
         rounded="lg"
         title="Nova conta"
         @click="handleOpenModalAddAccount"
-        
       >
       </v-btn>
 
@@ -248,7 +286,7 @@
             <v-btn
             variant="text"
             color="primary"
-            @click="modalAddExpense = true"
+            @click="handleOpenAddExpense(value)"
             >
               Adicionar despesa
             </v-btn>
@@ -257,7 +295,7 @@
 
       <CardAddAccount v-model="modalAddAccount" />
       <CardEditAccount :draft="editDraft" v-model="modalEditAccount" />
-      <CardAddMovimentsExpenses v-model="modalAddExpense" />
+      <CardAddMovimentsExpenses :draft="draftAccount" v-model="modalAddExpense" />
     </div>
 
   

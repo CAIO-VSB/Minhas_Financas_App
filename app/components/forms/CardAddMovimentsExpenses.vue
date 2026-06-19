@@ -34,6 +34,10 @@
     queryFn: getAccountsOnlyActive,
   })
 
+  const props = defineProps<{
+    draft?: Partial<TMovements> | null
+  }>()
+
   const form = ref()
   const modelValue = defineModel<boolean>()
   const menuCategorias = ref(false)
@@ -55,6 +59,12 @@
     accounts_id: null,
     status_transaction: "pago"
   })
+
+  watch(() => props.draft, (val) => {
+    if (val?.accounts_id) {
+      modelAccounts.value = val.accounts_id
+    }
+  }, {immediate: true})
 
   watch(menuCategorias, (val) => {
     if (!val) searchCategorias.value = ""
@@ -132,7 +142,10 @@
     },
 
     onError: (error) => {
-      notifyError("😢", "Ops! Algo deu errado ao salvar a desepesa. Tente novamente ou entre em contato com o suporte. Detalhes: " + error.message)
+      notifyError(
+        "Não foi possível concluir a operação",
+        "Tente novamente mais tarde." 
+      )
     },
 
   })
