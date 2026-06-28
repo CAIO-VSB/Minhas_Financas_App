@@ -4,8 +4,8 @@ export const transporter = nodemailer.createTransport({
     service: "gmail",
     host: "smtp.gmail.com",
     auth: {
-      user: "minhasfinancasapp900@gmail.com", 
-      pass: process.env.APP_API_KEY 
+      user: "financevelto@gmail.com", 
+      pass: process.env.SMTP_PASSWORD
     },
     secure: false,
     port: 587
@@ -18,83 +18,87 @@ type User = {
 
 export const sendUserEmail = async (user: User, url: string) => {
     const htmlTemplate = `
-  <div style="background-color: #f4f6f9; padding: 40px 0; font-family: Arial, sans-serif;">
-    <table role="presentation" border="0" cellpadding="0" cellspacing="0" 
-      style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 12px; 
-      overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-      
-      <tr>
-        <td style="background: #0096FF; padding: 20px; text-align: center; color: #fff;">
-          <span style="font-size: 28px;">💰</span>
-          <div style="font-size: 22px; font-weight: bold; margin-top: 8px;">
-            Minhas Finanças
-          </div>
-        </td>
-      </tr>
+  <div style="background-color: #F8FAFC; padding: 48px 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+  <table role="presentation" border="0" cellpadding="0" cellspacing="0"
+    style="max-width: 560px; margin: auto; background: #ffffff; border-radius: 16px;
+    overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.04);">
 
-      <tr>
-        <td style="padding: 30px; color: #333;">
-          <h2 style="margin: 0 0 16px; font-size: 20px; font-weight: 600; color: #0096FF;">
-            Verifique seu e-mail 📩
-          </h2>
-          <p style="margin: 0 0 12px; font-size: 15px; line-height: 1.6;">
-            Olá, <strong>${user.email}</strong>
-          </p>
-          <p style="margin: 0 0 20px; font-size: 15px; line-height: 1.6;">
-            Obrigado por criar sua conta em <strong>Minhas Finanças</strong>!  
-            Para ativar sua conta, clique no botão abaixo:
-          </p>
+    <tr>
+      <td style="padding: 32px 40px; text-align: center; border-bottom: 1px solid #F1F5F9;">
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin: auto;">
+          <tr>
+            <td style="vertical-align: middle;">
+              <span style="font-size: 18px; font-weight: 700; color: #0F172A; letter-spacing: -0.3px;">
+                Velto Finance
+              </span>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
 
-          <div style="background: #FFF3CD; color: #856404; border: 1px solid #FFEEBA; 
-            border-radius: 6px; padding: 12px; margin-bottom: 24px; text-align: center; font-size: 14px; font-weight: 600;">
-            ⏰ Atenção: este link é válido por apenas <strong>1 hora</strong>.
-          </div>
+    <tr>
+      <td style="padding: 40px 40px 32px;">
+        <p style="margin: 0 0 16px; font-size: 15px; color: #334155; line-height: 1.7;">
+          Olá, <strong style="color: #0F172A;">${user.email}</strong>! Obrigado por criar sua conta no <strong>Velto Finance</strong>.
+          Estamos felizes em ter você por aqui.
+        </p>
 
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${url}" style="background: #0096FF; color: #fff; text-decoration: none; 
-              padding: 14px 32px; border-radius: 6px; font-size: 16px; font-weight: bold; 
-              display: inline-block;">
-              ✅ Verificar E-mail
-            </a>
-          </div>
+        <p style="margin: 0 0 28px; font-size: 15px; color: #334155; line-height: 1.7;">
+          Para começar, confirme seu e-mail clicando no botão abaixo:
+        </p>
 
-          <p style="margin: 0 0 8px; font-size: 14px; color: #555;">
-            Se o botão não funcionar, copie e cole este link no seu navegador:
-          </p>
-          <p style="font-size: 13px; color: #0096FF; word-break: break-word;">
-            ${url}
-          </p>
+        <div style="text-align: center; margin: 32px 0;">
+          <a href="${url}" style="background: #2563EB; color: #ffffff; text-decoration: none;
+            padding: 14px 32px; border-radius: 8px; font-size: 15px; font-weight: 600;
+            display: inline-block;">
+            Confirmar e-mail →
+          </a>
+        </div>
 
-          <p style="margin-top: 24px; font-size: 13px; color: #999;">
-            Se você não criou esta conta, pode ignorar este e-mail.
-          </p>
-        </td>
-      </tr>
+        <p style="margin: 0 0 28px; font-size: 13px; color: #94A3B8; line-height: 1.7;">
+          ⚠️ Este link expira em <strong style="color: #334155;">1 hora</strong>. Após esse prazo, será necessário solicitar um novo.
+        </p>
 
-      <tr>
-        <td style="background: #f9fafb; text-align: center; padding: 16px; 
-          font-size: 12px; color: #999;">
-          © ${new Date().getFullYear()} Minhas Finanças – Gerencie suas finanças com segurança.  
-        </td>
-      </tr>
-    </table>
-  </div>
+        <p style="margin: 0 0 6px; font-size: 13px; color: #94A3B8;">
+          Se o botão não funcionar, copie e cole este link no navegador:
+        </p>
+        <p style="font-size: 12px; color: #2563EB; word-break: break-all; background: #F8FAFC;
+          padding: 10px 12px; border-radius: 6px; border: 1px solid #E2E8F0; margin: 0;">
+          ${url}
+        </p>
+
+        <p style="margin-top: 28px; padding-top: 20px; border-top: 1px solid #F1F5F9;
+          font-size: 13px; color: #CBD5E1;">
+          Se você não criou esta conta, pode ignorar este e-mail.
+        </p>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="background: #F8FAFC; text-align: center; padding: 20px 40px;
+        font-size: 12px; color: #94A3B8; border-top: 1px solid #F1F5F9;">
+        © ${new Date().getFullYear()} Velto Finance
+      </td>
+    </tr>
+  </table>
+</div>
 `
 
-    try {
-        const info = await transporter.sendMail({
-            from: "E-mail de verificação <minhasfinancasapp900@gmail.com>", 
-            to: user.email, 
-            subject: "Verifique seu e-mail",
-            text: "Siga as intruções para fazer a verificação do seu e-mail", 
-            html: htmlTemplate
-        });
+  try {
+    const info = await transporter.sendMail({
+      from: "E-mail de verificação <financevelto@gmail.com>", 
+      to: user.email, 
+      subject: "Verifique seu e-mail",
+      text: "Siga as intruções para fazer a verificação do seu e-mail", 
+      html: htmlTemplate
+    });
 
-        console.log("E-mail enviado com sucesso", info.response)
-        return info.messageId
-    } catch (error) {
-        //console.error("Falha ao enviar o email:", error)
-    }
+    console.log("E-mail enviado com sucesso", info.response)
+    return info.messageId
+  } catch (error) {
+    console.error("Falha ao enviar o email:", error)
+  }
 }
 
 

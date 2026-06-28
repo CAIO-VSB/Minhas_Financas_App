@@ -1,15 +1,14 @@
 <script lang="ts" setup>
 
   import logo from "@/assets/logo.jpg"
-  import InfoUser from './components/myAccount.vue'
-  import ButtonActions from './components/buttonActions.vue'
+  
+  import ButtonActions from './components/ButtonActions.vue'
+  import TopBar from "~/layouts/components/TopBar.vue"
 
   const drawer = ref(true)
   const rail = ref(false)
-  const openedGroups = ref(['Cadastros'])
-  const routes = useRoute()
-
-
+  const openedGroups = ref(['Visão geral'])
+  
   const nav = [
     { title: 'Visão geral', icon: 'mdi-home-analytics', value: 'Visão geral', to: '/home' },
     { title: 'Transações', icon: 'mdi-swap-horizontal-bold', value: 'transacoes', to: '/transactions' },
@@ -161,26 +160,7 @@
         </template>
       </v-navigation-drawer>
 
-      <v-app-bar color="surface">
-
-        <template #title>
-          <span>{{ routes.meta.title }}</span>
-        </template>
-
-        <template #prepend>
-          <v-btn
-            icon="mdi-menu"
-            variant="text"
-            @click.stop="drawer = !drawer"
-          ></v-btn>
-        </template>
-        
-        <template #append>
-          <div class="mr-4">
-              <infoUser />
-            </div>
-        </template>
-      </v-app-bar>
+      <TopBar v-model="drawer"/>
 
       <v-main style="overflow-y: auto;" class="bg-backgroundPrimary">
         <div class="dashboard-content ">

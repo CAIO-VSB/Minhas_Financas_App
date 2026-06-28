@@ -30,7 +30,9 @@ export default defineNuxtPlugin((app) => {
                         backgroundPrimary: '#f6f7fb',
                         surface: '#ffffff',
                         secondary: '#f2f2f2',
+                        textPrimary: '#2563EB',
                         textSecundary: '#757575',
+                        textAlternative: '#454843'
                     }
                 }
             }

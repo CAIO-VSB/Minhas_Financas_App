@@ -38,8 +38,22 @@ export const auth = betterAuth({
             clientId: process.env.GOOGLE_CLIENT_ID as string,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
             prompt: "select_account"
-        }
+        },
+
+        discord: { 
+            clientId: process.env.DISCORD_CLIENT_ID as string, 
+            clientSecret: process.env.DISCORD_CLIENT_SECRET as string,
+        }, 
+
     },
+
+    onAPIError: {
+        
+        onError(e) {
+            console.log(e)
+        },
+        errorURL: "/error.vue"
+    }
 
     
 })

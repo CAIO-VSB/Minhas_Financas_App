@@ -33,9 +33,12 @@
           append-icon="mdi-menu-down"
           variant="text"
           color="black text-none"
-          prepend-icon="mdi-account-circle"
         >
           Minha conta
+
+          <template #prepend>
+            <v-icon size="22" icon="mdi-account-circle"></v-icon>
+          </template>
         </v-btn>
       </template>
 

@@ -2,7 +2,7 @@ import * as z from "zod";
 
 export const singIn = z.object({
     email: z.email("Formato do email inválido"),
-    password: z.string("Campo senha vazio").min(8, "Mínimo 8 caracteres").max(32, "Máximo 32 caracteres")
+    password: z.string("Campo senha vazio").min(6, "Mínimo 6 caracteres").max(32, "Máximo 32 caracteres")
 })
 
 export const singUp = z.object({

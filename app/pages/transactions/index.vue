@@ -660,7 +660,7 @@
     font-weight: 800;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1400px) {
     .main-cards {
         display: grid;
         grid-template-columns: 1fr;
