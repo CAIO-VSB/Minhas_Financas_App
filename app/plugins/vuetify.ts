@@ -32,7 +32,7 @@ export default defineNuxtPlugin((app) => {
                         secondary: '#f2f2f2',
                         textPrimary: '#2563EB',
                         textSecundary: '#757575',
-                        textAlternative: '#454843'
+                        textAlternative: '#454843',
                     }
                 }
             }

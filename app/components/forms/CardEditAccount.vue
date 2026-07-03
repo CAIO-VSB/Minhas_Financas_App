@@ -28,6 +28,8 @@
   const dialog = ref(false)
   const newInitialBalance = ref()
   const disableAccount = ref(false)
+  const switchValue = ref(true)
+  const labelSwitch = ref("Ativo")
 
   const props = defineProps<{
     draft: TAccount | null
@@ -73,9 +75,23 @@
     },
 
     onError: (error) => {
-      notifyError("😢", "Ops! Algo deu errado ao editar a conta. Tente novamente ou entre em contato com o suporte. Detalhes: " + error.message)
+      handleErrorApplication(error.statusCode)
     },
 
+  })
+
+  watch(() => props.draft, (val) => {
+    if (props.draft) switchValue.value = val?.active ?? true
+  })
+
+  watch(switchValue, (val) => {
+    if (val === true) {
+      labelSwitch.value = "Ativo"
+      if (props.draft) props.draft.active = switchValue.value
+    } else if (val === false) {
+      labelSwitch.value = "Inativar"
+      if (props.draft) props.draft.active = switchValue.value
+    }
   })
 
   watch(selectedBank, (bank) => {
@@ -95,13 +111,6 @@
     newInitialBalance.value = newValue?.initial_balance
   })
 
-  watch(disableAccount, (newValue) => {
-    if (newValue === true) {
-      if (props.draft !== null) {
-        props.draft.active = false
-      } 
-    }
-  })
 
   async function handleEditAccount() {
 
@@ -261,9 +270,9 @@
               </v-text-field>
 
               <v-switch
-                v-model="disableAccount"
-                color="success"
-                label="Arquivar"
+                v-model="switchValue"
+                color="primary"
+                :label="labelSwitch"
                 true-icon="mdi-check"
                 false-icon="mdi-close"
                 hide-details

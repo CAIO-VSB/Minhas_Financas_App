@@ -32,7 +32,7 @@
   const modelValue = defineModel<boolean>()
   const categorieForm = ref<TCategorie>({
     name_identifier: "",
-    type_categorie: "",
+    type_categorie: null,
     url_icon: "",
     active: true
   })
@@ -63,7 +63,7 @@
     },
 
     onError: (error) => {
-      notifyError("😢", "Ops! Algo deu errado ao salvar a categoria. Tente novamente ou entre em contato com o suporte. Detalhes: " + error.message)
+      handleErrorApplication(error.statusCode)
     },
 
   })
@@ -134,9 +134,6 @@
 
             </form>
 
-            <small class="text-caption text-medium-emphasis"
-              >* Indica campos obrigatórios</small
-            >
           </v-card-text>
 
           <v-divider></v-divider>

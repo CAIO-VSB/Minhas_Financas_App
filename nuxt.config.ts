@@ -26,6 +26,7 @@ export default defineNuxtConfig({
     '@vee-validate/nuxt',
     'pinia-plugin-persistedstate/nuxt',
     'nuxt-toast',
+    "nuxt-api-shield",
 
     (_options, nuxt) => {
       nuxt.hooks.hook('vite:extendConfig', (config) => {
@@ -33,6 +34,42 @@ export default defineNuxtConfig({
       })
     },
   ],
+
+  nuxtApiShield: {
+
+    limit: {
+      max: 12,
+      duration: 30,
+      ban: 30,
+    },
+
+    delayOnBan: true,
+    errorMessage: "Too many Requests",
+    retryAfterHeader: true,
+    
+    log: {
+      path: "./logs/nuxt-api-shield",
+      attempts: 1,
+      fail2ban: true,
+    },
+
+    routes: ["/api/auth/sign-in/email"],
+    skipRoutes: [],
+    ipTTL: 7 * 24 * 60 * 60,
+
+    security: {
+      trustXForwardedFor: false,
+    }
+  },
+
+  
+  nitro: {
+    "storage": {
+      "shield": {
+        "driver": "memory"
+      }
+    },
+  },
 
   nuxtQuery: {
     autoImports: ["useQuery", "useMutation", "useQueryClient"],

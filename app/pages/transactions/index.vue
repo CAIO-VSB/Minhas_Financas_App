@@ -194,7 +194,7 @@
         },
 
         onError: (error) => {
-            notifyInfo("Atenção", `Erro ao editar transação. Tente novamente mais tarde ou contate o surpote técnico. Erro detalhado: ${error.message}`)
+            handleErrorApplication(error)
         },
 
     })
@@ -256,6 +256,11 @@
 
 
     function handleOptionClick(option: TOptionAction, data: TMovementsSummary) {
+
+        if (option.value === "arquivo") {
+            notifyInfo("Em desenvolvimento", "Estamos trabalhando nesta funcionalidade para disponibilizá-la em breve.", 6000, true)
+            return
+        }
 
         if (option.value === "edit" && data.type_transaction === "receita") {
             handleOpenModalEditMovementsRevenue(data)
@@ -404,12 +409,17 @@
                         rounded="lg"
                         ></v-avatar>
                     </div>
-                    <span class="text-h6 font-weight-semibold">{{ formatCurrency(balanceCurrent.saldo_atual) }}</span>
+                    <span class="font-weight-semibold card-value" >{{ formatCurrency(balanceCurrent.saldo_atual) }}</span>
                 </div>
+                
+                <template #subtitle>
+                    <p class="card-label">Saldo atual</p>
+                </template>
+
                 <template #append>
                     <v-tooltip text="O cálculo do saldo atual é independente do período selecionado, considerando o saldo inicial das contas ativas juntamente com todas as movimentações efetivadas de entrada e saída">
                         <template v-slot:activator="{ props }">
-                            <v-icon class="icon-help" v-bind="props" size="20px" icon="mdi-information-outline"></v-icon>
+                            <v-icon class="icon-help" v-bind="props" size="22px" icon="mdi-information-outline"></v-icon>
                         </template>
                     </v-tooltip>
                 </template>
@@ -426,10 +436,15 @@
                         rounded="lg"
                         ></v-avatar>
                     </div>
-                    <span class="text-h6 font-weight-semibold">{{ formatCurrency(summary.receitas) }}</span>
+                    <span class="font-weight-semibold card-value" >{{ formatCurrency(summary.receitas) }}</span>
                 </div>
+                
+                <template #subtitle>
+                    <p class="font-weigth card-label" >Receitas</p>
+                </template>
+
                 <template #append>
-                    <v-tooltip text="O cálculo do total de receitas considera todas as movimentações de entrada efetivadas vinculadas às contas ativas.">
+                    <v-tooltip text="O valor apresentado corresponde à soma de todas as receitas efetivadas registradas nas contas ativas.">
                         <template v-slot:activator="{ props }">
                             <v-icon class="icon-help" v-bind="props" size="20px" icon="mdi-information-outline"></v-icon>
                         </template>
@@ -448,11 +463,15 @@
                         rounded="lg"
                         ></v-avatar>
                     </div>
-                    <span class="text-h6 font-weight-semibold"> {{ formatCurrency(summary.despesas) }}</span>
+                    <span class="font-weight-semibold card-value"> {{ formatCurrency(summary.despesas) }}</span>
                 </div>
 
+                <template #subtitle>
+                    <p class="font-weigth card-label">Despesas</p>
+                </template>
+
                 <template #append>
-                    <v-tooltip text="O cálculo do total de despesas considera todas as movimentações de saída efetivadas vinculadas às contas ativas.">
+                    <v-tooltip text="O valor apresentado corresponde à soma de todas as despesas efetivadas registradas nas contas ativas.">
                         <template v-slot:activator="{ props }">
                             <v-icon class="icon-help" v-bind="props" size="20px" icon="mdi-information-outline"></v-icon>
                         </template>
@@ -471,8 +490,13 @@
                         rounded="lg"
                         ></v-avatar>
                     </div>
-                    <span class="text-h6 font-weight-semibold">{{ formatCurrency(summary.balancoMensal) }}</span>
+                    <span class="font-weight-semibold card-value" >{{ formatCurrency(summary.balancoMensal) }}</span>
                 </div>
+                
+                <template #subtitle>
+                    <p class="font-weigth card-label" >Balanço mensal</p>
+                </template>
+
                 <template #append>
                     <v-tooltip text="O balanço mensal é calculado com base na soma de todas as receitas efetivadas menos todas as despesas efetivadas do período selecionado.">
                         <template v-slot:activator="{ props }">
@@ -601,7 +625,7 @@
                             transition="slide-y-transition"
                             >
                             <template v-slot:activator="{ props }">
-                                <v-icon class="hover:scale-150 hover:bg-gray-200 rounded-xl"  v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
+                                <v-icon class="rounded-xl hover-icon" v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
                             </template>
                             <v-list>
                                 <v-list-item
@@ -642,6 +666,18 @@
     cursor: pointer;
 }
 
+.card-label {
+    font-size: var(--text-base);
+}
+
+.card-value {
+    font-size: var(--text-md);
+    font-weight: 500;
+}
+
+.hover-icon:hover {
+    background-color: rgba(128, 128, 128, 0.256);
+}
 
 :deep(.v-card-text) {
     position: sticky;
@@ -657,7 +693,8 @@
 }
 
 :deep(.v-data-table-header__content) {
-    font-weight: 800;
+    font-weight: 900;
+    font-size: 1rem;
 }
 
 @media (max-width: 1400px) {

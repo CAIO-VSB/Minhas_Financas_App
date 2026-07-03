@@ -47,11 +47,11 @@
   { name: 'Uber/Transporte', icon: 'mdi-taxi', type: 'Despesa' },
   { name: 'Cabeleireiro', icon: 'mdi-content-cut', type: 'Despesa' },
   { name: 'Eletrônicos', icon: 'mdi-cellphone', type: 'Despesa' },
+  { name: 'Eletrônicos', icon: 'mdi-dots-horizontal', type: 'Despesa' },
 ]
   const { selectIcon } = useSelectedIcon()
 
   const dialogFilter = ref(false)
-  const valueEntered = ref("")
   const radios = ref("")
   const currentRadio = ref("")
   const loading = ref(false)
@@ -65,90 +65,37 @@
     dialogFilter.value = false
   })
 
-  watch(valueEntered, () => {
-    loading.value = true
-    setTimeout(() => {
-      loading.value = false
-    }, 2000);
-  })
-
-  const finalData = computed(() => {
-    return icons.filter(item => {
-      const onlyText = item.name.toLowerCase().includes(valueEntered.value.toLowerCase())
-      const onlyRadio = item.type.toLowerCase().includes(currentRadio.value.toLowerCase())
-      return onlyText && onlyRadio
-    })
-  })
-
   const modelValue = defineModel<boolean>()
 
 </script>
 
 <template>
   <div class="text-center pa-4">
+
     <v-dialog
       v-model="modelValue"
-      max-width="600"
-      min-height="600"
     >
 
       <v-card
         class="mx-auto"
-        max-width="450"
-        max-height="620"
       >
         <v-toolbar>
-          <v-toolbar-title class="title-card">Selecione um ícone de identificação</v-toolbar-title>
+          <v-toolbar-title class="title-card">Ícone</v-toolbar-title>
         </v-toolbar>
-
-        <div>
-            <v-text-field
-                color="blue"
-                :loading="loading"
-                label="Buscar…"
-                class="!p-4"
-                prepend-inner-icon="mdi-magnify"
-                v-model="valueEntered"
-                hint="Dica: Os ícones servem como referência visual. Selecione aquele que melhor representa a categoria que você está criando."
-                persistent-hint
-            >
-
-            <template #append-inner>
-                <v-btn
-                text="Fechar"
-                icon="mdi-filter"
-                variant="text"
-                @click="dialogFilter = true"
-                >
-                </v-btn>
-            </template>
-            </v-text-field>
-        </div>
 
         <v-divider></v-divider>
 
-        <v-list
-          lines="two"
-          item-props
-          activatable
+        <div class="icon-grid">
+          <div
+          v-for="item in icons"
+          :key="item"
+          @click="selectdItem(item)"
+          class="icon-cell"
           >
-        
-          <v-list-item
-            v-for="(item, i) in finalData"
-            :key="i"
-            rounded="xl"
-            @click="selectdItem(item)"
-          >
+          <v-icon :icon="item.icon" size="32"></v-icon>
+          </div>
+        </div>
 
-          <template v-slot:prepend>
-            <v-icon :icon="item.icon" size="35"></v-icon>
-          </template>
-
-          <v-list-item-title class="item-text">{{ item.name }}</v-list-item-title>
-          
-          </v-list-item>
-
-        </v-list>
     </v-card>
 
   </v-dialog>
@@ -180,14 +127,62 @@
   height: 100vh;
 }
 
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  padding: 10px;
+  overflow: auto;
+  max-width: 100%;
+  width: 348px;
+  margin: 10px;
+}
+
+.icon-cell:hover {
+  background-color: rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+}
+
+.icon-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 30px;
+  transition: background-color 0.15s ease;
+}
+
 .item-text {
   font-size: 1rem;
   color: #AFB1AC;
 }
 
-.title-card {
-  font-size: 1rem;
+@media (max-width: 820px) {
+  .icon-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    padding: 5px;
+    overflow: auto;
+    max-width: 100%;
+    width: 298px;
+    margin: 8px;
+  }
 }
+
+@media (max-width: 380px) {
+  .icon-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    padding: 5px;
+    overflow: auto;
+    max-width: 100%;
+    width: 262px;
+    margin: 8px;
+  }
+}
+
 
 ::v-deep(.v-selection-control .v-label ) {
   font-size: 0.85rem;

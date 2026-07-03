@@ -84,9 +84,9 @@
         const row = tableData.value?.[0]
 
         return {
-            despesas_pendentes: Number(row?.t_despesas_pendentes),
-            despesas_efetivadas: Number(row?.t_despesas_efetivadas),
-            total_geral: Number(row?.total_geral_despesas),
+            despesas_pendentes: Number(row?.t_despesas_pendentes ?? 0.00),
+            despesas_efetivadas: Number(row?.t_despesas_efetivadas ?? 0.00),
+            total_geral: Number(row?.total_geral_despesas ?? 0.00),
         }
     })
 
@@ -158,7 +158,7 @@
         },
 
         onError: (error) => {
-            notifyInfo("Atenção", `Erro ao editar transação. Tente novamente mais tarde ou contate o surpote técnico. Erro detalhado: ${error.message}`)
+            handleErrorApplication(error)
         },
 
     })
@@ -207,6 +207,12 @@
             handleOpenModalEditMovementsExpense(data)
             return 
         }
+
+        if (option.value === "arquivo") {
+            notifyInfo("Em desenvolvimento", "Estamos trabalhando nesta funcionalidade para disponibilizá-la em breve.", 6000, true)
+            return
+        }
+
 
         const raw = structuredClone(toRaw(data))
 
@@ -308,7 +314,7 @@
         </div>
 
         <div class="main-cards">
-            <v-card subtitle="Despesas pendentes">
+            <v-card >
                 <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
                 <div v-else class="d-flex align-center ga-2 pl-2 mb-2">
                     <div class="pa-2 rounded-lg">
@@ -320,11 +326,12 @@
                         rounded="lg"
                         ></v-avatar>
                     </div>
-                    <span class="text-h6 font-weight-semibold">{{ formatCurrency(sumary.despesas_pendentes) }}</span>
+                    <span class="font-weight-semibold card-value " >{{ formatCurrency(sumary.despesas_pendentes ?? 0.00) }}</span>
                 </div>
+                <template #subtitle> <span class="card-label">Despesas pendentes</span> </template>
 
             </v-card>
-            <v-card :loading="isPending" subtitle="Despesas pagas">
+            <v-card :loading="isPending">
                  <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
                  <div v-else class="d-flex align-center ga-2 pl-2 mb-2">
                     <div class="pa-2 rounded-lg">
@@ -336,11 +343,12 @@
                         rounded="lg"
                         ></v-avatar>
                     </div>
-                    <span class="text-h6 font-weight-semibold">{{ formatCurrency(sumary.despesas_efetivadas) }}</span>
+                    <span class="font-weight-semibold card-value ">{{ formatCurrency(sumary.despesas_efetivadas ?? 0.00) }}</span>
                 </div>
+                <template #subtitle> <span class="card-label">Despesas pagas</span> </template>
 
             </v-card>
-            <v-card :loading="isPending" subtitle="Total">
+            <v-card :loading="isPending">
                 <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
                  <div v-else class="d-flex align-center ga-2 pl-2 mb-2">
                     <div class="pa-2 rounded-lg">
@@ -352,8 +360,9 @@
                         rounded="lg"
                         ></v-avatar>
                     </div>
-                    <span class="text-h6 font-weight-semibold"> {{ formatCurrency(sumary.total_geral) }}</span>
+                    <span class="font-weight-semibold card-value "> {{ formatCurrency(sumary.total_geral) }}</span>
                 </div>
+                <template #subtitle> <span class="card-label">Total</span> </template>
             </v-card>
         </div>
         
@@ -424,7 +433,7 @@
                             transition="slide-y-transition"
                             >
                              <template v-slot:activator="{ props }">
-                                <v-icon class="hover:scale-150 hover:bg-gray-200 rounded-xl"  v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
+                                <v-icon class=" hover-icon rounded-xl"  v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
                             </template>
                             <v-list>
                                 <v-list-item
@@ -473,6 +482,19 @@
 .icon-help:hover {
     transform: scale(1.3);
     cursor: pointer;
+}
+
+.card-label {
+    font-size: var(--text-base);
+}
+
+.card-value {
+    font-size: var(--text-md);
+    font-weight: 500;
+}
+
+.hover-icon:hover {
+    background-color: rgba(128, 128, 128, 0.256);
 }
 
 

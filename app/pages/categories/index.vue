@@ -3,11 +3,9 @@
   definePageMeta({
     title: "Categorias",
     layout: "layout-dashboard",
-    middleware: "session"
   })
 
   //Imports
-  import { useDisplay } from 'vuetify'
   import { useHttpCategories } from '~/composables/useHttp/useHttpCategories'
   import type { TCategorie } from '~~/types/categorie/TCategorie'
   import BaseFab from "~/components/ui/BaseFab.vue"
@@ -15,9 +13,7 @@
   import CardAddCategorie from '~/components/forms/CardAddCategorie.vue'
   import { useInvalidate } from "~/composables/useInvalidate"
   import type { TOptionAction } from "~~/types/option_action/TOptionAction"
-  const { width, mobile } = useDisplay()
 
- 
 
   //Importações composables
   const { getAllCategories } = useHttpCategories()
@@ -48,7 +44,7 @@
     },
 
     onError: (error) => {
-      notifyInfo("Atenção", `Erro ao editar categoria. Tente novamente mais tarde ou contate o surpote técnico. Erro detalhado: ${error.message}`)
+      handleErrorApplication(error)
     },
 
   })
@@ -113,7 +109,6 @@
     },
 
   ]
-
 
   /**
    * Lida com a abertura do modal de edição das categorias
@@ -221,20 +216,20 @@
 <template>
   <div class="container">
 
-    <div class="filter-card">
+    <div class="card-filter">
       <v-card
         class="mx-auto"
         >
         <v-list density="compact">
-          <v-list-subheader>Filtro</v-list-subheader>
+          <v-list-subheader style="font-size: var(--text-base);">Filtro</v-list-subheader>
 
           <v-divider></v-divider>
 
           <v-list-item
+            color="primary"
             v-for="(item, i) in items"
             :key="i"
             :value="item.value"
-            color="black"
             @click="selectedTypeCategorie = item.value"
           >
             <template v-slot:prepend>
@@ -242,35 +237,35 @@
             </template>
 
             <template v-slot:append>
-              <v-chip>
+              <v-chip class="font-weight-bold"> 
                 {{ item.total }}
               </v-chip>
             </template>
 
             <v-list-item-title v-text="item.title"></v-list-item-title>
           </v-list-item>
+          
+          <v-divider :thickness="2" class="mt-2"></v-divider>
+
+          <div class="pa-1">
+            <v-switch
+              v-model="filterCategorieActive"
+              hide-details
+              color="primary"
+            >
+            <template #label>
+              <span style="font-size: var(--text-base); white-space: nowrap;" class="text-now">Somente ativas</span>
+            </template>
+            </v-switch>
+          </div>
+
         </v-list>
       </v-card>
-
-      <div style="margin-top: 10px;">
-        <v-switch
-          v-model="filterCategorieActive"
-          label="Exibir apenas categorias ativas"
-          hide-details
-          inset
-          color="success"
-        ></v-switch>
-      </div>
-
     </div>
 
     <div class="card-list">
           
       <v-list style="height: 100%;" lines="two" item-props>
-
-        <v-list-subheader>Categorias</v-list-subheader>
-        
-        <v-divider></v-divider>
 
         <v-list-item
           v-for="(categorie, index) in filteredCategories ||  []"
@@ -359,22 +354,23 @@
 .container {
   display: flex;
   gap: 16px;
-  margin-top: 20px;
+  padding: 25px 0 0 0;
   justify-content: center;
   margin-bottom: 10px;
 }
 
-.filter-card {
+.card-filter {
+  max-width: 100%;
   width: 20%;
-  padding: 0 5px 0 5px;
+  padding: 0 10px 0 10px;
 }
 
 .card-list {
-  width: 65%;
-  height: 100vh;
+  width: 60%;
+  height: 89dvh;
+  overflow-y: auto;
   border-radius: 5px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-  align-self: flex-start;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
 }
 
 .fab-wrapper {
@@ -394,13 +390,13 @@
     flex-direction: column;
   }
 
-  .filter-card {
+  .card-filter {
     width: 100%;
   }
 
   .card-list {
     width: 100%;
-    height: 100%;
+    height: auto;
     padding: 0 8px;
   }
 

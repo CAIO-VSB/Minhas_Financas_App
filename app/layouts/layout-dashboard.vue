@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 
-  import logo from "@/assets/logo.jpg"
+  import logo from "~~/app/assets/logo-side-bar.svg"
   
   import ButtonActions from './components/ButtonActions.vue'
   import TopBar from "~/layouts/components/TopBar.vue"
@@ -24,37 +24,21 @@
         v-model="drawer"
         :rail="rail"
         @click="rail = false"
-        :width="380"
+        :width="320"
         border="end"
         color="surface"
         class="elavation-2"
       >
-        <v-list >
-          <v-list-item
-          >
-            <template #prepend>
-               <v-avatar :image="logo"></v-avatar>
-            </template>
-            
-            <template #title>
-              <span class="text-primary text-subtitle-1 font-weight-bold">Minhas finanças</span>
-            </template>
-
-            <template v-slot:append>
-              <v-btn
-                icon="mdi-chevron-left"
-                variant="text"
-                @click.stop="rail = !rail"
-              ></v-btn>
-            </template>
-          </v-list-item>
-        </v-list>
+      
+        <div class="drawer-logo">
+          <img class="drawer-logo-img" :src="logo" alt="Velto Finance">
+        </div>
 
         <v-divider ></v-divider>
 
-        <ButtonActions class="my-3" :rail="rail"/>
+        <ButtonActions class="my-4" :rail="rail"/>
 
-        <v-list  density="comfortable" class="px-2 mt-2" nav v-model:opened="openedGroups">
+        <v-list density="comfortable" class="px-2 mt-2" nav v-model:opened="openedGroups">
             <v-list-item
             v-for="item in nav"
               :prepend-icon="item.icon"
@@ -63,10 +47,9 @@
               :to="item.to"
               rounded="lg"
               color="primary"
-              class="mb-1 text-body-2"
             >
               <template #title>
-                <span class="text-body-1">{{ item.title }}</span>
+                <span class="size-item-title">{{ item.title }}</span>
               </template>
 
               <v-tooltip
@@ -90,7 +73,7 @@
 
             <template v-slot:activator="{ props }">
               <v-list-item v-bind="props" prepend-icon="mdi-database-plus" rounded="lg" color="primary">
-                <template #title><span class="text-body-1">Cadastros</span></template>
+                <template #title><span class="size-item-title">Cadastros</span></template>
               </v-list-item>
             </template>
                         
@@ -119,7 +102,7 @@
             >
 
             <template #title>
-              <span class="text-body-1">Contas bancárias</span>
+              <span class="size-item-title">Contas bancárias</span>
             </template>
           </v-list-item>
 
@@ -133,7 +116,7 @@
                 class="mb-1"
             >
               <template #title>
-                <span class="text-body-1">Relatórios</span>
+                <span class="size-item-title">Relatórios</span>
               </template>
                 <v-tooltip
                 activator="parent"
@@ -172,6 +155,10 @@
 
 <style scoped>
 
+.size-item-title {
+  font-size: var(--text-base);
+}
+
 .dashboard-content::-webkit-scrollbar {
   width: 5px;
   background: #F4F4F4;
@@ -181,4 +168,17 @@
   background: #dad7d7;
 }
 
+.drawer-logo {
+  height: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.drawer-logo-img {
+  width: 250px;
+  height: auto;
+  display: block;
+}
 </style>

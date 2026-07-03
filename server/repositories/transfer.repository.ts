@@ -42,13 +42,13 @@ export const transferRepository = {
             await client.query(`
                 INSERT INTO movements(user_id, type_transaction, value_transaction, date_transaction, description_transaction, categorie_id, accounts_id, observation, url_recibo, status_transaction, is_deleted, transfer_id) 
                 VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
-                [userId, 'transferencia_saida', data.value_transfer, data.date_transfer, 'Transferência de saída', 80, data.account_origin, null, null, 'saida', false, transferId]
+                [userId, 'transferencia_saida', data.value_transfer, data.date_transfer, 'Transferência de saída', 840, data.account_origin, null, null, 'saida', false, transferId]
             )
 
             await client.query(`
                 INSERT INTO movements(user_id, type_transaction, value_transaction, date_transaction, description_transaction, categorie_id, accounts_id, observation, url_recibo, status_transaction, is_deleted, transfer_id) 
                 VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
-                [userId, 'transferencia_entrada', data.value_transfer, data.date_transfer, 'Transferência de entrada', 80, data.account_destination, null, null, 'entrada', false, transferId]
+                [userId, 'transferencia_entrada', data.value_transfer, data.date_transfer, 'Transferência de entrada', 804, data.account_destination, null, null, 'entrada', false, transferId]
             )
 
             await client.query('COMMIT')

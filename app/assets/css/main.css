@@ -2,4 +2,15 @@
 
 :root {
     --font-main: "Inter", sans-serif;
+    --font-button-primary: 1.125rem;
+    --font-size-cards-primary: 1.375rem;
+    --font-size-subTitle-primary: 1.075rem;
+
+    --text-xs: 0.75rem;      /* 12px - legenda, versão */
+    --text-sm: 0.875rem;     /* 14px - labels menores */
+    --text-base: 1rem;       /* 16px - sidebar, inputs, corpo */
+    --text-md: 1.225rem;     /* 18px - botões grandes/subtítulos */
+    --text-lg: 1.375rem;     /* 22px - cards/títulos internos */
+    --text-xl: 1.75rem;      /* 28px - título de página */
+
 }

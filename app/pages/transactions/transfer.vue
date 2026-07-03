@@ -24,7 +24,9 @@
 
     const { getTransfer } = useHttpTransfer()
     const { getMoviments, getCurrentBalance } = useHttpMovements()
+    const {  notifyInfo, notifySuccess } = useNotify()
 
+    
     const editDraft = ref<TTransfer | null>(null)
    
     const route = useRoute()
@@ -147,6 +149,12 @@
             return 
         }
 
+        if (option.value === "arquivo") {
+            notifyInfo("Em desenvolvimento", "Estamos trabalhando nesta funcionalidade para disponibilizá-la em breve.", 6000, true)
+            return
+        }
+
+
         const raw = structuredClone(toRaw(data))
 
         const payload: TTransfer = {
@@ -238,8 +246,11 @@
                         rounded="lg"
                         ></v-avatar>
                     </div>
-                    <span class="text-h6 font-weight-semibold">{{ formatCurrency(balanceCurrent.saldo_atual) }}</span>
-                </div>
+                    <span class="font-weight-semibold card-value">{{ formatCurrency(balanceCurrent.saldo_atual) }}</span>
+                </div>                
+                <template #subtitle>
+                    <p class="card-label">Saldo atual</p>
+                </template>
                 <template #append>
                     <v-tooltip  text="O cálculo do saldo atual é independente do período selecionado, considerando o saldo inicial das contas ativas juntamente com todas as movimentações efetivadas de entrada e saída">
                         <template v-slot:activator="{ props }">
@@ -260,8 +271,11 @@
                         rounded="lg"
                         ></v-avatar>
                     </div>
-                    <span class="text-h6 font-weight-semibold">{{ formatCurrency(sumary.receitas)}}</span>
+                    <span class="font-weight-semibold card-value">{{ formatCurrency(sumary.receitas)}}</span>
                 </div>
+                 <template #subtitle>
+                    <p class="card-label">Receitas</p>
+                </template>
                 <template #append>
                     <v-tooltip text="O cálculo do total de receitas considera todas as movimentações de entrada efetivadas vinculadas às contas ativas.">
                         <template v-slot:activator="{ props }">
@@ -282,9 +296,11 @@
                         rounded="lg"
                         ></v-avatar>
                     </div>
-                    <span class="text-h6 font-weight-semibold"> {{ formatCurrency(sumary.despesas) }}</span>
+                    <span class="font-weight-semibold card-value"> {{ formatCurrency(sumary.despesas) }}</span>
                 </div>
-
+                 <template #subtitle>
+                    <p class="card-label">Despesas</p>
+                </template>
                 <template #append>
                     <v-tooltip text="O cálculo do total de despesas considera todas as movimentações de saída efetivadas vinculadas às contas ativas.">
                         <template v-slot:activator="{ props }">
@@ -305,8 +321,11 @@
                         rounded="lg"
                         ></v-avatar>
                     </div>
-                    <span class="text-h6 font-weight-semibold">{{ formatCurrency(sumary.balanco_mensal) }}</span>
+                    <span class="font-weight-semibold card-value">{{ formatCurrency(sumary.balanco_mensal) }}</span>
                 </div>
+                 <template #subtitle>
+                    <p class="card-label">Balanço mensal</p>
+                </template>
                 <template #append>
                     <v-tooltip text="O balanço mensal é calculado com base na soma de todas as receitas efetivadas menos todas as despesas efetivadas do período selecionado.">
                         <template v-slot:activator="{ props }">
@@ -353,7 +372,6 @@
                 :headers="headers"
                 :items="data"
                 :search="search"
-                hide-no-data
                 mobile-breakpoint="md"
                 >
 
@@ -391,7 +409,7 @@
                             transition="slide-y-transition"
                             >
                             <template v-slot:activator="{ props }">
-                                <v-icon  class="hover:scale-150 hover:bg-gray-200 rounded-xl"  v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
+                                <v-icon  class="hover-icon rounded-xl"  v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
                             </template>
                             <v-list>
                                 <v-list-item
@@ -431,6 +449,20 @@
     transform: scale(1.3);
     cursor: pointer;
 }
+
+.card-label {
+    font-size: var(--text-base);
+}
+
+.card-value {
+    font-size: var(--text-md);
+    font-weight: 500;
+}
+
+.hover-icon:hover {
+    background-color: rgba(128, 128, 128, 0.256);
+}
+
 
 :deep(.v-data-table-header__content) {
     font-weight: 800;

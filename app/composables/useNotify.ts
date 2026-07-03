@@ -17,7 +17,7 @@ export function useNotify() {
         })
     }
 
-    const notifyInfo = (title: string, message: string, timer?: number) => {
+    const notifyInfo = (title: string, message: string, timer?: number, close?: boolean, drag?: boolean) => {
         useNotification().warning({
             title: title,
             message: message,
@@ -30,7 +30,9 @@ export function useNotify() {
             messageColor: "#78350f",
             iconColor: "#78350f",
             icon: "mdi mdi-alert-outline",
-            maxWidth: 380
+            maxWidth: 380,
+            close: close,
+            drag: drag,
         })
     }
 
@@ -47,7 +49,7 @@ export function useNotify() {
             messageColor: "#991b1b",
             iconColor: "#dc2626",
             icon: "mdi mdi-alert-circle-outline",
-            maxWidth: 380
+            maxWidth: 380,
         })
     }
 

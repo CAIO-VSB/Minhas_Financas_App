@@ -4,19 +4,15 @@
   import { useValidateFields } from "~/composables/useValidateFields";
   import type { TResetForm } from "~~/types/user/Tuser.types";
   import { useValidateSchemas } from "~/composables/useValidateSchema"
+  import Password from "vue-password-strength-meter"
+  import 'vue-password-strength-meter/style.css'
 
-  definePageMeta({
-    layout: "layout-auth",
-  });
+  import logoLogin from "~/assets/logo-login.svg"
 
 
   //Variáveis reativas
   const loading = ref(false);
   const showPassword = ref(true);
-  const isPasswordValidatorVisible = ref(true);
-  const containerItensWithValidator = ref(false);
-  const successMessage = ref(false);
-  const dialog = ref(false);
   const form = ref();
   const formPassword = ref<TResetForm>({
     password: "",
@@ -24,32 +20,16 @@
   });
   
   const { $authClient } = useNuxtApp()
-  const hasUpperCase = computed(() => /[A-Z]/.test(formPassword.value.password));
-  const hasLowerCase = computed(() => /[a-z]/.test(formPassword.value.password));
-  const hasNumber = computed(() => /[0-9]/.test(formPassword.value.password));
-  const hasCharacterSpecial = computed(() =>
-    /[^A-Za-z0-9]/.test(formPassword.value.password)
-  );
 
   const { passwordRules } = useValidateFields();
   const { validateSchemaPassword } = useValidateSchemas()
+  const { notifyError, notifyInfo, notifySuccess } = useNotify()
 
   const confirmPasswordRules = ref([
     (val: string) => !!val || "Campo confirmar senha é obrigatório",
     (val: string) =>
       val === formPassword.value.password || "As senha não coincidem",
   ]);
-
-  function showListVerificationPassword() {
-    isPasswordValidatorVisible.value = false;
-    containerItensWithValidator.value = true;
-  }
-
-  async function redirectPage() {
-    successMessage.value = true;
-    await new Promise((resolve) => setTimeout(resolve, 4000));
-    navigateTo({ path: "/login-page" });
-  }
 
   async function handleResetPassword() {
     try {
@@ -79,7 +59,10 @@
                 loading.value = true;
               },
               onSuccess() {
-                dialog.value = true;
+                notifySuccess("Senha redefinida", "Sua senha foi alterada com sucesso. Você já pode fazer login com a nova senha.", 7000)
+                formPassword.value.password = ""
+                formPassword.value.confirmPassword = ""
+
               },
               onError(context) {
                 console.log("Erro ao salvar nova senha", context.error.message);
@@ -89,6 +72,7 @@
         }
       }
     } catch (error) {
+      notifyError("Algo deu errado", "Ocorreu um erro inesperado. Tente novamente em alguns instantes.", 7000)
       console.log("Erro ao criar usuário" + error);
     } finally {
       loading.value = false;
@@ -97,311 +81,135 @@
 </script>
 
 <template>
-  <div class="flex login-container">
-    <div
-      class="flex container-itens"
-      :class="{
-        'container-itens--with-validator': containerItensWithValidator,
-      }"
-    >
-      <div
-        class="flex flex-col items-center justify-center rounded-l-4xl inset-shadow-sm !p-4 w-full side-left"
-      >
-        <h4
-          class="text-center text-3xl text-[#0096FF] font-['Montserrat'] font-semibold"
-        >
-          Domine suas finanças.
-        </h4>
-        <h4 class="text-center text-3xl mt-2 font-semibold">
-          Antes que elas dominem <u>Você.</u>
-        </h4>
-        <Carrossel></Carrossel>
+
+  <div  class="container w-100 bg-backgroundPrimary d-flex justify-center">
+    
+    <v-form validate-on="submit" ref="form" class="bg-surface elevation-2 ma-3 pa-3 rounded-lg form">
+
+      <div class="d-flex align-center justify-center"> 
+        <div class="">
+          <v-img :width="310" :height="180" :src="logoLogin"></v-img>
+        </div>
       </div>
 
-      <div
-        class="rounded-r-4xl w-full flex items-center justify-center side-right"
-      >
-        <v-form
-          class="login-form w-full !p-5 !m-5 rounded-3xl overflow-hidden"
-          @submit.prevent
-          ref="form"
-        >
-          <div
-            class="flex items-center justify-center gap-3 bg-ambere-800 h-[100px]"
-          >
-            <img
-              class="logo"
-              src="/assets/report.png"
-              alt="MinhasFinancas.logo"
-            />
-            <h2
-              class="text-3xl text-center font-normal font-[Montserrat] login-title"
-            >
-              Minhas<strong>Finanças</strong>
-            </h2>
-          </div>
-
-          <div class="te flex flex-col items-center justify-center !p-4">
-            <h3
-              class="text-[1.4rem] !p-1 font-['Montserrat'] !font-semibold login-sub-title"
-            >
-              Redefinir Senha
-            </h3>
-            <p
-              class="text-[0.86rem] text-gray-700 font-['Montserrat'] font-semibold"
-            >
-              Preencha as informações abaixo
-            </p>
-          </div>
-
-          <div>
-            <div>
-              <v-text-field
-                label="Senha"
-                :type="showPassword ? 'password' : 'text'"
-                variant="solo"
-                density="comfortable"
-                v-model="formPassword.password"
-                prepend-inner-icon="mdi-lock"
-                :rules="passwordRules"
-                @keyup="showListVerificationPassword"
-              >
-                <template #append-inner>
-                  <v-icon
-                    :icon="showPassword ? 'mdi mdi-eye-off' : 'mdi mdi-eye'"
-                    @click="showPassword = !showPassword"
-                  ></v-icon>
-                </template>
-              </v-text-field>
-
-              <v-list :class="{ 'list-validator': isPasswordValidatorVisible }">
-                <v-list-item>
-                  <template v-slot:prepend>
-                    <v-icon
-                      :color="hasUpperCase ? '#00C853' : '#FF0000'"
-                      :icon="
-                        hasUpperCase
-                          ? 'mdi mdi-check-circle'
-                          : 'mdi mdi-close-circle'
-                      "
-                    ></v-icon>
-                  </template>
-
-                  <v-list-item-title>Contém letra maiúscula</v-list-item-title>
-                </v-list-item>
-
-                <v-list-item>
-                  <template v-slot:prepend>
-                    <v-icon
-                      :color="hasLowerCase ? '#00C853' : '#FF0000'"
-                      :icon="
-                        hasLowerCase
-                          ? 'mdi mdi-check-circle'
-                          : 'mdi mdi-close-circle'
-                      "
-                    ></v-icon>
-                  </template>
-
-                  <v-list-item-title>Contém letra minúscula</v-list-item-title>
-                </v-list-item>
-
-                <v-list-item>
-                  <template v-slot:prepend>
-                    <v-icon
-                      :color="hasNumber ? '#00C853' : '#FF0000'"
-                      :icon="
-                        hasNumber
-                          ? 'mdi mdi-check-circle'
-                          : 'mdi mdi-close-circle'
-                      "
-                    ></v-icon>
-                  </template>
-
-                  <v-list-item-title>Contém número</v-list-item-title>
-                </v-list-item>
-
-                <v-list-item>
-                  <template v-slot:prepend>
-                    <v-icon
-                      :color="hasCharacterSpecial ? '#00C853' : '#FF0000'"
-                      :icon="
-                        hasCharacterSpecial
-                          ? 'mdi mdi-check-circle'
-                          : 'mdi mdi-close-circle'
-                      "
-                    ></v-icon>
-                  </template>
-
-                  <v-list-item-title class=""
-                    >Contém caractere especial</v-list-item-title
-                  >
-                </v-list-item>
-              </v-list>
-            </div>
-
-            <div>
-              <v-text-field
-                label="Confirmar senha"
-                :type="showPassword ? 'password' : 'text'"
-                variant="solo"
-                density="comfortable"
-                v-model="formPassword.confirmPassword"
-                prepend-inner-icon="mdi-lock-check"
-                :rules="confirmPasswordRules"
-              >
-                <template #append-inner>
-                  <v-icon
-                    :icon="showPassword ? 'mdi mdi-eye-off' : 'mdi mdi-eye'"
-                    @click="showPassword = !showPassword"
-                  ></v-icon>
-                </template>
-              </v-text-field>
-            </div>
-          </div>
-
-          <div class="flex items-center justify-center gap-6 !p-2 !mt-2">
-            <div class="w-[100%]">
-              <v-btn
-                :disabled="loading"
-                :loading="loading"
-                class="text-none font-['Montserrat'] rounded-xl button-login"
-                size="large"
-                color="indigo-darken-3"
-                block
-                @click="handleResetPassword"
-              >
-                Redefinir
-              </v-btn>
-            </div>
-          </div>
-          <BaseModal
-            text="🔒 Sua senha foi redefinida com sucesso. Utilize suas novas credenciais para fazer login."
-            title="Sucesso ✅"
-            v-model="dialog"
-            @update:model-value="redirectPage"
-          >
-          </BaseModal>
-        </v-form>
-
-        <Toasts
-          :model-value="successMessage"
-          :timeout="4000"
-          timer="#d4f7dc"
-          color="#21BA45"
-          text="Redirecionando para a página de login..."
-          color-icon="white"
-          icon="mdi mdi-check-decagram"
-        >
-        </Toasts>
+      <div class="mb-2 text-center d-flex flex-column">
+        <span class="font-weight-bold text-h5 text-textAlternative">Redefinir senha de acesso</span>
+        <span class="font-weight-semibold text-h7 text-textSecundary">Insira sua nova senha logo abaixo</span>
       </div>
-    </div>
+
+      <div class="pa-2">
+
+        <v-text-field
+        v-model="formPassword.password"
+        placeholder="Senha*"
+        density="compact"
+        prepend-inner-icon="mdi-lock-outline"
+        variant="outlined"
+        color="primary"
+        :type="showPassword ? 'text' : 'password'"
+        :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+        @click:append-inner="showPassword = !showPassword"
+        :rules="passwordRules"
+        autocomplete="off"
+        hide-details="auto"
+        >
+        </v-text-field>
+        <div class="password-meter">
+          <Password
+            v-model="formPassword.password"
+            :strength-meter-only="true"
+          />
+      </div>
+        
+        <v-text-field
+        v-model="formPassword.confirmPassword"
+        density="compact"
+        placeholder="Confirmar senha*"
+        prepend-inner-icon="mdi-lock-check-outline"
+        variant="outlined"
+        color="primary"
+        :type="showPassword ? 'text' : 'password'"
+        :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+        @click:append-inner="showPassword = !showPassword"
+        :rules="confirmPasswordRules"
+        autocomplete="off"
+        >
+        </v-text-field>
+
+        <div class="d-flex justify-center aling-center w-100 mt-3">
+          <v-btn @click="handleResetPassword" :loading="loading" color="primary" class="text-none btn-login w-100">
+            <span class="font-weight-bold" style="font-size: var(--font-button-primary);">Redefinir senha</span>
+          </v-btn>
+        </div>
+
+        <div class="mt-5 font-weight-light text-center d-flex justify-center align-center ga-2">
+          <NuxtLink to="/login-page" class="text-decoration-none text-primary link-register text-textPrimary text-no-wrap font-weight-bold">Voltar</NuxtLink>
+        </div>
+
+      </div>
+      
+
+    </v-form>
   </div>
+
 </template>
 
-<style lang="scss" scoped>
-.login-container {
+<style scoped>
+
+.container {
+  min-height: 100dvh;
+  overflow-y: auto;
+  align-items: flex-start;
+  padding: 55px 16px;
+}
+
+.form {
   width: 100%;
-  max-width: 1100px;
+  max-width: 520px;
 }
 
-.container-itens {
+.password-meter {
   width: 100%;
-  min-height: 62dvh;
-  margin: 12px;
-}
-
-.side-left {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  background-color: $color-secundary;
-  z-index: 3;
-}
-
-.side-right {
-  box-shadow: 2px 4px 12px rgba(0, 0, 0, 0.5);
-  background-color: $color-primary;
-  z-index: 3;
-}
-
-.login-title {
-  color: $color-primary-title;
-  font-size: clamp(1.4rem, 2.5vw, 2rem);
-}
-
-.login-sub-title {
-  font-size: clamp(1rem, 2.5vw, 1.4rem);
-}
-
-.login-form {
-  padding: 5px;
   width: 100%;
-  border-radius: 25px;
-  margin: 5px;
+  margin: 10px 0 10px;
 }
 
-.logo {
-  width: clamp(45px, 2.5vw, 100px);
+.Password {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
-.button-google {
-  box-shadow: none;
-  border: 1px solid rgba(128, 128, 128, 0.425);
-  border-radius: 20px;
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color:#757575;
+  font-size: 0.85rem;
 }
 
-.button-google:hover {
-  transform: translateY(-5px);
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #757575;
 }
 
-.button-login {
-  font-size: clamp(0.9rem, 2.5vw, 1rem);
-}
-
-.button-login:hover {
-  transform: translateY(-5px);
+.link-register:hover {
+  text-decoration: underline !important;
+  color: #2563EB !important;
 }
 
 .list-validator {
   display: none;
 }
 
-@media (max-width: 980px) {
-  .side-left {
-    display: none;
-  }
-
-  .container-itens {
-    display: flex;
+@media (min-height: 1200px) {
+  .container {
     align-items: center;
-    justify-content: center;
-  }
-
-  .side-right {
-    margin: 10px;
-    border-radius: 20px;
-    width: 100%;
-    max-width: 650px;
   }
 }
 
-@media (max-width: 480px) {
-  .side-right {
-    border-radius: 40px;
-    width: 100%;
-    overflow: auto;
-  }
-
-  .login-form {
-    overflow: auto;
-  }
-
-  .container-itens {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .container-itens--with-validator {
-    margin-top: 25vh;
-  }
-}
 </style>

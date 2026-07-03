@@ -1,471 +1,287 @@
 <script setup lang="ts">
 
-    definePageMeta({
-        title: "Transações",
-        layout: "layout-dashboard"
-    })
+  import type { TRegisterForm } from "~~/types/user/Tuser.types";
+  import logoLogin from "~/assets/logo-login.svg"
+  import logoGoogle from "~/assets/logo-google.svg"
+  import logoDiscord from "~/assets/logo-discord.svg"
+
+  import { useValidateFields } from "~/composables/useValidateFields";
+  import { useValidateSchemas } from "~/composables/useValidateSchema"
+  import { useAuthStore } from "~~/store/modules/auth-store";
+  import Password from "vue-password-strength-meter"
+  import 'vue-password-strength-meter/style.css'
 
 
-    import { useHttpMovements } from '~/composables/useHttp/useHttpMovements'
-    import type { TMovements } from '~~/types/movements/TMovements'
-    import type { TOptionAction } from '~~/types/option_action/TOptionAction'
+  const { notifyError, notifyInfo, notifySuccess } = useNotify()
+  const { nameRules, emailRules, passwordRules,  } = useValidateFields()
+  const { validateSchemaSignUp } = useValidateSchemas()
 
-    type TMovementsFormatted = Omit<TMovements, 'value_transaction' | 'date_transaction'> & {
-        value_transaction: string,
-        date_transaction: string
+  const password = ref(null)
+  const loadingGoogle = ref(false);
+  const loadingFacebook = ref(false)
+  const loading = ref(false);
+  const showPassword = ref(false);
+  const isPasswordValidatorVisible = ref(true);
+  const containerItensWithValidator = ref(false);
+  const form = ref();
+  const registerForm = ref<TRegisterForm>({
+    id: "",
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const authStore = useAuthStore();
+
+  const confirmPasswordRules = ref([
+    (val: string) => !!val || "Campo confirmar senha é obrigatório",
+    (val: string) =>
+      val === registerForm.value.password || "As senha não coincidem",
+  ]);
+
+  async function redirectPage() {
+    notifySuccess("Cadastro realizado", "Sua conta foi criada com sucesso. Você será redirecionado para a tela de login.", 4000)
+    await new Promise((resolve) => setTimeout(resolve, 4000));
+    navigateTo({ path: "/login-page" });
+  }
+
+  async function handleRegisterUser() {
+    try {
+      loading.value = true;
+
+      const formValid = await form.value.validate();
+
+      const resultSchema = validateSchemaSignUp(registerForm.value);
+
+      if (formValid) {
+        if (resultSchema.success) {
+          await authStore.register(registerForm.value);
+        }
+      }
+    } catch (error) {
+      notifyError("Algo deu errado", "Ocorreu um erro inesperado. Tente novamente em alguns instantes.")
+      console.log("Erro ao criar usuário" + error);
+    } finally {
+      loading.value = false;
+      registerForm.value.confirmPassword = ""
+      registerForm.value.email = ""
+      registerForm.value.id = ""
+      registerForm.value.name = ""
+      registerForm.value.password = ""
     }
-    
-    type option = {
-        title: string,
-        color: string,
-        value: string,
-        route: string
+  }
+
+    async function handleWidthGoogle() {
+    try {
+      loadingGoogle.value = true
+
+      await authStore.loginGoogle()
+      
+    } catch (error) {
+      notifyError("Algo deu errado", "Ocorreu um erro inesperado. Tente novamente em alguns instantes.")
+      console.log("Erro ao autenteicar com o google" + error);
+    } finally {
+      loadingGoogle.value = true;
     }
+  }
 
-    const { getMoviments } = useHttpMovements()
+  async function handleWidthDiscord() {
+    try {
+      loadingFacebook.value = true
 
-    const route = useRoute()
+      await authStore.loginDiscord()
 
-    const search = ref('')
-
-    const dialog = ref(false)
-  
-    const { data, isPending } = useQuery({
-        queryKey: QUERY_KEYS.movements.all,
-        queryFn: getMoviments,
-    })
-
-
-    const transitionsFformatted = computed(() => {
-        return data.value?.map(item => ({
-            ...item,
-            date_transaction: new Date(item.date_transaction ?? "").toLocaleDateString("pt-BR"),
-            value_transaction: new Intl.NumberFormat('pt-br', {style: 'currency', currency: 'BRL'}).format(item.value_transaction ?? 0.00)
-        }))
-        
-    })
-
-    const itemsRouter = [
-        { title: 'Todas as transações', color: "#673AB7", value: "todas",          route: "/transactions" },
-        { title: 'Despesas',            color: "#F44336", value: "despesas",       route: "/transactions/expense" },
-        { title: 'Receitas',            color: "#4CAF50", value: "receitas",       route: "/transactions/revenue" },
-        { title: 'Transferências',      color: "#2196F3", value: "transferencias", route: "/transactions/transfer" },
-    ]
-        
-    const headers = [
-        {
-            align: 'center' as const,
-            key: 'status_transaction',
-            title: 'Situação',
-        },
-        { key: 'date_transaction', title: 'Data'  },
-        { key: 'description_transaction', title: 'Descrição' },
-        { key: 'categorie_name', title: 'Categoria' },
-        { key: 'account_name', title: 'Conta' },
-        { key: 'value_transaction', title: 'Valor' },
-        { key: 'actions', title: 'Ações' },
-    ]
-
-    const currentItem = computed(() => {
-       return itemsRouter.find(item => item.route === route.path)
-    })
-
-    const titleButtonOption = computed(() => {
-        return currentItem.value?.title ?? "Todas"
-    })
-
-    function getTitleRouter(item: option) {
-        navigateTo(item.route)
+    } catch (error) {
+      notifyError("Algo deu errado", "Ocorreu um erro inesperado. Tente novamente em alguns instantes.")
+      console.log("Erro ao autenteicar com o google" + error);
+    } finally {
+      loadingFacebook.value = false
     }
-
-    function getOptions(moviments: TMovementsFormatted): TOptionAction [] {
-        return [
-        {
-            title: moviments.status_transaction === 'pendente' ? 'Efetivar' : 'Editar',
-            icon: moviments.status_transaction === 'pendente' ? "mdi-check-all" : "mdi-circle-edit-outline",
-            value: moviments.status_transaction === 'pendente' ? 'efetivar' : 'editar'
-        },
-        { title: 'Anexar arquivo',  value: "arquivo", icon: "mdi-paperclip" },
-        { title: 'Deletar', value: "delete", icon: "mdi-delete-forever" }
-        ]
-    } 
-
-  const drawer = ref(false)
-
-  const model = ref()
- 
+  }
 </script>
 
-
 <template>
-    <div class="container-main">
 
-      <v-navigation-drawer
-        v-model="drawer"
-        location="right"
-        temporary
-        width="470"
-      >
-
-       <v-list >
-          <v-list-item
-          >
-            <template #title>
-              <span style="font-weight: 600; font-size: 1.2rem;">Filtro de transações</span>
-            </template>
-          </v-list-item>
-        </v-list>
-
-        <v-divider ></v-divider>
-
-        <div class="filter-main">
-
-          <div class="d-flex justify-center">
-            <v-date-input
-              v-model="model"
-              label="Selecione o período"
-              multiple="range"
-              autocomplete="off"
-              prepend-icon=""
-              variant="underlined"
-              clearable
-            ></v-date-input>
-          </div>
-
-          <div>
-            <v-select
-              autocomplete="off"
-              :loading="isPending"
-              v-model="modelCategorias"
-              v-model:menu="menuCategorias"
-              :items="filterCategorias"
-              item-title="name_identifier"
-              item-value="id"
-              variant="underlined"
-              label="Categoria"
-              persistent-hint
-              :rules="selectRules"
-              >                
-                <template v-slot:selection="{item}">
-                  <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
-                    <v-avatar :icon="item.raw.url_icon"></v-avatar>
-                  </v-avatar>
-                  <span>{{ item.raw.name_identifier }}</span>
-                </template>
-
-                <template v-slot:item="{props, item}">
-                  <v-list-item v-bind="props">
-                    <template v-slot:prepend>
-                      <v-avatar :icon="item.raw.url_icon"></v-avatar>
-                    </template>
-                  </v-list-item>
-                </template>
-
-                <template v-slot:prepend-item>
-                  <div class="pa-2 border-b">
-                    <v-text-field
-                      v-model="searchCategorias"
-                      :error="!!searchCategorias && !filterCategorias?.length"
-                      density="compact"
-                      placeholder="Buscar..."
-                      prepend-inner-icon="mdi-magnify"
-                      variant="outlined"
-                      @click.stop
-                      @keydown.stop
-                      @mousedown.stop
-                      hide-details="auto"
-                    >                 
-                  </v-text-field>
-                  </div>
-                </template>
-              </v-select>
-          </div>
-
-          <div>
-            <v-select
-              v-model="modelAccounts"
-              v-model:menu="menuAccounts"
-              :items="filterAccounts"
-              :rules="selectRules"
-              item-title="name_identifier"
-              item-value="id"
-              variant="underlined"
-              label="Conta"
-              persistent-hint
-              autocomplete="off"
-            >
-
-                <template v-slot:selection="{item}">
-                  <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
-                    <v-img  :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
-                  </v-avatar>
-                  <span >{{ item.raw.name_identifier }}</span>
-                </template>
-
-                <template v-slot:item="{props, item}">
-                  <v-list-item  v-bind="props">
-                    <template v-slot:prepend>
-                      <v-avatar>
-                        <v-img :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
-                      </v-avatar>
-                    </template>
-                  </v-list-item>
-                </template>
-
-                <template v-slot:prepend-item>
-                  <div class="pa-2 border-b">
-                    <v-text-field
-                      v-model="searchAccounts"
-                      :error="!!searchAccounts && !filterAccounts?.length"
-                      density="compact"
-                      placeholder="Buscar..."
-                      prepend-inner-icon="mdi-magnify"
-                      variant="outlined"
-                      @click.stop
-                      @keydown.stop
-                      @mousedown.stop
-                      hide-details="auto"
-                    >                 
-                  </v-text-field>
-                  </div>
-                </template>
-              </v-select>
-          </div>
-
-          <div>
-            <v-select
-              variant="underlined"
-              clearable
-              label="Situação"
-              :items="['California', 'Colorado', 'Florida', 'Georgia', 'Texas', 'Wyoming']"
-            ></v-select>
-          </div>
-
-          <v-divider style="margin-top: 5px;"></v-divider>
-          
-          <v-card-actions style="display: flex; justify-content: space-between; margin-top: 13px;">
-          
-            <v-btn
-              text="Cancelar"
-              variant="elevated"
-              @click="resetForm"
-            ></v-btn>
-
-            <v-btn
-              color="primary"
-              text="Aplicar filtros"
-              variant="elevated"
-              :loading="isPending"
-              @click="handleAddAccount"
-            ></v-btn>
-          </v-card-actions>
-
-        </div>
-
-      </v-navigation-drawer>
-      
-        <div class="text-center bnt-options">
-            
-            <v-menu
-                transition="scale-transition"
-                >
-                <template v-slot:activator="{ props }">
-                    <v-btn
-                    color="primary"
-                    v-bind="props"
-                    class="text-none rounded-xl"
-                    append-icon="mdi-arrow-down-drop-circle"
-                    >
-                    {{ titleButtonOption }}
-                    </v-btn>
-                </template>
-
-                <v-list>
-                    <v-list-item
-                    v-for="(item, i) in itemsRouter"
-                    :key="i"
-                    :value="i"
-                    @click="getTitleRouter(item)"
-                    >
-                    <template v-slot:prepend>
-                        <v-icon :color="item.color">mdi-circle-medium</v-icon>
-                    </template>
-                    <v-list-item-title>{{ item.title }}</v-list-item-title>
-                    </v-list-item>
-                </v-list>
-            </v-menu>
-
-            <div class="more-option">
-                <v-btn
-                color="primary"
-                prepend-icon="mdi-filter"
-                class="text-none rounded-xl"
-                @click="drawer = true"
-                >
-                Filtro
-                </v-btn>
-            </div>
-
-
-
-
-        </div>
-
-        <div class="main-cards">
-            <v-card text="Saldo Atual"></v-card>
-            <v-card text="Receitas"></v-card>
-            <v-card text="Despesas"></v-card>
-            <v-card text="Balanco Mensal"></v-card>
-        </div>
-        
-        <div class="container-table">
-
-            <template v-if="isPending">
-                <v-skeleton-loader 
-                    v-for="n in 12" 
-                    :key="n" 
-                    type="list-item-avatar"
-                    class="mb-2"
-                />
-            </template>
-            
-            <v-card
-                flat
-                class="table"
-                :loading="isPending"
-                v-else
-            >
-            <template v-slot:text>
-            <v-text-field
-                v-model="search"
-                label="Pesquisar"
-                prepend-inner-icon="mdi-magnify"
-                variant="outlined"
-                hide-details
-                single-line
-            ></v-text-field>
-            </template>
-                <v-data-table
-                :headers="headers"
-                :items="transitionsFformatted"
-                :search="search"
-                hide-no-data
-                >
-
-                <template v-slot:item.status_transaction="{ item }">
-                    <v-icon 
-                    :color="item.status_transaction === 'recebido' || item.status_transaction === 'pago' ? 'green' : 'red'"
-                    :icon="item.status_transaction === 'recebido' || item.status_transaction === 'pago' ? 'mdi-check-circle' : 'mdi-alert-circle'"
-                    >
-                    </v-icon>
-                    <v-tooltip
-                        activator="parent"
-                        location="top"
-                    >{{ item.status_transaction === 'recebido' || item.status_transaction === 'pago' ? 'Efetivada' : 'Pendente' }}</v-tooltip>
-                </template>
-
-                <template v-slot:item.actions="{ item }">
-                    <v-btn icon variant="text" size="small">
-                        <v-menu
-                            transition="slide-y-transition"
-                            >
-                            <template v-slot:activator="{ props }">
-                                <v-icon v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
-                            </template>
-                            <v-list>
-                                <v-list-item
-                                v-for="action in getOptions(item)"
-                                :key="action.title"
-                                :value="action.value"
-                                :prepend-icon="action.icon"
-                                >
-                                <v-list-item-title>{{ action.title }}</v-list-item-title>
-                                </v-list-item>
-                            </v-list>
-                        </v-menu>
-                    </v-btn>
-                </template>
-                </v-data-table>
-            </v-card>
-        </div>
-    </div>
-
+  <div  class="container w-100 bg-backgroundPrimary d-flex justify-center">
     
+    <v-form ref="form" class="bg-surface elevation-2 ma-3 pa-3 rounded-lg form">
+
+      <div class="d-flex align-center justify-center"> 
+        <div class="">
+          <v-img :width="310" :height="180" :src="logoLogin"></v-img>
+        </div>
+      </div>
+
+      <div class="mb-2 text-center d-flex flex-column">
+        <span class="font-weight-semibold text-h5 text-textAlternative">Crie sua conta como quiser</span>
+        <span class="font-weight-semibold text-h7 text-textSecundary">Crie sua conta para começar a controlar sua grana</span>
+      </div>
+
+      <div class="pa-2">
+
+        <v-text-field
+        v-model="registerForm.name"
+        density="compact"
+        placeholder="Nome*"
+        prepend-inner-icon="mdi-account-outline"
+        variant="outlined"
+        color="primary"
+        autocomlete="name"
+        name="name"
+        clearable
+        :rules="nameRules"
+        ></v-text-field>
+
+        <v-text-field
+        v-model="registerForm.email"
+        density="compact"
+        placeholder="Email*"
+        prepend-inner-icon="mdi-email-outline"
+        variant="outlined"
+        color="primary"
+        :rules="emailRules"
+        autocomlete="email"
+        name="email"
+        clearable
+        ></v-text-field>
+
+        <v-text-field
+        v-model="registerForm.password"
+        placeholder="Senha*"
+        density="compact"
+        prepend-inner-icon="mdi-lock-outline"
+        variant="outlined"
+        color="primary"
+        :type="showPassword ? 'text' : 'password'"
+        :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+        @click:append-inner="showPassword = !showPassword"
+        :rules="passwordRules"
+        autocomplete="off"
+        hide-details="auto"
+        >
+        </v-text-field>
+        <div class="password-meter">
+          <Password
+            v-model="registerForm.password"
+            :strength-meter-only="true"
+          />
+      </div>
+        
+        <v-text-field
+        v-model="registerForm.confirmPassword"
+        density="compact"
+        placeholder="Confirmar senha*"
+        prepend-inner-icon="mdi-lock-check-outline"
+        variant="outlined"
+        color="primary"
+        :type="showPassword ? 'text' : 'password'"
+        :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+        @click:append-inner="showPassword = !showPassword"
+        :rules="confirmPasswordRules"
+        autocomplete="off"
+        >
+        </v-text-field>
+
+        <div class="d-flex justify-center aling-center w-100 mt-3">
+          <v-btn @click="handleRegisterUser" :loading="loading" color="primary" class="text-none btn-login w-100">
+            <span class="text-h7 font-weight-bold">Criar conta</span>
+          </v-btn>
+        </div>
+
+        <div class="divider mt-5">
+          <span>OU</span>
+        </div>
+
+        <div class="d-flex align-center justify-center flex-column ga-3 mt-3">
+          <v-btn  @click="handleWidthGoogle" :loading="loadingGoogle" class="w-100 text-none">
+            <template #prepend>
+              <v-avatar :image="logoGoogle" size="20" ></v-avatar>
+            </template>
+            <span class="text-h7 font-weight-bold">Criar conta com Google</span>
+          </v-btn>
+
+          <v-btn @click="handleWidthDiscord" class="w-100 text-none">
+            <template #prepend>
+              <v-avatar :image="logoDiscord" size="25" ></v-avatar>
+            </template>
+            <span class="text-h7 font-weight-bold">Criar conta com Discord</span>
+          </v-btn>
+        </div>
+
+        <div class="mt-5 font-weight-light text-center d-flex justify-center align-center ga-2">
+          <span class="text-textAlternative">Já sou cadastrado.</span>
+          <NuxtLink to="/login-page" class="text-decoration-none text-primary link-register text-textPrimary">Quero fazer login</NuxtLink>
+        </div>
+
+        <div class="mt-5 font-weight-light text-center d-flex justify-center align-center ga-2">
+          <NuxtLink to="/login-page" class="text-decoration-none text-primary link-register text-textPrimary">Voltar</NuxtLink>
+        </div>
+
+      </div>
+      
+
+    </v-form>
+  </div>
 
 </template>
 
 <style scoped>
 
-.filter-main {
-  padding: 10px;
-  margin-top: 10px;
+.container {
+  min-height: 100dvh;
+  overflow-y: auto;
+  align-items: flex-start;
+  padding: 32px 16px;
 }
 
-.container-main {
-    margin-top: 35px;
+.form {
+  width: 100%;
+  max-width: 520px;
 }
 
-.main-cards {
-    margin: 10px;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
+.password-meter {
+  width: 100%;
+  width: 100%;
+  margin: 10px 0 10px;
 }
 
-.bnt-options {
-    display: flex;
-    margin-bottom: 20px;
-    gap: 20px;
-    margin-left: 20px;
+.Password {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
-.more-option {
-    width: 100%;
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    padding-right: 20px;
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color:#757575;
+  font-size: 0.85rem;
 }
 
-.container-table {
-    width: 100%;
-    padding: 10px;
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #757575;
 }
 
-.table {
-    overflow-y: auto;
-    max-height: calc(100vh - 220px);
-    height: fit-content;
+.link-register:hover {
+  text-decoration: underline !important;
+  color: #2563EB !important;
 }
 
-:deep(.v-data-table-header__content) {
-    font-weight: 800;
+.list-validator {
+  display: none;
 }
 
-@media (max-width: 950px) {
-  .main-cards {
-    display: grid;
-    grid-template-columns: 1fr;
-    padding: 0 6px 0 6px;
+@media (min-height: 820px) {
+  .container {
+    align-items: center;
   }
 }
-
-@media (max-width: 680px) {
-    .bnt-options {
-        display: flex;
-        margin-bottom: 20px;
-        gap: 20px;
-        flex-direction: column;
-        margin: 10px;
-    }
-
-    .more-option {
-        width: 100%;
-        display: flex;
-        gap: 10px;
-        flex-direction: column;
-    }
-}
-
 
 </style>

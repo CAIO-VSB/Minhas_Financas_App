@@ -51,10 +51,7 @@
     },
 
     onError: (error) => {
-      notifyError(
-        "Não foi possível concluir a operação",
-        "Tente novamente mais tarde." 
-      )
+     handleErrorApplication(error.data)
     },
 
   })
@@ -181,7 +178,7 @@
                 prepend-icon="mdi-archive-clock"
                 @click="handleOptionAccountsDisable"
               >
-                <v-list-item-title>{{ item.title }}</v-list-item-title>
+                <v-list-item-title >{{ item.title }}</v-list-item-title>
               </v-list-item>
             </v-list>
         </v-menu>
@@ -199,7 +196,7 @@
           variant="tonal"
           @click="handleOpenModalAddAccount"
           ></v-btn>
-          <span style="color: #4A7FD4;">Nova conta</span>
+          <span style="color: #4A7FD4;" class="card-label">Nova conta</span>
         </div>
       </v-card>
 
@@ -209,17 +206,17 @@
             <v-avatar color="primary" size="32" rounded="md">
               <v-icon color="white" size="18">mdi-bank</v-icon>
             </v-avatar>
-            <span class="text-body-3 text-medium-emphasis">Saldo atual</span>
+            <span class="text-medium-emphasis card-label">Saldo atual</span>
           </div>
           <v-icon size="15" color="medium-emphasis">mdi-chevron-right</v-icon>
         </div>
 
         <div class="d-flex align-center justify-space-between mb-16">
-          <span class="text-h7 font-weight-bold text-high-emphasis ml-1 mt-2">
+          <span class="font-weight-bold text-high-emphasis ml-1 mt-2 card-value">
             {{ formatCurrency(totalForAccountsActive || 0.00) }}
           </span>
           <v-chip :color="totalForAccountsActive  >= 0 ? 'success' : 'error'" size="small" variant="tonal">
-            <v-icon start size="12">{{ totalForAccountsActive >= 0 ? 'mdi-trending-up' : 'mdi-trending-down' }}</v-icon>
+            <v-icon start size="15">{{ totalForAccountsActive >= 0 ? 'mdi-trending-up' : 'mdi-trending-down' }}</v-icon>
             {{ totalForAccountsActive >= 0 ? 'Positivo' : 'Negativo' }}
           </v-chip>
         </div>
@@ -241,7 +238,7 @@
             size="45"
             >
             </v-avatar>
-             <span class="ml-2">{{ value.name_identifier }}</span>  
+             <span class="ml-2 card-label">{{ value.name_identifier }}</span>  
           </template>
 
           <template #append>
@@ -275,8 +272,8 @@
 
           <template #text>
             <div class="d-flex ga-16 mt-3">
-              <span class="font-weight-semibold">Saldo atual</span>
-              <span class="mb-10 font-weight-bold">{{ formatCurrency(value.saldo_atual ?? 0.00) }}</span>
+              <span class="font-weight-semibold card-value">Saldo atual</span>
+              <span class="mb-10 font-weight-bold card-value">{{ formatCurrency(value.saldo_atual ?? 0.00) }}</span>
             </div>
           </template>
 
@@ -296,6 +293,7 @@
       <CardAddAccount v-model="modalAddAccount" />
       <CardEditAccount :draft="editDraft" v-model="modalEditAccount" />
       <CardAddMovimentsExpenses :draft="draftAccount" v-model="modalAddExpense" />
+      
     </div>
 
   
@@ -314,13 +312,21 @@
 }
 
 .text-obs-saldo-atual {
-  font-size: clamp(0.75rem, 2.5vw, 0.90rem);
+  font-size: var(--text-sm);
 }
 
-@media (max-width: 1600px) {
-  .text-obs-saldo-atual {
-    font-size: clamp(0.55rem, 1.5vw, 0.75rem);
-    overflow: auto;
+.card-label {
+  font-size: var(--text-md);
+}
+
+.card-value {
+  font-size: var(--text-base);
+}
+
+@media (max-width: 1700px) {
+  .cards-main {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
   }
 }
 

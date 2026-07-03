@@ -16,7 +16,7 @@ export function useValidateFields() {
 
     const passwordRules = ref([
         (val: string) => !!val || "Campo senha é obrigatório",
-        (val: string) => (val && val.length >= 8) || "A senha deve conter no minímo 6 caracteres"
+        (val: string) => (val && val.length >= 6) || "A senha deve conter no minímo 6 caracteres"
     ])
 
     const selectRules = ref([

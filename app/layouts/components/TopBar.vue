@@ -24,11 +24,12 @@
 
 <template>
           
-    <v-app-bar color="surface">
+    <v-app-bar :elevation="1" color="surface">
 
         <template #title>
-            <span>{{ routes.meta.title }}</span>
+            <span class="font-weight-semibold" style="font-size: var( --text-xl);">{{ routes.meta.title }}</span>
         </template>
+        
 
         <template #prepend>
             <v-btn
@@ -39,8 +40,8 @@
         </template>
         
         <template #append>
-            <div class="mr-4">
-                <infoUser />
+            <div class="mr-4 ml-3">
+                <InfoUser />
             </div>
         </template>
 
@@ -51,8 +52,8 @@
             <template v-slot:activator="{ props }">
 
                 <v-btn v-bind="props" class="text-none" >
-                    <v-badge color="error" content="...">
-                    <v-icon size="24">mdi-bell</v-icon>
+                    <v-badge color="error" content="3">
+                        <v-icon size="24">mdi-bell</v-icon>
                     </v-badge>
                 </v-btn>
                 

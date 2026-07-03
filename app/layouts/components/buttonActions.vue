@@ -15,10 +15,10 @@
   const modalTranfer = ref(false)
 
   const items = [
-    { title: 'Receita', icon: "mdi-arrow-up-circle-outline", value: "receita" },
-    { title: 'Despesa', icon: "mdi-arrow-down-circle-outline", value: "despesa" },
-    { title: 'Despesa Cartão', icon: "mdi-credit-card-outline", value: "despesaCartao" },
-    { title: 'Transferência', icon: "mdi-swap-horizontal", value: "transfer" }
+    { title: 'Receita', icon: "mdi-arrow-up-circle-outline", value: "receita", color: "green" },
+    { title: 'Despesa', icon: "mdi-arrow-down-circle-outline", value: "despesa", color: "red" },
+    { title: 'Despesa Cartão', icon: "mdi-credit-card-outline", value: "despesaCartao", color: "blue" },
+    { title: 'Transferência', icon: "mdi-swap-horizontal", value: "transfer", color: "blue" }
   ]
 
   function getOption(data: string)  {
@@ -57,7 +57,7 @@
               color="primary"
               prepend-icon="mdi-plus"
               variant="elevated"
-              class="text-none "
+              class="text-none"
               v-bind="mergeProps(menu, tooltip)"
             >
             Novo
@@ -82,9 +82,12 @@
           v-for="(item, index) in items"
           :key="index"
           :value="index"
-          :prepend-icon="item.icon"
+          :color="item.color"
           @click="getOption(item.value)"
         >
+          <template #prepend>
+            <v-icon :color="item.color" :icon="item.icon"></v-icon>
+          </template>
           <v-list-item-title>{{ item.title }}</v-list-item-title>
         </v-list-item>
       </v-list>

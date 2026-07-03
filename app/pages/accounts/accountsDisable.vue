@@ -44,10 +44,8 @@
     },
 
     onError: (error) => {
-      notifyError(
-        "Não foi possível concluir a operação",
-        "Tente novamente mais tarde."
-      )
+      const errorFatal = handleErrorApplication(error.data)
+      console.dir("O erro tá vindo aqui pelo menos " + errorFatal)
     },
 
   })
@@ -111,7 +109,7 @@
         >
         </v-btn>
     </span>
-    <span class="text-h6 font-weight-bold">Contas arquivadas</span>
+    <span class="font-weight-bold" style="font-size: var(--text-lg);">Contas arquivadas</span>
   </div>
 
   <div class="pa-2 d-flex ga-7 container-main">

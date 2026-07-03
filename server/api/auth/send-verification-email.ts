@@ -18,69 +18,83 @@ type User = {
 
 export const sendUserEmail = async (user: User, url: string) => {
     const htmlTemplate = `
-  <div style="background-color: #F8FAFC; padding: 48px 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
-  <table role="presentation" border="0" cellpadding="0" cellspacing="0"
-    style="max-width: 560px; margin: auto; background: #ffffff; border-radius: 16px;
-    overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.04);">
+ <div style="margin:0; padding:56px 16px; background:#FFFFFF; font-family:Arial, Helvetica, sans-serif;">
+  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+    style="max-width:520px; margin:0 auto; background:#FFFFFF;">
 
     <tr>
-      <td style="padding: 32px 40px; text-align: center; border-bottom: 1px solid #F1F5F9;">
-        <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin: auto;">
-          <tr>
-            <td style="vertical-align: middle;">
-              <span style="font-size: 18px; font-weight: 700; color: #0F172A; letter-spacing: -0.3px;">
-                Velto Finance
-              </span>
-            </td>
-          </tr>
-        </table>
+        <div style="margin-top:14px; font-size:26px; line-height:1.2; font-weight:700; color:#2563EB; letter-spacing:-0.6px;">
+          Velto Finance
+        </div>
       </td>
     </tr>
 
     <tr>
-      <td style="padding: 40px 40px 32px;">
-        <p style="margin: 0 0 16px; font-size: 15px; color: #334155; line-height: 1.7;">
-          Olá, <strong style="color: #0F172A;">${user.email}</strong>! Obrigado por criar sua conta no <strong>Velto Finance</strong>.
-          Estamos felizes em ter você por aqui.
+      <td style="padding:0 0 28px;">
+        <p style="margin:0; font-size:14px; line-height:1.65; color:#7A7F87;">
+          Olá, <strong style="color:#111827;">${user.email}</strong>! Obrigado por criar sua conta no
+          <strong style="color:#111827;">Velto Finance</strong>. Estamos felizes em ter você por aqui.
         </p>
+      </td>
+    </tr>
 
-        <p style="margin: 0 0 28px; font-size: 15px; color: #334155; line-height: 1.7;">
+    <tr>
+      <td style="padding:0 0 32px;">
+        <p style="margin:0; font-size:14px; line-height:1.65; color:#7A7F87;">
           Para começar, confirme seu e-mail clicando no botão abaixo:
         </p>
+      </td>
+    </tr>
 
-        <div style="text-align: center; margin: 32px 0;">
-          <a href="${url}" style="background: #2563EB; color: #ffffff; text-decoration: none;
-            padding: 14px 32px; border-radius: 8px; font-size: 15px; font-weight: 600;
-            display: inline-block;">
-            Confirmar e-mail →
-          </a>
+    <tr>
+      <td style="text-align:center; padding:0 0 34px;">
+        <a href="${url}"
+          style="display:inline-block; background:#2563EB; color:#FFFFFF; text-decoration:none;
+          padding:12px 30px; border-radius:9px; font-size:14px; font-weight:600;">
+          Confirmar e-mail
+        </a>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:0 0 28px;">
+        <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:14px 16px;">
+          <p style="margin:0; font-size:14px; line-height:1.55; color:#475569;">
+            <strong style="color:#111827;">Este link expira em 1 hora.</strong>
+            Após esse prazo, será necessário solicitar um novo link de confirmação.
+          </p>
         </div>
+      </td>
+    </tr>
 
-        <p style="margin: 0 0 28px; font-size: 13px; color: #94A3B8; line-height: 1.7;">
-          ⚠️ Este link expira em <strong style="color: #334155;">1 hora</strong>. Após esse prazo, será necessário solicitar um novo.
-        </p>
-
-        <p style="margin: 0 0 6px; font-size: 13px; color: #94A3B8;">
+    <tr>
+      <td style="padding-top:22px; border-top:1px solid #EEF2F7;">
+        <p style="margin:0 0 8px; font-size:12px; line-height:1.5; color:#9CA3AF;">
           Se o botão não funcionar, copie e cole este link no navegador:
         </p>
-        <p style="font-size: 12px; color: #2563EB; word-break: break-all; background: #F8FAFC;
-          padding: 10px 12px; border-radius: 6px; border: 1px solid #E2E8F0; margin: 0;">
-          ${url}
-        </p>
 
-        <p style="margin-top: 28px; padding-top: 20px; border-top: 1px solid #F1F5F9;
-          font-size: 13px; color: #CBD5E1;">
-          Se você não criou esta conta, pode ignorar este e-mail.
+        <p style="margin:0; font-size:12px; line-height:1.5; color:#2563EB; word-break:break-all;">
+          ${url}
         </p>
       </td>
     </tr>
 
     <tr>
-      <td style="background: #F8FAFC; text-align: center; padding: 20px 40px;
-        font-size: 12px; color: #94A3B8; border-top: 1px solid #F1F5F9;">
-        © ${new Date().getFullYear()} Velto Finance
+      <td style="padding-top:28px;">
+        <p style="margin:0; font-size:13px; line-height:1.6; color:#A8B1C1;">
+          Se você não criou esta conta, pode ignorar este e-mail com segurança.
+        </p>
       </td>
     </tr>
+
+    <tr>
+      <td style="padding-top:36px; text-align:center;">
+        <p style="margin:0; font-size:12px; color:#CBD5E1;">
+          © ${new Date().getFullYear()} Velto Finance
+        </p>
+      </td>
+    </tr>
+
   </table>
 </div>
 `

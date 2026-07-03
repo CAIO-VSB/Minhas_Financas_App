@@ -93,7 +93,7 @@ import flags from "~~/shared/flags/catalog"
     },
 
     onError: (error) => {
-      notifyError("Ops!", `Erro ao editar ${error.message}`)
+      handleErrorApplication(error.statusCode)
     },
 
   })

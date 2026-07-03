@@ -136,7 +136,7 @@
     },
 
     onError: (error) => {
-      notifyError("😢", "Ops! Algo deu errado ao salvar a receita. Tente novamente ou entre em contato com o suporte. Detalhes: " + error.message)
+      handleErrorApplication(error.statusCode)
     },
 
   })

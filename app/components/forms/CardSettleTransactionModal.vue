@@ -80,7 +80,7 @@
     },
 
     onError: (error) => {
-      notifyInfo("Atenção", `Erro ao editar transação. Tente novamente mais tarde ou contate o surpote técnico. Erro detalhado: ${error.message}`)
+      handleErrorApplication(error.statusCode)
     },
 
   })

@@ -17,8 +17,8 @@
   const showPassword = ref(false);
   const form = ref();
   const loginForm = ref<TLoginForm>({
-    email: "",
-    password: "V9#mQ2@xL7!pR4$",
+    email: "caiob7517@gmail.com",
+    password: "errada2025",
   });
 
   const authStore = useAuthStore();
@@ -28,7 +28,6 @@
 
   async function handleWidthEmailAndPassword() {
 
-    console.log("Teste")
     try {
       loadingEmail.value = true
 
@@ -85,9 +84,9 @@
 
 <template>
 
-  <div class="container w-100 h-100 bg-backgroundPrimary d-flex justify-center align-center overflow-auto">
+  <div class="container w-100 bg-backgroundPrimary d-flex justify-center">
     
-    <v-form ref="form" class="bg-surface elevation-2 ma-3 pa-3 rounded-lg" style="width: 100vw; max-width: 520px; height: auto;">
+    <v-form ref="form" class="bg-surface elevation-2 ma-3 pa-3 rounded-lg form">
 
       <div class="d-flex align-center justify-center"> 
         <div class="">
@@ -96,7 +95,7 @@
       </div>
 
       <div class="mb-2 text-center">
-        <span class="font-weight-semibold text-h5 text-textSecundary">Acesse sua conta</span>
+        <span class="font-weight-bold text-h5 text-textSecundary">Acesse sua conta</span>
       </div>
 
       <div class="pa-2">
@@ -124,16 +123,17 @@
         :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
         @click:append-inner="showPassword = !showPassword"
         :rules="passwordRules"
+        autocomplete="off"
         >
         </v-text-field>
 
         <div class="mb-3 ">
-          <NuxtLink to="/recover-password-page" class="text-decoration-none text-textAlternative link-register">Esqueceu a senha?</NuxtLink>
+          <NuxtLink to="/recover-password-page" class="text-decoration-none text-textAlternative auth-link-register font-weight-bold">Esqueceu a senha?</NuxtLink>
         </div>
 
         <div class="d-flex justify-center aling-center w-100 mt-3">
-          <v-btn @click="handleWidthEmailAndPassword" :loading="loadingEmail" color="primary" class="text-none btn-login w-100">
-            <span class="text-h7 font-weight-bold">Entrar</span>
+          <v-btn :disabled="authStore.disableButton" @click="handleWidthEmailAndPassword" :loading="loadingEmail" color="primary" class="text-none btn-login w-100">
+            <span class="font-weight-bold" style="font-size: var(--font-button-primary);">Entrar</span>
           </v-btn>
         </div>
 
@@ -142,24 +142,24 @@
         </div>
 
         <div class="d-flex align-center justify-center flex-column ga-3 mt-3">
-          <v-btn  @click="handleWidthGoogle" :loading="loadingGoogle" class="w-100 text-none">
+          <v-btn :disabled="authStore.disableButton"  @click="handleWidthGoogle" :loading="loadingGoogle" class="w-100 text-none">
             <template #prepend>
               <v-avatar :image="logoGoogle" size="20" ></v-avatar>
             </template>
-            <span class="text-h7 font-weight-bold">Entrar com conta Google</span>
+            <span class="font-weight-bold text-textAlternative" style="font-size: var(--text-base);">Entrar com conta Google</span>
           </v-btn>
 
-          <v-btn @click="handleWidthDiscord" class="w-100 text-none">
+          <v-btn :disabled="authStore.disableButton" @click="handleWidthDiscord" class="w-100 text-none">
             <template #prepend>
               <v-avatar :image="logoDiscord" size="25" ></v-avatar>
             </template>
-            <span class="text-h7 font-weight-bold">Entrar com conta Discord</span>
+            <span class="font-weight-bold text-textAlternative" style="font-size: var(--text-base);">Entrar com conta Discord</span>
           </v-btn>
         </div>
 
-        <div class="mt-5 font-weight-light text-center d-flex justify-center align-center ga-2">
-          <span class="text-textAlternative">Ainda não tem uma conta?</span>
-          <NuxtLink to="/register-page" class="text-decoration-none text-primary link-register text-textPrimary">Cadastre-se</NuxtLink>
+        <div class="mt-5 font-weight-light text-center d-flex justify-center align-center ga-2 flex-nowrap auth-footer">
+          <span class="text-textAlternative text-no-wrap font-weight-bold">Ainda não tem uma conta?</span>
+          <NuxtLink to="/register-page" class="text-decoration-none text-primary auth-link-register text-textPrimary text-no-wrap font-weight-bold">Cadastre-se</NuxtLink>
         </div>
 
       </div>
@@ -170,7 +170,19 @@
 
 </template>
 
-<style lang="scss" escoped>
+<style scoped>
+
+.container {
+  min-height: 100dvh;
+  overflow-y: auto;
+  align-items: flex-start;
+  padding: 32px 16px;
+}
+
+.form {
+  width: 100%;
+  max-width: 520px;
+}
 
 .divider {
   display: flex;
@@ -188,11 +200,17 @@
   background: #757575;
 }
 
-.link-register:hover {
+.auth-link-register:hover {
   text-decoration: underline !important;
   color: #2563EB !important;
+  font-size: clamp(0.85rem, 4wv, 1rem);
 }
 
+@media (min-height: 820px) {
+  .container {
+    align-items: center;
+  }
+}
 
 </style>
   

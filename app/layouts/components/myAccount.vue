@@ -37,7 +37,7 @@
           Minha conta
 
           <template #prepend>
-            <v-icon size="22" icon="mdi-account-circle"></v-icon>
+            <v-icon size="25" color="gray" icon="mdi-account-circle"></v-icon>
           </template>
         </v-btn>
       </template>
@@ -51,19 +51,6 @@
           >
           </v-list-item>
         </v-list>
-
-        <v-divider></v-divider>
-
-        <div class="new-account-button">
-            <v-btn
-            size="x-small"
-            color="outlined"
-            class="button-singup"
-            variant="tonal"
-            >
-            Criar nova conta
-            </v-btn>
-        </div>
 
         <v-divider></v-divider>
 

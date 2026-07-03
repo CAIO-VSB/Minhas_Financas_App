@@ -118,7 +118,7 @@ import flags from "~~/shared/flags/catalog"
     },
 
     onError: (error) => {
-      notifyError("😢", "Ops! Algo deu errado ao salvar o cartão de crédito. Tente novamente ou entre em contato com o suporte. Detalhes: " + error.message)
+      handleErrorApplication(error.statusCode)
     },
 
   })

@@ -142,10 +142,7 @@
     },
 
     onError: (error) => {
-      notifyError(
-        "Não foi possível concluir a operação",
-        "Tente novamente mais tarde." 
-      )
+     handleErrorApplication(error.statusCode)
     },
 
   })

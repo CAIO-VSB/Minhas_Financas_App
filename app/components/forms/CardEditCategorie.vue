@@ -33,6 +33,8 @@
   const modalAddIconCategorie = ref(false)
   const form = ref()
   const modelValue = defineModel<boolean>()
+  const switchValue = ref(true)
+  const labelSwitch = ref("Ativo")
 
   watch(selectedIcon, (newIcon) => {
     if (props.draft !== null && newIcon !== null) {
@@ -48,6 +50,20 @@
     }
   })
 
+  watch(() => props.draft, (val) => {
+    if (props.draft) switchValue.value = val?.active ?? true
+  })
+
+  watch(switchValue, (val) => {
+    if (val === true) {
+      labelSwitch.value = "Ativo"
+      if (props.draft) props.draft.active = switchValue.value
+    } else if (val === false) {
+      labelSwitch.value = "Inativar"
+      if (props.draft) props.draft.active = switchValue.value
+    }
+  })
+
   const  { mutate, isPending  } = useMutation({
 
     mutationFn: (payload: TCategorie) => patchCategorieById(payload.id!, payload),
@@ -59,7 +75,7 @@
     },
 
     onError: (error) => {
-      notifyError("😥", "Ops! Algo deu errado ao editar a categoria. Tente novamente ou entre em contato com o suporte. Detalhes: " + error.message)
+      handleErrorApplication(error.statusCode)
     },
 
   })
@@ -108,7 +124,7 @@
                 color="primary"
                 v-model="props.draft.name_identifier"
                 :rules="nameRules"
-                hint="Adicione uma identificação clicando no ícone ao lado"
+                hint="Clique no ícone ao lado para alterá-lo."
                 persistent-hint
                 :counter="45" 
                 maxlength="45"
@@ -130,9 +146,9 @@
               </v-select>
 
               <v-switch
-                v-model="props.draft.active"
-                color="success"
-                label="Ativo"
+                v-model="switchValue"
+                color="primary"
+                :label="labelSwitch"
                 true-icon="mdi-check"
                 false-icon="mdi-close"
                 hide-details

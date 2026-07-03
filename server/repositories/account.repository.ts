@@ -74,7 +74,7 @@ export const accountsRepository = {
             VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
             RETURNING id, user_id, type_transaction, value_transaction, date_transaction, description_transaction, categorie_id, accounts_id, observation, url_recibo, status_transaction, is_deleted`
 
-            const valuesMovements = [userId, 'saldo inicial', data.initial_balance, new Date(), 'saldo inicial', 74, accountsId, null, null, 'Lançamento de saldo inicial', false]
+            const valuesMovements = [userId, 'saldo inicial', data.initial_balance, new Date(), 'saldo inicial', 80, accountsId, null, null, 'Lançamento de saldo inicial', false]
 
             const movements = client.query(textMovements, valuesMovements)
 
@@ -119,7 +119,7 @@ export const accountsRepository = {
             VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
             RETURNING id, user_id, type_transaction, value_transaction, date_transaction, description_transaction, categorie_id, accounts_id, observation, url_recibo, status_transaction, is_deleted`
 
-            const valuesMovements = [userId, 'saldo inicial', data.initial_balance, new Date(), 'saldo inicial', 74, accountsId, null, null, 'saldo inicial', false]
+            const valuesMovements = [userId, 'saldo inicial', data.initial_balance, new Date(), 'saldo inicial', 80, accountsId, null, null, 'saldo inicial', false]
 
             await client.query(textMovements, valuesMovements)
 

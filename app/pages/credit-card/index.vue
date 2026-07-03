@@ -59,7 +59,7 @@
   },
 
   onError: (error) => {
-    notifyInfo("Atenção", `Erro ao edita cartão de crédito. Tente novamente mais tarde ou contate o surpote técnico. Erro detalhado: ${error.message}`)
+    handleErrorApplication(error)
   },
 
   })

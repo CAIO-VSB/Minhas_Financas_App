@@ -47,6 +47,13 @@ export const auth = betterAuth({
 
     },
 
+    account: {
+        accountLinking: {
+            enabled: true,
+            trustedProviders: ["discord", "google"]
+        }
+    },
+
     onAPIError: {
         
         onError(e) {

@@ -185,7 +185,7 @@
         },
 
         onError: (error) => {
-            notifyInfo("Atenção", `Erro ao editar transação. Tente novamente mais tarde ou contate o surpote técnico. Erro detalhado: ${error.message}`)
+            handleErrorApplication(error)
         },
 
     })
@@ -206,6 +206,12 @@
             handleOpenModalEditMovementsRevenue(data)
             return 
         }
+
+        if (option.value === "arquivo") {
+            notifyInfo("Em desenvolvimento", "Estamos trabalhando nesta funcionalidade para disponibilizá-la em breve.", 6000, true)
+            return
+        }
+
 
         const raw = structuredClone(toRaw(data))
 
@@ -310,7 +316,7 @@
         </div>
 
          <div class="main-cards">
-            <v-card subtitle="Receitas pendentes">
+            <v-card>
                 <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
                 <div v-else  class="d-flex align-center ga-2 pl-2 mb-2">
                     <div class="pa-2 rounded-lg">
@@ -322,8 +328,9 @@
                         rounded="lg"
                         ></v-avatar>
                     </div>
-                    <span class="text-h6 font-weight-semibold">{{ formatCurrency(sumary.receitas_pendentes) }}</span>
+                    <span class="font-weight-semibold card-value">{{ formatCurrency(sumary.receitas_pendentes) }}</span>
                 </div>
+                <template #subtitle> <span class="card-label">Receitas pendentes</span> </template>
 
             </v-card>
             <v-card :loading="isPending" subtitle="Receitas recebidas">
@@ -338,8 +345,9 @@
                         rounded="lg"
                         ></v-avatar>
                     </div>
-                    <span class="text-h6 font-weight-semibold">{{ formatCurrency(sumary.receitas_efetivadas) }}</span>
+                    <span class="font-weight-semibold card-value">{{ formatCurrency(sumary.receitas_efetivadas) }}</span>
                 </div>
+                <template #subtitle> <span class="card-label">Receitas recebidas</span> </template>
 
             </v-card>
             <v-card :loading="isPending" subtitle="Total">
@@ -354,8 +362,9 @@
                         rounded="lg"
                         ></v-avatar>
                     </div>
-                    <span class="text-h6 font-weight-semibold"> {{ formatCurrency(sumary.total_geral) }}</span>
+                    <span class="font-weight-semibold card-value"> {{ formatCurrency(sumary.total_geral) }}</span>
                 </div>
+                <template #subtitle> <span class="card-label">Total</span> </template>
             </v-card>
         </div>
         
@@ -417,7 +426,7 @@
                             transition="slide-y-transition"
                             >
                             <template v-slot:activator="{ props }">
-                                <v-icon class="hover:scale-150 hover:bg-gray-200 rounded-xl"   v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
+                                <v-icon class="hover-icon rounded-xl"   v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
                             </template>
                             <v-list>
                                 <v-list-item
@@ -468,6 +477,20 @@
     transform: scale(1.3);
     cursor: pointer;
 }
+
+.card-label {
+    font-size: var(--text-base);
+}
+
+.card-value {
+    font-size: var(--text-md);
+    font-weight: 500;
+}
+
+.hover-icon:hover {
+    background-color: rgba(128, 128, 128, 0.256);
+}
+
 
 :deep(.v-data-table-header__content) {
     font-weight: 800;
