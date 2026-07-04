@@ -41,7 +41,7 @@ export function handleErrorApplication(statusCode: number | undefined) {
             break;
         default:
         console.log("Nenhum case bateu, statusCode era:", statusCode)
-        notifyError("Erro", "Erro não mapeado", 6000)
+        notifyError("Erro", "Erro não catalogado", 6000)
     }
    
 }

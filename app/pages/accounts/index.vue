@@ -51,7 +51,7 @@
     },
 
     onError: (error) => {
-     handleErrorApplication(error.data)
+     handleErrorApplication(error.statusCode)
     },
 
   })
@@ -196,7 +196,7 @@
           variant="tonal"
           @click="handleOpenModalAddAccount"
           ></v-btn>
-          <span style="color: #4A7FD4;" class="card-label">Nova conta</span>
+          <span style="color: #4A7FD4; font-size: var(--text-base);">Nova conta</span>
         </div>
       </v-card>
 
@@ -206,7 +206,7 @@
             <v-avatar color="primary" size="32" rounded="md">
               <v-icon color="white" size="18">mdi-bank</v-icon>
             </v-avatar>
-            <span class="text-medium-emphasis card-label">Saldo atual</span>
+            <span class="text-medium-emphasis" style="font-size: calc(--text-base);">Saldo atual</span>
           </div>
           <v-icon size="15" color="medium-emphasis">mdi-chevron-right</v-icon>
         </div>
@@ -272,7 +272,7 @@
 
           <template #text>
             <div class="d-flex ga-16 mt-3">
-              <span class="font-weight-semibold card-value">Saldo atual</span>
+              <span class="font-weight-semibold card-value" style="color: #0F172A;">Saldo atual</span>
               <span class="mb-10 font-weight-bold card-value">{{ formatCurrency(value.saldo_atual ?? 0.00) }}</span>
             </div>
           </template>
@@ -316,7 +316,8 @@
 }
 
 .card-label {
-  font-size: var(--text-md);
+  font-size: var(--text-base);
+  font-weight: 600;
 }
 
 .card-value {
@@ -326,7 +327,7 @@
 @media (max-width: 1700px) {
   .cards-main {
     display: grid;
-    grid-template-columns: repeat(1, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 

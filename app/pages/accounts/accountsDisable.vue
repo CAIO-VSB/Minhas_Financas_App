@@ -44,7 +44,7 @@
     },
 
     onError: (error) => {
-      const errorFatal = handleErrorApplication(error.data)
+      const errorFatal = handleErrorApplication(error.statusCode)
       console.dir("O erro tá vindo aqui pelo menos " + errorFatal)
     },
 

@@ -185,7 +185,7 @@
         },
 
         onError: (error) => {
-            handleErrorApplication(error)
+            handleErrorApplication(error.statusCode)
         },
 
     })

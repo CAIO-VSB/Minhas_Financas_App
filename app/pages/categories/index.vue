@@ -44,7 +44,7 @@
     },
 
     onError: (error) => {
-      handleErrorApplication(error)
+      handleErrorApplication(error.statusCode)
     },
 
   })
@@ -263,7 +263,7 @@
       </v-card>
     </div>
 
-    <div class="card-list">
+    <div class="card-list elevation-1 rounded-lg">
           
       <v-list style="height: 100%;" lines="two" item-props>
 
@@ -361,16 +361,15 @@
 
 .card-filter {
   max-width: 100%;
-  width: 20%;
+  width: 30%;
   padding: 0 10px 0 10px;
 }
 
 .card-list {
   width: 60%;
-  height: 89dvh;
+  height: calc(95dvh - 64px);
   overflow-y: auto;
-  border-radius: 5px;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+  
 }
 
 .fab-wrapper {
@@ -384,7 +383,7 @@
   text-decoration: line-through;
 }
 
-@media (max-width: 980px) {
+@media (max-width: 1450px) {
 
   .container {
     flex-direction: column;
