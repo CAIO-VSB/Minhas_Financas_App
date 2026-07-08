@@ -40,7 +40,7 @@
         </template>
         
         <template #append>
-            <div class="mr-4 ml-3">
+            <div class="mr-1">
                 <InfoUser />
             </div>
         </template>

@@ -7,7 +7,7 @@
     
     const emit = defineEmits<{
         applyFilter: [filter: TMovementsByFilter],
-        resetFilter: [reset: true]
+        resetFilter: [reset: string]
     }>()
 
     const props = defineProps<{
@@ -78,7 +78,7 @@
 
         modelValue.value = false
 
-        emit("resetFilter", true)
+        emit("resetFilter", "todos")
     }
 
     function submitForm() {
@@ -160,7 +160,7 @@
                 item-title="name_identifier"
                 item-value="id"
                 variant="underlined"
-                label="Categoria"
+                label="Categorias"
                 persistent-hint
                 :rules="selectRules"
                 clearable
@@ -211,7 +211,7 @@
                 item-title="name_identifier"
                 item-value="id"
                 variant="underlined"
-                label="Conta"
+                label="Contas"
                 persistent-hint
                 autocomplete="off"
                 clearable
@@ -259,7 +259,7 @@
                 <v-select
                 variant="underlined"
                 clearable
-                label="Situação"
+                label="Situações"
                 :items="props.items"
                 v-model="filterFrom.situation"
                 ></v-select>

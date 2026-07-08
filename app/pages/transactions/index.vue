@@ -22,13 +22,8 @@
     import CardEditTransfer  from '~/components/forms/CardEditTransfer.vue'
     import DateInput from '~/components/ui/DateInput.vue'
     import CardDeleteMovementTransfer from '~/components/forms/CardDeleteMovementTransfer.vue'
-
-    type option = {
-        title: string,
-        color: string,
-        value: string,
-        route: string
-    }
+    import ListToolBar from './components/ListToolBar.vue'
+    import AppCard from '~/components/ui/AppCard.vue'
 
     const { getMoviments, patchMovementsById, getCurrentBalance, getMovimentsByFilter } = useHttpMovements()
     const { getCategoriesOnlyActive } = useHttpCategories()
@@ -37,7 +32,7 @@
     const { notifyError, notifyInfo, notifySuccess } = useNotify()
     const { invalidate } = useInvalidate()
 
-    const route = useRoute()
+    
     const search = ref('')
     const drawer = ref(false)
     const cardPostValueTransaction = ref(false)
@@ -82,6 +77,10 @@
         queryFn: getCurrentBalance
     })
 
+    function showDrawer(value: boolean) {
+        drawer.value = value
+    }
+
     async function handleApplyFilter(filter: TMovementsByFilter) {
 
         lastFilter.value = filter
@@ -123,21 +122,19 @@
     })
 
     const lastFilterLabels = computed(() => {
-        const cats = lastFilter.value?.categorie_id?.map(id => categories.value?.find(c => c.id === id)?.name_identifier).filter(Boolean) ?? []
-        const accs = lastFilter.value?.accounts_id?.map(id => accounts.value?.find(a => a.id === id)?.name_identifier).filter(Boolean) ?? []
+        const cats = lastFilter.value?.categorie_id?.map(id => {
+            const found = categories.value?.find(c => c.id === id) 
+            return found ? {id: found.id, name: found.name_identifier} : null
+        })
+
+        const accs = lastFilter.value?.accounts_id?.map(id => {
+            const found = accounts.value?.find(a => a.id === id)
+            return found ? {id: found.id, name: found.name_identifier} : null
+        })
 
         return { cats, accs}
     })
 
-
-    
-    const itemsRouter = [
-        { title: 'Todas as transações', color: "#673AB7", value: "todas",          route: "/transactions" },
-        { title: 'Despesas',            color: "#F44336", value: "despesas",       route: "/transactions/expense" },
-        { title: 'Receitas',            color: "#4CAF50", value: "receitas",       route: "/transactions/revenue" },
-        { title: 'Transferências',      color: "#2196F3", value: "transferencias", route: "/transactions/transfer" },
-    ]
-        
     const headers = [
         {
             align: 'center' as const,
@@ -151,18 +148,6 @@
         { key: 'value_transaction', title: 'Valor' },
         { key: 'actions', title: 'Ações' },
     ]
-
-    const currentItem = computed(() => {
-       return itemsRouter.find(item => item.route === route.path)
-    })
-
-    const titleButtonOption = computed(() => {
-        return currentItem.value?.title ?? "Todas"
-    })
-
-    function getTitleRouter(item: option) {
-        navigateTo(item.route)
-    }
 
     function getOptions(movements: TMovementsSummary): TOptionAction [] {
 
@@ -199,16 +184,58 @@
 
     })
 
-    
     function handleMutationSuccess() {
         if (isFiltered.value && lastFilter.value) {
             handleApplyFilter(lastFilter.value)
         }
     }
 
-    function handleClearFilter() {
-        filteredData.value = null
-        isFiltered.value = false
+    function handleClearFilter(value: string, filter?: TMovementsByFilter | null, idCategorie?: number, idAccount?: number) {
+        switch (value) {
+            case "period":
+                lastFilter.value!.start_day = null
+                lastFilter.value!.end_day = null
+                isFiltered.value = false
+                break;
+            case "categories":
+                if (!filter) return
+                const categorieId = idCategorie
+                const categoriesRemaining = filter.categorie_id?.filter(id => id !== categorieId) ?? null
+                const payloadCategorie: TMovementsByFilter = {
+                    ...filter,
+                    categorie_id: categoriesRemaining?.length ? categoriesRemaining : null
+                }
+                handleApplyFilter(payloadCategorie)
+                break;
+            case "accounts":
+                if (!filter) return
+                const accountId = idAccount
+                const accountsRemaining = filter.accounts_id?.filter(id => id !== accountId) ?? null
+                const payloadAccounts: TMovementsByFilter = {
+                    ...filter,
+                    accounts_id: accountsRemaining?.length ? accountsRemaining : null
+                }
+                handleApplyFilter(payloadAccounts)
+                break; 
+            case "situation":
+                if (!filter) return
+                const payloadSituation: TMovementsByFilter = {
+                    ...filter,
+                    situation: null
+                }
+                handleApplyFilter(payloadSituation)
+                break; 
+            case "for_type":
+                if (!filter) return
+                const payloadFortype: TMovementsByFilter = {
+                    ...filter,
+                    for_type: null
+                }
+                handleApplyFilter(payloadFortype)
+                break; 
+            default:
+                break;
+        }
     }
 
     function handleGetPeriod(value: TPeriod) {
@@ -240,7 +267,7 @@
     async function handleOpenModalEditTransfer(transfer: TMovementsWithTransfer) {
 
         if (!transfer.transfer_id) {
-            notifyError("Erro", "Transferência não encontrada")
+            notifyError("Error", "Transferência não encontrada")
             return
         }
 
@@ -255,28 +282,22 @@
     }
 
 
-    function handleOptionClick(option: TOptionAction, data: TMovementsSummary) {
+    function handleOptionClick(option: TOptionAction, data: TMovementsSummary) {        
+        const optionsMap: Record<string, () => void> = {
+            "arquivo": () => notifyInfo("Em desenvolvimento", "Estamos trabalhando nesta funcionalidade para disponibilizá-la em breve.", 6000, true),
+            "edit_receita": () =>  handleOpenModalEditMovementsRevenue(data),
+            "edit_despesa": () => handleOpenModalEditMovementsExpense(data),
+            "edit_transferencia_entrada": () =>  handleOpenModalEditTransfer(data),
+            "edit_transferencia_saida": () => handleOpenModalEditTransfer(data),
+        }
 
-        if (option.value === "arquivo") {
-            notifyInfo("Em desenvolvimento", "Estamos trabalhando nesta funcionalidade para disponibilizá-la em breve.", 6000, true)
+        const key = option.value === "edit" ? `edit_${data.type_transaction}` : option.value
+        const action = optionsMap[key as string]
+
+        if (action) {
+            action()
             return
         }
-
-        if (option.value === "edit" && data.type_transaction === "receita") {
-            handleOpenModalEditMovementsRevenue(data)
-            return 
-        }
-
-        if (option.value === "edit" && data.type_transaction === "despesa") {
-            handleOpenModalEditMovementsExpense(data)
-            return 
-        }
-
-       if (option.value === "edit" && (data.type_transaction === "transferencia_entrada" || data.type_transaction === "transferencia_saida")) {
-            handleOpenModalEditTransfer(data)
-            return
-       }
-
 
         const raw = structuredClone(toRaw(data))
 
@@ -294,7 +315,8 @@
             labelOptions.value.text = "Ao efetivar essa receita será adicionado o valor na Conta."
             cardPostValueTransaction.value = true
             return
-        } else if (option.value === "efetivar" && data.type_transaction === "despesa") {
+        } 
+        if (option.value === "efetivar" && data.type_transaction === "despesa") {
             editDraft.value = payload
             labelOptions.value.colorButton = "red"
             labelOptions.value.textButton = "Pagar"
@@ -302,7 +324,8 @@
             labelOptions.value.text = "Ao efetivar essa despesa será descontado o valor na Conta."
             cardPostValueTransaction.value = true
             return
-        } else if (option.value === "delete" && data.type_transaction === "receita") {
+        }  
+        if (option.value === "delete" && data.type_transaction === "receita") {
             editDraft.value = payload
             payload.is_deleted = true
             labelOptions.value.colorButton = "green"
@@ -311,7 +334,8 @@
             labelOptions.value.text = "Essa ação não poderá ser desfeita. O valor será removido da conta."
             cardDeletTransaction.value = true
             return
-        } else if (option.value === "delete" && data.type_transaction === "despesa") {
+        }
+        if (option.value === "delete" && data.type_transaction === "despesa") {
             editDraft.value = payload
             payload.is_deleted = true
             labelOptions.value.colorButton = "red"
@@ -320,7 +344,8 @@
             labelOptions.value.text = "Essa ação não poderá ser desfeita. O valor será retornado ao saldo da conta."
             cardDeletTransaction.value = true
             return
-        } else if (option.value === "delete" && (data.type_transaction === "transferencia_entrada" || data.type_transaction === "transferencia_saida")) {
+        } 
+        if (option.value === "delete" && (data.type_transaction === "transferencia_entrada" || data.type_transaction === "transferencia_saida")) {
             editDraft.value = payload
             payload.is_deleted = true
             labelOptions.value.colorButton = "blue"
@@ -350,180 +375,37 @@
         
         <FilterDrawer :items="[ 'Recebidas', 'Pagas', 'Pendentes']" :field-type-active="false" color-button="primary" @apply-filter="handleApplyFilter" @reset-filter="handleClearFilter" v-model="drawer"/>
           
-        <div class="text-center d-flex ga-4 ml-4 mb-5 btn-options">
-            
-            <v-menu
-                transition="scale-transition"
-                >
-                <template v-slot:activator="{ props }">
-                    <v-btn
-                    color="primary"
-                    v-bind="props"
-                    class="text-none"
-                    variant="tonal"
-                    append-icon="mdi-arrow-down-drop-circle"
-                    >
-                    {{ titleButtonOption }}
-                    </v-btn>
-                </template>
-
-                <v-list>
-                    <v-list-item
-                    v-for="(item, i) in itemsRouter"
-                    :key="i"
-                    :value="i"
-                    @click="getTitleRouter(item)"
-                    >
-                    <template v-slot:prepend>
-                        <v-icon :color="item.color">mdi-circle-medium</v-icon>
-                    </template>
-                    <v-list-item-title>{{ item.title }}</v-list-item-title>
-                    </v-list-item>
-                </v-list>
-            </v-menu>
-
-            <div class="w-100 d-flex justify-sm-end ga-3 pr-4 ">
-                <v-btn
-                color="primary"
-                prepend-icon="mdi-filter-variant"
-                class="text-none"
-                variant="tonal"
-                @click="drawer = true"
-                >
-                Filtro
-                </v-btn>
-            </div>
-
+        <div class="text-center d-flex ga-4 ml-4 mb-5 btn-options"> 
+            <ListToolBar @show-drawer="showDrawer" />
         </div>
 
         <div class="main-cards">
-            <v-card subtitle="Saldo Atual">
-                <v-skeleton-loader v-if="isPendingCurrentBalance" type="list-item-avatar"></v-skeleton-loader>
-                <div v-else class="d-flex align-center ga-2 pl-2 mb-2">
-                    <div class="pa-2 rounded-lg ">
-                        <v-avatar 
-                        color="primary"
-                        variant="tonal" 
-                        icon="mdi-bank-outline"
-                        size="40"
-                        rounded="lg"
-                        ></v-avatar>
-                    </div>
-                    <span class="font-weight-semibold card-value" >{{ formatCurrency(balanceCurrent.saldo_atual) }}</span>
-                </div>
-                
-                <template #subtitle>
-                    <p class="card-label">Saldo atual</p>
-                </template>
+           <AppCard subtitle="Saldo atual" :loading="isPendingCurrentBalance" size="40" :value="balanceCurrent.saldo_atual" color="primary" icon="mdi-bank" text-tool-tip="O cálculo do saldo atual é independente do período selecionado, considerando o saldo inicial das contas ativas juntamente com todas as movimentações efetivadas de entrada e saída" icon-tool-tip="mdi-information-outline" size-icon-tool-tip="20px"></AppCard>
 
-                <template #append>
-                    <v-tooltip text="O cálculo do saldo atual é independente do período selecionado, considerando o saldo inicial das contas ativas juntamente com todas as movimentações efetivadas de entrada e saída">
-                        <template v-slot:activator="{ props }">
-                            <v-icon class="icon-help" v-bind="props" size="22px" icon="mdi-information-outline"></v-icon>
-                        </template>
-                    </v-tooltip>
-                </template>
-            </v-card>
-            <v-card :loading="isPending" subtitle="Receitas">
-                 <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
-                 <div v-else class="d-flex align-center ga-2 pl-2 mb-2">
-                    <div class="pa-2 rounded-lg ">
-                        <v-avatar 
-                        color="success"
-                        variant="tonal" 
-                        icon="mdi-arrow-down-thin-circle-outline"
-                        size="40"
-                        rounded="lg"
-                        ></v-avatar>
-                    </div>
-                    <span class="font-weight-semibold card-value" >{{ formatCurrency(summary.receitas) }}</span>
-                </div>
-                
-                <template #subtitle>
-                    <p class="font-weigth card-label" >Receitas</p>
-                </template>
+           <AppCard subtitle="Receitas" :loading="isPending" size="40" :value="summary.receitas" color="success" icon="mdi-arrow-down-thin-circle-outline" text-tool-tip="O valor apresentado corresponde à soma de todas as receitas efetivadas registradas nas contas ativas" icon-tool-tip="mdi-information-outline" size-icon-tool-tip="20px"></AppCard>
 
-                <template #append>
-                    <v-tooltip text="O valor apresentado corresponde à soma de todas as receitas efetivadas registradas nas contas ativas.">
-                        <template v-slot:activator="{ props }">
-                            <v-icon class="icon-help" v-bind="props" size="20px" icon="mdi-information-outline"></v-icon>
-                        </template>
-                    </v-tooltip>
-                </template>
-            </v-card>
-            <v-card :loading="isPending" subtitle="Despesas">
-                <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
-                 <div v-else class="d-flex align-center ga-2 pl-2 mb-2">
-                     <div class="pa-2 rounded-lg ">
-                        <v-avatar 
-                        color="error"
-                        variant="tonal" 
-                        icon="mdi-arrow-up-thin-circle-outline"
-                        size="40"
-                        rounded="lg"
-                        ></v-avatar>
-                    </div>
-                    <span class="font-weight-semibold card-value"> {{ formatCurrency(summary.despesas) }}</span>
-                </div>
+           <AppCard subtitle="Despesas" :loading="isPending" size="40" :value="summary.despesas" color="error" icon="mdi-arrow-up-thin-circle-outline" text-tool-tip="O valor apresentado corresponde à soma de todas as despesas efetivadas registradas nas contas ativas" icon-tool-tip="mdi-information-outline" size-icon-tool-tip="20px"></AppCard>
 
-                <template #subtitle>
-                    <p class="font-weigth card-label">Despesas</p>
-                </template>
+           <AppCard subtitle="Balanço mensal" :loading="isPending" size="40" :value="summary.balancoMensal" color="primary" icon="mdi-scale-balance" text-tool-tip="O balanço mensal é calculado com base na soma de todas as receitas efetivadas menos todas as despesas efetivadas do período selecionado" icon-tool-tip="mdi-information-outline" size-icon-tool-tip="20px"></AppCard>
 
-                <template #append>
-                    <v-tooltip text="O valor apresentado corresponde à soma de todas as despesas efetivadas registradas nas contas ativas.">
-                        <template v-slot:activator="{ props }">
-                            <v-icon class="icon-help" v-bind="props" size="20px" icon="mdi-information-outline"></v-icon>
-                        </template>
-                    </v-tooltip>
-                </template>
-            </v-card>
-            <v-card :loading="isPending" subtitle="Balanco Mensal">
-                <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
-                 <div v-else class="d-flex align-center ga-2 pl-2 mb-2">
-                    <div class="pa-2 rounded-lg ">
-                        <v-avatar 
-                        color="primary"
-                        variant="tonal" 
-                        icon="mdi-scale-balance"
-                        size="40"
-                        rounded="lg"
-                        ></v-avatar>
-                    </div>
-                    <span class="font-weight-semibold card-value" >{{ formatCurrency(summary.balancoMensal) }}</span>
-                </div>
-                
-                <template #subtitle>
-                    <p class="font-weigth card-label" >Balanço mensal</p>
-                </template>
-
-                <template #append>
-                    <v-tooltip text="O balanço mensal é calculado com base na soma de todas as receitas efetivadas menos todas as despesas efetivadas do período selecionado.">
-                        <template v-slot:activator="{ props }">
-                            <v-icon class="icon-help" v-bind="props" size="20px" icon="mdi-information-outline"></v-icon>
-                        </template>
-                    </v-tooltip>
-                </template>
-            </v-card>
         </div>
-        
+         
         <div class="w-100 pa-2 container-table">
 
             <v-card
             flat
-            class="table"
+            class="table elevation-2"
             :loading="isPending"
             >
             <template v-slot:text>
                 
                 <v-expand-transition>
-                    <div v-show="isFiltered" class="text-center mb-2">
-                    
-                        <span class="text-h7 font-weight-semibold">Filtros:</span>
+                    <div v-show="isFiltered" class=" mb-2 ml-2  ">
+                        <span v-if="isFiltered" class="font-weight-semibold" style="font-size: var(--text-base); font-weight: 600;">Filtros:</span>
                         <v-chip
                         v-if="lastFilter?.start_day && lastFilter.end_day"
                         class="ma-2"
-                        @click:close="handleClearFilter"
+                        @click:close="handleClearFilter('period')"
                         color="primary"
                         closable
                         >
@@ -532,31 +414,32 @@
 
                         <v-chip
                         v-if="lastFilterLabels.cats"
+                        value="categories"
                         class="ma-2"
                         closable
-                        @click:close="handleClearFilter"
-                        :key="name"
-                        v-for="name in lastFilterLabels.cats"
+                        @click:close="handleClearFilter('categories', lastFilter, categorie?.id)"
+                        :key="categorie?.name"
+                        v-for="categorie in lastFilterLabels.cats"
                         >
-                        {{ name }}
+                        {{ categorie?.name }}
                         </v-chip>
 
                         <v-chip
                         v-if="lastFilterLabels.accs"
                         class="ma-2"
                         closable
-                        @click:close="handleClearFilter"
-                        :key="name"
-                        v-for="name in lastFilterLabels.accs"
+                        @click:close="handleClearFilter('accounts', lastFilter, account?.id)"
+                        :key="account?.name"
+                        v-for="account in lastFilterLabels.accs"
                         >
-                        {{ name }}
+                        {{ account?.name }}
                         </v-chip>
 
                         <v-chip
                         v-if="lastFilter?.situation"
                         class="ma-2"
                         closable
-                        @click:close="handleClearFilter"
+                        @click:close="handleClearFilter('situation',  lastFilter)"
                         :color="(lastFilter?.situation === 'Pagas' || lastFilter?.situation === 'Recebidas') ? 'success' : 'error'"
                         >
                         {{ lastFilter?.situation }}
@@ -565,13 +448,13 @@
                         <v-chip
                         class="ma-2"
                         closable
-                        @click:close="handleClearFilter"
+                        @click:close="handleClearFilter('for_type',  lastFilter)"
                         color="primary"
                         v-for="type in lastFilter?.for_type"
                         >
                         {{ type }}
                         </v-chip>
-                    
+                        
                     </div>
                 </v-expand-transition>
 
@@ -595,7 +478,7 @@
                 :search="search"
                 :loading="isPending"
                 mobile-breakpoint="md"
-                items-per-page="6"
+                items-per-page="8"
                 >
 
                 <template v-slot:item.status_transaction="{ item }">
@@ -666,31 +549,10 @@
     cursor: pointer;
 }
 
-.card-label {
-    font-size: var(--text-base);
-}
-
-.card-value {
-    font-size: var(--text-md);
-    font-weight: 500;
-}
-
 .hover-icon:hover {
     background-color: rgba(128, 128, 128, 0.256);
 }
 
-:deep(.v-card-text) {
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    background-color: white;
-}
-
-:deep(.v-data-table-footer) {
-    position: sticky;
-    bottom: 0;
-    background-color: white;
-}
 
 :deep(.v-data-table-header__content) {
     font-weight: 900;
@@ -713,10 +575,6 @@
 
     .container-main {
         margin-top: 30px;
-    }
-
-    .table {
-        height: fit-content;
     }
 
 }

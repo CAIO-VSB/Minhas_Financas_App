@@ -118,9 +118,9 @@ async function submitForm() {
               <v-card-actions style="display: flex; justify-content: space-between; margin-top: 13px;">
               <v-btn
                   text="Cancelar"
-                  variant="outlined"
+                  variant="tonal"
                   :color="props.colorBotton"
-                  class="text-none rounded-xl button-singup"
+                  class="text-none "
                   @click="isActive.value = false"
               ></v-btn>
               
@@ -128,7 +128,7 @@ async function submitForm() {
                   :text="props.titleBotton"
                   variant="elevated"
                   :color="props.colorBotton"
-                  class="text-none rounded-xl button-singup"
+                  class="text-none"
                   @click="submitForm"
               ></v-btn>
               </v-card-actions>

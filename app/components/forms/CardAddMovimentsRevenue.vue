@@ -48,6 +48,8 @@
   const menuAccounts = ref(false)
   const modalAddCategorie = ref(false)
   const modalAddAccount = ref(false)
+  const showInputParcelado = ref(false)
+  const showInputFixa = ref(false)
   const labelSwitch = ref("Receita recebida")
 
   const movementsForm = ref<TMovements>({
@@ -58,6 +60,19 @@
     categorie_id: null,
     accounts_id: null,
     status_transaction: "recebido"
+  })
+
+  watch(showInputFixa, (newVal) => {
+    if (newVal) {
+      showInputParcelado.value = false
+    }
+  })
+
+  watch(showInputParcelado, (newVal) => {
+    console.log("newvalaaaa" + newVal)
+    if (newVal) {
+      showInputFixa.value = false
+    } 
   })
 
   watch(menuCategorias, (val) => {
@@ -173,104 +188,71 @@
         <v-card prepend-icon="mdi-bank-plus" title="Nova receita">
           <v-divider></v-divider>
           <v-card-text>
-
-            <CurrencyInput prepend-icon="mdi-cash" input-color="#2E7D32" base-color="#2E7D32" color="#2E7D32" :rules="currencyRules"  text-color="green" autocomplete="off" label="Valor*" v-model="movementsForm.value_transaction" />
-
-            <v-date-input prepend-icon="mdi-calendar" :rules="dateRules" autocomplete="off" name="date" label="Data*" variant="underlined" v-model="movementsForm.date_transaction"></v-date-input>
-
-            <v-text-field prepend-icon="mdi-pencil" :rules="nameRules" :counter="45" maxlength="45"  autocomplete="name" name="name" label="Descrição*" variant="underlined" v-model="movementsForm.description_transaction"></v-text-field>
-
-            <v-select
-              autocomplete="off"
-              :loading="isPending"
-              v-model="modelCategorias"
-              v-model:menu="menuCategorias"
-              :items="filterCategorias"
-              item-title="name_identifier"
-              item-value="id"
-              variant="underlined"
-              label="Categoria*"
-              persistent-hint
-              :rules="selectRules"
-              prepend-icon="mdi-shape"
+            <v-row dense>
+              <v-col
+              dens
+              cols="12"
+              md="6"
+              sm="12"
               >
-                <template #append-inner>
-                  <v-tooltip
-                  activator="parent"
-                  location="top"
-                  >Nova categoria</v-tooltip>
-                  <v-icon @click.stop="handleOpenModalAddCategorie" class="button-hover" icon="mdi-plus-box"></v-icon>
-                </template>
-                
-                <template v-slot:selection="{item}">
-                  <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
-                    <v-avatar :icon="item.raw.url_icon"></v-avatar>
-                  </v-avatar>
-                  <span>{{ item.raw.name_identifier }}</span>
-                </template>
+              <CurrencyInput prepend-inner-icon="mdi-cash" input-color="#2E7D32" base-color="#2E7D32" color="#2E7D32" :rules="currencyRules"  text-color="green" autocomplete="off" label="Valor*" v-model="movementsForm.value_transaction" />
+              </v-col>
 
-                <template v-slot:item="{props, item}">
-                  <v-list-item v-bind="props">
-                    <template v-slot:prepend>
-                      <v-avatar :icon="item.raw.url_icon"></v-avatar>
-                    </template>
-                  </v-list-item>
-                </template>
+              <v-col
+              cols="12"
+              md="6"
+              sm="12"
+              >
+              <v-date-input prepend-inner-icon="mdi-calendar" prepend-icon="" :rules="dateRules" autocomplete="off" name="date" label="Data*" variant="underlined" v-model="movementsForm.date_transaction"></v-date-input>
+              </v-col>
+              
+              <v-col
+              cols="12"
+              md="12"
+              sm="12"
+              >
+              <v-text-field prepend-inner-icon="mdi-pencil" prepend-icon="" :rules="nameRules" :counter="45" maxlength="45"  autocomplete="name" name="name" label="Descrição*" variant="underlined" v-model="movementsForm.description_transaction"></v-text-field>
+              </v-col>
 
-                <template v-slot:prepend-item>
-                  <div class="pa-2 border-b">
-                    <v-text-field
-                      v-model="searchCategorias"
-                      :error="!!searchCategorias && !filterCategorias?.length"
-                      density="compact"
-                      placeholder="Buscar..."
-                      prepend-inner-icon="mdi-magnify"
-                      variant="outlined"
-                      @click.stop
-                      @keydown.stop
-                      @mousedown.stop
-                      hide-details="auto"
-                    >                 
-                  </v-text-field>
-                  </div>
-                </template>
-              </v-select>
-
+              <v-col
+              cols="12"
+              md="12"
+              sm="12"
+              >
               <v-select
-                  v-model="modelAccounts"
-                  v-model:menu="menuAccounts"
-                  :items="filterAccounts"
-                  :rules="selectRules"
-                  item-title="name_identifier"
-                  item-value="id"
-                  variant="underlined"
-                  label="Conta*"
-                  hint="O valor será creditado nesta conta"
-                  persistent-hint
-                  autocomplete="off"
-                  prepend-icon="mdi-bank"
+                autocomplete="off"
+                :loading="isPending"
+                v-model="modelCategorias"
+                v-model:menu="menuCategorias"
+                :items="filterCategorias"
+                item-title="name_identifier"
+                item-value="id"
+                variant="underlined"
+                label="Categoria*"
+                persistent-hint
+                :rules="selectRules"
+                prepend-inner-icon="mdi-shape"
+                clearable
                 >
                   <template #append-inner>
                     <v-tooltip
                     activator="parent"
                     location="top"
-                    >Nova conta</v-tooltip>
-                    <v-icon @click.stop="handleOpenModalAddAccount"  class="button-hover" icon="mdi-plus-box"></v-icon>
+                    >Nova categoria</v-tooltip>
+                    <v-icon @click.stop="handleOpenModalAddCategorie" class="button-hover" icon="mdi-plus-box"></v-icon>
                   </template>
-
+                  
                   <template v-slot:selection="{item}">
                     <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
-                      <v-img  :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
+                      <v-avatar :icon="item.raw.url_icon"></v-avatar>
                     </v-avatar>
-                    <span >{{ item.raw.name_identifier }}</span>
+                    <span>{{ item.raw.name_identifier }}</span>
                   </template>
 
                   <template v-slot:item="{props, item}">
-                    <v-list-item  v-bind="props">
+                    <v-list-item v-bind="props">
                       <template v-slot:prepend>
-                        <v-avatar>
-                          <v-img :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
-                        </v-avatar>
+                        <v-avatar :icon="item.raw.url_icon"></v-avatar>
                       </template>
                     </v-list-item>
                   </template>
@@ -278,8 +260,8 @@
                   <template v-slot:prepend-item>
                     <div class="pa-2 border-b">
                       <v-text-field
-                        v-model="searchAccounts"
-                        :error="!!searchAccounts && !filterAccounts?.length"
+                        v-model="searchCategorias"
+                        :error="!!searchCategorias && !filterCategorias?.length"
                         density="compact"
                         placeholder="Buscar..."
                         prepend-inner-icon="mdi-magnify"
@@ -293,21 +275,151 @@
                     </div>
                   </template>
                 </v-select>
+              </v-col>
 
-                <v-text-field prepend-icon="mdi-note-text" v-model="movementsForm.observation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="underlined"></v-text-field >
+              <v-col
+              cols="12"
+              md="12"
+              sm="12"
+              >
+                <v-select
+                    v-model="modelAccounts"
+                    v-model:menu="menuAccounts"
+                    :items="filterAccounts"
+                    :rules="selectRules"
+                    item-title="name_identifier"
+                    item-value="id"
+                    variant="underlined"
+                    label="Conta*"
+                    hint="O valor será creditado nesta conta"
+                    persistent-hint
+                    autocomplete="off"
+                    prepend-inner-icon="mdi-bank"
+                    clearable
+                  >
+                    <template #append-inner>
+                      <v-tooltip
+                      activator="parent"
+                      location="top"
+                      >Nova conta</v-tooltip>
+                      <v-icon @click.stop="handleOpenModalAddAccount"  class="button-hover" icon="mdi-plus-box"></v-icon>
+                    </template>
 
-                <v-file-input prepend-icon="mdi-paperclip" clearable label="Anexar comprovante" variant="underlined"></v-file-input>
+                    <template v-slot:selection="{item}">
+                      <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
+                        <v-img  :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
+                      </v-avatar>
+                      <span >{{ item.raw.name_identifier }}</span>
+                    </template>
 
-              <v-switch
-                v-model="movementsForm.status_transaction"
-                color="success"
-                :label="labelSwitch"
-                hide-details
-                false-value="pendente"
-                true-value="recebido"
-                true-icon="mdi-check"
-                false-icon="mdi-close"
-              ></v-switch> 
+                    <template v-slot:item="{props, item}">
+                      <v-list-item  v-bind="props">
+                        <template v-slot:prepend>
+                          <v-avatar>
+                            <v-img :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
+                          </v-avatar>
+                        </template>
+                      </v-list-item>
+                    </template>
+
+                    <template v-slot:prepend-item>
+                      <div class="pa-2 border-b">
+                        <v-text-field
+                          v-model="searchAccounts"
+                          :error="!!searchAccounts && !filterAccounts?.length"
+                          density="compact"
+                          placeholder="Buscar..."
+                          prepend-inner-icon="mdi-magnify"
+                          variant="outlined"
+                          @click.stop
+                          @keydown.stop
+                          @mousedown.stop
+                          hide-details="auto"
+                        >                 
+                      </v-text-field>
+                      </div>
+                    </template>
+                  </v-select>
+                </v-col>
+
+                <v-col
+                cols="12"
+                md="12"
+                sm="12"
+                >
+                  <v-text-field prepend-inner-icon="mdi-note-text" v-model="movementsForm.observation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="underlined"></v-text-field >
+                </v-col>
+
+                <v-col
+                cols="12"
+                md="12"
+                sm="12"
+                >
+                  <v-file-input prepend-inner-icon="mdi-paperclip" prepend-icon="" clearable label="Anexar comprovante" variant="underlined"></v-file-input>
+                </v-col>
+
+                <div class="d-flex ga-3 options-footer">
+                    <v-switch
+                    v-model="movementsForm.status_transaction"
+                    color="success"
+                    :label="labelSwitch"
+                    hide-details
+                    false-value="pendente"
+                    true-value="recebido"
+                    true-icon="mdi-check"
+                    false-icon="mdi-close"
+                  ></v-switch> 
+                  <v-switch
+                    v-model="showInputFixa"
+                    color="primary"
+                    label="Receita fixa"
+                    hide-details
+                    true-icon="mdi-pin"
+                    false-icon="mdi-close"
+                  ></v-switch> 
+                  <v-switch
+                    v-model="showInputParcelado"
+                    color="primary"
+                    label="Receita parcelada"
+                    hide-details
+                    true-icon="mdi-repeat"
+                    false-icon="mdi-close"
+                  ></v-switch> 
+                </div>
+
+                <v-col
+                  cols="12"
+                  md="6"
+                  sm="6"
+                  class="mt-3"
+                  >
+                  <v-number-input
+                  v-if="showInputParcelado"
+                  density="compact"
+                  variant="underlined"
+                  controlVariant="default"
+                  :min="2"
+                  label="Número de parcelas*"
+                  :hideInput="false"
+                  inset
+                ></v-number-input>
+                </v-col>
+
+                <v-col
+                  cols="12"
+                  md="6"
+                  sm="6"
+                  class="mt-3"
+                  >
+                  <v-select
+                  v-if="showInputParcelado"
+                  label="Selecione a periodicidade*"
+                  density="compact"
+                  :items="['Dias', 'Semanas', 'Meses', 'Anos']"
+                  variant="underlined"
+                ></v-select>
+                </v-col>
+            </v-row>
 
             <small class="text-caption text-medium-emphasis"
               >* Indica campos obrigatórios</small
@@ -316,15 +428,14 @@
 
           <v-divider></v-divider>
 
-          <v-card-actions>
-            <v-spacer></v-spacer>
-
+          <v-card-actions >
+            
             <v-btn
               text="Fechar"
               variant="plain"
               @click="resetForm"
             ></v-btn>
-
+            <v-spacer></v-spacer>
             <v-btn
               color="primary"
               text="Lançar"
@@ -345,19 +456,11 @@
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style  scoped>
 
 .icon-add-logo:hover {
   background-color: rgba(128, 128, 128, 0.562);
   border-radius: 60%;
-}
-
-::v-deep(.v-field__field) {
-  align-items: center;
-}
-
-::v-deep(.v-card-title) {
-  align-items: center;
 }
 
 .button-hover:hover {
@@ -366,5 +469,10 @@
   transition: 0.3s; /* Transição suave */
 }
 
+@media (max-width: 680px) {
+  .options-footer {
+    flex-direction: column;
+  }
+}
 
 </style>

@@ -1,0 +1,16 @@
+{
+  "name": "teste-rrule",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "moment-timezone": "^0.6.2",
+    "rrule": "^2.8.1"
+  }
+}

@@ -195,7 +195,7 @@
                     <v-btn
                     :color="ColorButtonOption"
                     v-bind="props"
-                    class="text-none "
+                    class="text-none elevation-1"
                     variant="tonal"
                     append-icon="mdi-arrow-down-drop-circle"
                     >
@@ -222,7 +222,7 @@
                 <v-btn
                 :color="ColorButtonOption"
                 prepend-icon="mdi-plus"
-                class="text-none btn-add-transfer"
+                class="text-none btn-add-transfer elevation-1"
                 variant="tonal"
                 @click="modalAddTransfer = true"
                 >
@@ -349,7 +349,7 @@
             
             <v-card
                 flat
-                class="table"
+                class="table  elevation-2"
                 :loading="isPending"
                 v-else
             >

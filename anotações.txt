@@ -15,5 +15,4 @@ Lista de coisas a ser fazer (para não cair no esquecimento)
 listagem pode trazer dados resumidos
 edição deve buscar a entidade completa
 
-74
-80
+datetime(ano, mes, dia, hora, minuto, segundo)

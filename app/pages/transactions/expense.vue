@@ -267,7 +267,7 @@
                     <v-btn
                     :color="ColorButtonOption"
                     v-bind="props"
-                    class="text-none"
+                    class="text-none elevation-1"
                     variant="tonal"
                     append-icon="mdi-arrow-down-drop-circle"
                     >
@@ -294,7 +294,7 @@
                 <v-btn
                 :color="ColorButtonOption"
                 prepend-icon="mdi-plus"
-                class="text-none btn-add-despesa"
+                class="text-none btn-add-despesa elevation-1"
                 variant="tonal"
                 @click="modalAddExpenses = true"
                 >
@@ -303,7 +303,7 @@
                 <v-btn
                 color="red"
                 prepend-icon="mdi-filter"
-                class="text-none btn-filter"
+                class="text-none btn-filter elevation-1"
                 variant="tonal"
                 @click="drawer = true"
                 >
@@ -379,7 +379,7 @@
             
             <v-card
                 flat
-                class="table"
+                class="table elevation-2"
                 :loading="isPending"
                 v-else
             >
