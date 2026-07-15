@@ -8,7 +8,6 @@ export const useAuthStore = defineStore('auth', () => {
     const user = ref<TUser>()
     const isAuthenticated = ref<boolean>(false)
     const disableButton = ref<boolean>(false)
-    const rateLimitUntil = ref<number | null>(null)
 
     const { notifyError, notifyInfo, notifySuccess } = useNotify()
 
@@ -22,56 +21,6 @@ export const useAuthStore = defineStore('auth', () => {
         sessionStorage.setItem('isAuthenticated', JSON.stringify(value))
     }
 
-    const lockButtonFor = (ms: number) => {
-        disableButton.value = true
-        rateLimitUntil.value = Date.now() + ms
-
-        sessionStorage.setItem("rateLimitUntil", String(rateLimitUntil.value))
-
-        setTimeout(() => {
-            disableButton.value = false
-            rateLimitUntil.value = null
-            sessionStorage.removeItem("rateLimitUntil")
-        }, ms)
-    }
-
-    const restoreRateLimit = () => {
-
-        const storeUntil = sessionStorage.getItem("rateLimitUntil")
-
-        console.log(storeUntil)
-
-        if (!storeUntil) return
-
-        //Tempo restante       
-        const remaining = Number(storeUntil) - Date.now()
-
-        if (remaining <= 0) {
-            disableButton.value = false
-            sessionStorage.removeItem("rateLimitUntil")
-            return
-        }
-
-        disableButton.value = true
-
-        notifyInfo(
-            "Limite de tentativas atingido",
-            `Por segurança, novas tentativas foram temporariamente bloqueadas. Tente novamente em ${remaining.toLocaleString("pt-br").split(".")[0]} segundos...`,
-            remaining,
-            false,
-            false
-        )
-
-        setTimeout(() => {
-            disableButton.value = false
-            rateLimitUntil.value = null
-            sessionStorage.removeItem("rateLimitUntil")
-        }, remaining);
-
-    }
-
-    restoreRateLimit()
-
     const login = async (data: TLoginForm) => {
         try {
             const response = await $authClient.signIn.email(data, {
@@ -81,7 +30,6 @@ export const useAuthStore = defineStore('auth', () => {
                         return
                     } else {
                         handleErrorApplication(context.error.status)
-                        lockButtonFor(30000)
                         return
                     }
                 }
@@ -157,6 +105,6 @@ export const useAuthStore = defineStore('auth', () => {
         })
     }
 
-    return { lockButtonFor, login, loginGoogle, loginDiscord, register, logout, isAuthenticated, user, disableButton }
+    return { login, loginGoogle, loginDiscord, register, logout, isAuthenticated, user, disableButton }
 
 })

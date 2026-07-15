@@ -15,6 +15,7 @@
   import type { TMovements } from "~~/types/movements/TMovements"
   import { useInvalidate } from "~/composables/useInvalidate"
   import { useHttpMovements } from '~/composables/useHttp/useHttpMovements'
+  import type { TMovementsPayload } from "~~/schemas/movements.schema";
 
 
   const { invalidate } = useInvalidate()
@@ -26,7 +27,7 @@
 
   const  { mutate } = useMutation({
 
-  mutationFn: (payload: TMovements) => patchMovementsById(payload.id!, payload),
+  mutationFn: (payload: TMovementsPayload) => patchMovementsById(payload.id!, payload),
 
   onSuccess: () => {
     invalidate(QUERY_KEYS.movements.all)
@@ -44,7 +45,6 @@
 
 })
 
-
 async function submitForm() {
 
   if(!props.draft) {
@@ -54,8 +54,11 @@ async function submitForm() {
 
   const raw = structuredClone(toRaw(props.draft))
 
-  const payload: TMovements = {
-    ...raw
+  const dateFormated = dateToDateOnly(raw.date_transaction)
+
+  const payload: TMovementsPayload = {
+    ...raw,
+    date_transaction: dateFormated
   }
 
   if (props.draft.type_transaction === "receita") {

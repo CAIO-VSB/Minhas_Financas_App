@@ -295,7 +295,7 @@
                 :color="ColorButtonOption"
                 prepend-icon="mdi-plus"
                 class="text-none btn-add-despesa elevation-1"
-                variant="tonal"
+                variant="flat"
                 @click="modalAddExpenses = true"
                 >
                 NOVA DESPESA
@@ -304,7 +304,7 @@
                 color="red"
                 prepend-icon="mdi-filter"
                 class="text-none btn-filter elevation-1"
-                variant="tonal"
+                variant="outlined"
                 @click="drawer = true"
                 >
                 Filtro

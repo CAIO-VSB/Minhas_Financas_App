@@ -295,7 +295,7 @@
                 color="success"
                 prepend-icon="mdi-plus"
                 class="text-none btn-add-receita elevation-1"
-                variant="tonal"
+                variant="flat"
                 @click="modalAddRevenue = true"
                 >
                 NOVA RECEITA
@@ -305,7 +305,7 @@
                 color="green"
                 prepend-icon="mdi-filter"
                 class="text-none btn-filter elevation-1"
-                variant="tonal"
+                variant="outlined"
                 @click="drawer = true"
                 >
                 Filtro

@@ -39,8 +39,8 @@ export default defineNuxtConfig({
 
     limit: {
       max: 12,
-      duration: 30,
-      ban: 30,
+      duration: 5,
+      ban: 5,
     },
 
     delayOnBan: true,

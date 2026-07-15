@@ -2,11 +2,12 @@
 CREATE TABLE recurrence (
     id SERIAL PRIMARY KEY,
     user_id VARCHAR(100) REFERENCES "user"(id),
+    value_recurrence NUMERIC(10, 2) NOT NULL,
     description_recurrence VARCHAR(45) NOT NULL,
     accounts_id INTEGER REFERENCES "banks_accounts"(id),
     categorie_id INTEGER REFERENCES "categories"(id),
     type_recurrence VARCHAR(15) NOT NULL,
-    frequency_recurrence VARCHAR(15) NOT NULL,
+    frequency_recurrence VARCHAR(15),
     total_installments INTEGER,
     day_maturity DATE NOT NULL,
     day_start TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

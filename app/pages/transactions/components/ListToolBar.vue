@@ -72,10 +72,10 @@
 
     <div class="w-100 d-flex justify-sm-end ga-3 pr-4 ">
         <v-btn
-        color="primary"
+        color="blue"
         prepend-icon="mdi-filter-variant"
         class="text-none elevation-1"
-        variant="tonal"
+        variant="flat"
         @click="showDrawer"
         >
         Filtro

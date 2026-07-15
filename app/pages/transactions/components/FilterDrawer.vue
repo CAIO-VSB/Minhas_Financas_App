@@ -282,15 +282,17 @@
             <v-card-actions style="display: flex; justify-content: space-between; margin-top: 13px;">
             
                 <v-btn
+                class="text-none"
                 text="Limpar e sair"
-                variant="tonal"
+                variant="text"
                 @click="resetForm"
                 ></v-btn>
 
                 <v-btn
+                class="text-none"
                 :color="props.colorButton"
                 text="Aplicar filtros"
-                variant="tonal"
+                variant="flat"
                 @click="submitForm"
                 ></v-btn>
             </v-card-actions>

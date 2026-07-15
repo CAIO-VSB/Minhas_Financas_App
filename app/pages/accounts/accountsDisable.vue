@@ -16,7 +16,6 @@
 
   const loadingButton = ref(false)
   const headers = [
-    { key: 'id', title: 'ID' },
     { key: 'name_identifier', title: 'Descrição' },
     { key: 'type_account', title: 'Tipo de conta' },
     { key: 'saldo_atual', title: 'Saldo atual' },

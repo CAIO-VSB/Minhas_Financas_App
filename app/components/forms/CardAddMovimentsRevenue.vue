@@ -1,20 +1,17 @@
 <script lang="ts" setup>
-
+  import { format } from "date-fns";
   import CurrencyInput from "~/components/ui/CurrencyInput.vue"
-
-  import { format } from 'date-fns'
   import { useHttpCategories } from '~/composables/useHttp/useHttpCategories'
   import { useHttpAccounts } from "~/composables/useHttp/useHttpAccounts"
   import { useHttpMovements } from "~/composables/useHttp/useHttpMovements"
-
   import { useValidateSchemas } from "~/composables/useValidateSchema"
   import { useValidateFields } from "~/composables/useValidateFields"
   import { useInvalidate } from "~/composables/useInvalidate"
-
   import CardAddCategorie from '~/components/forms/CardAddCategorie.vue'
   import CardAddAccount from "~/components/forms/CardAddAccount.vue"
-
   import type { TMovements } from "~~/types/movements/TMovements"
+  import type { TRecurrence } from "~~/types/recurrence/TRecurrence"
+  import { useRecurrenceStore } from "~~/store/modules/recurrence-store"
 
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
   const { getCategoriesOnlyActive } = useHttpCategories()
@@ -23,6 +20,7 @@
   const { postMovements } = useHttpMovements()
   const { invalidate } = useInvalidate()
   const { nameRules, selectRules, dateRules, currencyRules } = useValidateFields()
+  const recurrenceStore = useRecurrenceStore()
 
   const { data:categories } = useQuery({
     queryKey: QUERY_KEYS.categories.active,
@@ -48,31 +46,76 @@
   const menuAccounts = ref(false)
   const modalAddCategorie = ref(false)
   const modalAddAccount = ref(false)
-  const showInputParcelado = ref(false)
-  const showInputFixa = ref(false)
+  const showInputParcelado = ref("")
+  const showInputFixa = ref("")
   const labelSwitch = ref("Receita recebida")
+  const showSwitch = ref(false)
 
   const movementsForm = ref<TMovements>({
     type_transaction: "receita",
-    value_transaction: 0.00,
+    value_transaction: null,
     date_transaction: new Date(),
-    description_transaction: "",
+    description_transaction: "teste",
     categorie_id: null,
     accounts_id: null,
     status_transaction: "recebido"
   })
 
+  const recorrenceForm = ref<TRecurrence>({
+    value_recurrence: 0.00,
+    description_recurrence: "",
+    accounts_id: null,
+    categorie_id: null,
+    type_recurrence: "",
+    frequency_recurrence: null,
+    total_installments: 0,
+    day_maturity: null,
+    is_active: true
+  })
+
+  watch(() => [
+    movementsForm.value.value_transaction,
+    movementsForm.value.description_transaction,
+    movementsForm.value.accounts_id,
+    movementsForm.value.categorie_id,
+    movementsForm.value.date_transaction
+  ] as const, ([value, description, account, categorie, matury]) => {
+    recorrenceForm.value.value_recurrence = value 
+    recorrenceForm.value.description_recurrence = description
+    recorrenceForm.value.accounts_id = account
+    recorrenceForm.value.categorie_id = categorie
+    recorrenceForm.value.day_maturity = matury 
+  }, {immediate: true}) 
+
   watch(showInputFixa, (newVal) => {
-    if (newVal) {
-      showInputParcelado.value = false
+    console.log(newVal)
+    if (newVal === 'fixa') {
+      showInputParcelado.value = ""
+      labelSwitch.value = "Receita pendente"
+      movementsForm.value.status_transaction = "pendente"
+      showSwitch.value = true
+      recorrenceForm.value.type_recurrence = newVal
+    } else if (newVal === 'avista') {
+      labelSwitch.value = "Receita recebida"
+      movementsForm.value.status_transaction = "recebido"
+      showSwitch.value = false
     }
   })
 
   watch(showInputParcelado, (newVal) => {
-    console.log("newvalaaaa" + newVal)
-    if (newVal) {
-      showInputFixa.value = false
-    } 
+    console.log(newVal)
+    if (newVal === 'parcelada') {
+      showInputFixa.value = ""
+      labelSwitch.value = "Receita pendente"
+      movementsForm.value.status_transaction = "pendente"
+      showSwitch.value = true
+      recorrenceForm.value.type_recurrence = newVal
+    } else if (newVal === 'unica') {
+      showInputParcelado.value = ""
+      labelSwitch.value = "Receita recebida"
+      movementsForm.value.status_transaction = "recebido"
+      showSwitch.value = false
+    }
   })
 
   watch(menuCategorias, (val) => {
@@ -112,6 +155,10 @@
   })
 
   function resetForm() {
+    showInputFixa.value = ""
+    showInputParcelado.value = ""
+    recorrenceForm.value.frequency_recurrence = ""
+    recorrenceForm.value.total_installments = 0
     modelAccounts.value = null
     modelCategorias.value = null
     movementsForm.value.accounts_id = null
@@ -122,7 +169,24 @@
     movementsForm.value.url_recibo = ""
     movementsForm.value.status_transaction = "recebido"
     movementsForm.value.date_transaction = new Date()
-    
+    showSwitch.value = false
+  }
+  function resetFormAndCloseModal() {
+    showInputFixa.value = ""
+    showInputParcelado.value = ""
+    recorrenceForm.value.frequency_recurrence = ""
+    recorrenceForm.value.total_installments = 0
+    modelAccounts.value = null
+    modelCategorias.value = null
+    movementsForm.value.accounts_id = null
+    movementsForm.value.categorie_id = null
+    movementsForm.value.description_transaction = ""
+    movementsForm.value.observation = ""
+    movementsForm.value.value_transaction = 0.00
+    movementsForm.value.url_recibo = ""
+    movementsForm.value.status_transaction = "recebido"
+    movementsForm.value.date_transaction = new Date()
+    showSwitch.value = false
     modelValue.value = false
   }
 
@@ -134,7 +198,7 @@
     modalAddAccount.value = true
   }
 
-  const  { mutate, isPending  } = useMutation({
+  const  { mutate:mutateMovements, isPending:isPendingMovements  } = useMutation({
     
     mutationFn: postMovements,
 
@@ -146,7 +210,6 @@
       invalidate(QUERY_KEYS.accounts.getBalanceForAccount)
       notifySuccess("Sucesso", "Receita lançada com sucesso", 6000)
       resetForm()
-      modelValue.value = false
       emit("success")
     },
 
@@ -157,23 +220,77 @@
   })
 
   async function handleAddMovimentRevenue() {
-    
+    if (!movementsForm.value.date_transaction) return
+
+    const dateFormated = dateToDateOnly(movementsForm.value.date_transaction)
+
     try {
-
       const formValid = await form.value.validate()
-      const resultSchema = validateSchemaMovements(movementsForm.value)
-
       if (formValid) {
-        if (resultSchema.success) {  
-          mutate(movementsForm.value)
+        const movementsPayload = {
+          ...movementsForm.value,
+          date_transaction: dateFormated,
         }
-      }
+        const recurrencePayload = {
+          ...recorrenceForm.value,
+          day_maturity: movementsForm.value.date_transaction
+        }
 
+        const resultSchema = validateSchemaMovements(movementsPayload)
+
+        if (resultSchema.success) {
+          if (showInputFixa.value || showInputParcelado.value) {
+            await recurrenceStore.movementsFormated(movementsForm.value, recurrencePayload)
+            invalidate(QUERY_KEYS.movements.all)
+            notifySuccess("Sucesso", "Receita lançada com sucesso", 6000)
+            resetForm()
+            modelValue.value = false
+            emit("success")
+          } else {
+            mutateMovements(resultSchema.data)
+            modelValue.value = false
+          }
+        }
+          
+      }
     } catch (err) {
-      notifyInfo("Error", "Erro ao criar conta bancária" + err)
+      notifyInfo("Erro", "Algo deu errado. Tente novamente em instantes.", 7000)
     } 
   }
 
+async function handleAddMovimentAndNotClean() {
+    if (!movementsForm.value.date_transaction) return
+
+    const dateFormated = dateToDateOnly(movementsForm.value.date_transaction)
+
+    try {
+      const formValid = await form.value.validate()
+
+      if (formValid) {
+        const movementsPayload = {
+        ...movementsForm.value,
+        date_transaction: dateFormated
+      }
+
+      const resultSchema = validateSchemaMovements(movementsPayload)
+
+      if (resultSchema.success) {
+          if (showInputFixa.value || showInputParcelado.value) {
+            await recurrenceStore.movementsFormated(movementsForm.value, recorrenceForm.value)
+            invalidate(QUERY_KEYS.movements.all)
+            notifySuccess("Sucesso", "Receita lançada com sucesso", 6000)
+            emit("success")
+            resetForm()
+          } else {
+            mutateMovements(resultSchema.data)
+            resetForm()
+          }
+        }
+      }
+  } catch (err) {
+      notifyInfo("Erro", "Algo deu errado. Tente novamente em instantes.", 7000)
+  }
+}
 
 </script>
 
@@ -184,44 +301,98 @@
     ref="form"
     validate-on="lazy blur"
     >
-      <v-dialog v-model="modelValue" max-width="600">
+      <v-dialog v-model="modelValue" max-width="700">
         <v-card prepend-icon="mdi-bank-plus" title="Nova receita">
           <v-divider></v-divider>
           <v-card-text>
             <v-row dense>
               <v-col
-              dens
-              cols="12"
-              md="6"
-              sm="12"
+              dense cols="12" md="6" sm="12"
               >
               <CurrencyInput prepend-inner-icon="mdi-cash" input-color="#2E7D32" base-color="#2E7D32" color="#2E7D32" :rules="currencyRules"  text-color="green" autocomplete="off" label="Valor*" v-model="movementsForm.value_transaction" />
               </v-col>
 
               <v-col
-              cols="12"
-              md="6"
-              sm="12"
+              cols="12" md="6" sm="12"
               >
               <v-date-input prepend-inner-icon="mdi-calendar" prepend-icon="" :rules="dateRules" autocomplete="off" name="date" label="Data*" variant="underlined" v-model="movementsForm.date_transaction"></v-date-input>
               </v-col>
               
               <v-col
-              cols="12"
-              md="12"
-              sm="12"
+              cols="12" md="6" sm="12"
               >
-              <v-text-field prepend-inner-icon="mdi-pencil" prepend-icon="" :rules="nameRules" :counter="45" maxlength="45"  autocomplete="name" name="name" label="Descrição*" variant="underlined" v-model="movementsForm.description_transaction"></v-text-field>
+              <v-text-field prepend-inner-icon="mdi-pencil"  prepend-icon="" :rules="nameRules" :counter="45" maxlength="45"  autocomplete="name" name="name" label="Descrição*" variant="underlined" v-model="movementsForm.description_transaction"></v-text-field>
               </v-col>
 
               <v-col
-              cols="12"
-              md="12"
-              sm="12"
+              cols="12" md="6" sm="12"
+              >
+                <v-select
+                    v-model="modelAccounts"
+                    v-model:menu="menuAccounts"
+                    :items="filterAccounts"
+                    :rules="selectRules"
+                    item-title="name_identifier"
+                    item-value="id"
+                    variant="underlined"
+                    label="Conta*"
+                    hint="O valor será creditado nesta conta"
+                    persistent-hint
+                    autocomplete="off"
+                    prepend-inner-icon="mdi-bank"
+                    clearable
+                  >
+                    <template #append-inner>
+                      <v-tooltip
+                      activator="parent"
+                      location="top"
+                      >Nova conta</v-tooltip>
+                      <v-icon @click.stop="handleOpenModalAddAccount"  class="button-hover" icon="mdi-plus-box"></v-icon>
+                    </template>
+
+                    <template v-slot:selection="{item}">
+                      <v-avatar style="width: 25px; height: 24px; margin-right: 12px;"> 
+                        <v-img  :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
+                      </v-avatar>
+                      <span >{{ item.raw.name_identifier }}</span>
+                    </template>
+
+                    <template v-slot:item="{props, item}">
+                      <v-list-item  v-bind="props">
+                        <template v-slot:prepend>
+                          <v-avatar>
+                            <v-img :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
+                          </v-avatar>
+                        </template>
+                      </v-list-item>
+                    </template>
+
+                    <template v-slot:prepend-item>
+                      <div class="pa-2 border-b">
+                        <v-text-field
+                          v-model="searchAccounts"
+                          :error="!!searchAccounts && !filterAccounts?.length"
+                          density="compact"
+                          placeholder="Buscar..."
+                          prepend-inner-icon="mdi-magnify"
+                          variant="outlined"
+                          @click.stop
+                          @keydown.stop
+                          @mousedown.stop
+                          hide-details="auto"
+                        >                 
+                      </v-text-field>
+                      </div>
+                    </template>
+                  </v-select>
+                </v-col>
+
+              <v-col
+              cols="12" md="12" sm="12"
               >
               <v-select
                 autocomplete="off"
-                :loading="isPending"
+                :loading="isPendingMovements"
                 v-model="modelCategorias"
                 v-model:menu="menuCategorias"
                 :items="filterCategorias"
@@ -277,89 +448,21 @@
                 </v-select>
               </v-col>
 
-              <v-col
-              cols="12"
-              md="12"
-              sm="12"
-              >
-                <v-select
-                    v-model="modelAccounts"
-                    v-model:menu="menuAccounts"
-                    :items="filterAccounts"
-                    :rules="selectRules"
-                    item-title="name_identifier"
-                    item-value="id"
-                    variant="underlined"
-                    label="Conta*"
-                    hint="O valor será creditado nesta conta"
-                    persistent-hint
-                    autocomplete="off"
-                    prepend-inner-icon="mdi-bank"
-                    clearable
-                  >
-                    <template #append-inner>
-                      <v-tooltip
-                      activator="parent"
-                      location="top"
-                      >Nova conta</v-tooltip>
-                      <v-icon @click.stop="handleOpenModalAddAccount"  class="button-hover" icon="mdi-plus-box"></v-icon>
-                    </template>
-
-                    <template v-slot:selection="{item}">
-                      <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
-                        <v-img  :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
-                      </v-avatar>
-                      <span >{{ item.raw.name_identifier }}</span>
-                    </template>
-
-                    <template v-slot:item="{props, item}">
-                      <v-list-item  v-bind="props">
-                        <template v-slot:prepend>
-                          <v-avatar>
-                            <v-img :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
-                          </v-avatar>
-                        </template>
-                      </v-list-item>
-                    </template>
-
-                    <template v-slot:prepend-item>
-                      <div class="pa-2 border-b">
-                        <v-text-field
-                          v-model="searchAccounts"
-                          :error="!!searchAccounts && !filterAccounts?.length"
-                          density="compact"
-                          placeholder="Buscar..."
-                          prepend-inner-icon="mdi-magnify"
-                          variant="outlined"
-                          @click.stop
-                          @keydown.stop
-                          @mousedown.stop
-                          hide-details="auto"
-                        >                 
-                      </v-text-field>
-                      </div>
-                    </template>
-                  </v-select>
-                </v-col>
-
                 <v-col
-                cols="12"
-                md="12"
-                sm="12"
+                cols="12" md="12" sm="12"
                 >
                   <v-text-field prepend-inner-icon="mdi-note-text" v-model="movementsForm.observation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="underlined"></v-text-field >
                 </v-col>
 
                 <v-col
-                cols="12"
-                md="12"
-                sm="12"
+                cols="12" md="12" sm="12"
                 >
                   <v-file-input prepend-inner-icon="mdi-paperclip" prepend-icon="" clearable label="Anexar comprovante" variant="underlined"></v-file-input>
                 </v-col>
 
                 <div class="d-flex ga-3 options-footer">
                     <v-switch
+                    :disabled="showSwitch"
                     v-model="movementsForm.status_transaction"
                     color="success"
                     :label="labelSwitch"
@@ -371,30 +474,40 @@
                   ></v-switch> 
                   <v-switch
                     v-model="showInputFixa"
-                    color="primary"
+                    color="success"
                     label="Receita fixa"
                     hide-details
+                    false-value="avista"
+                    true-value="fixa"
                     true-icon="mdi-pin"
                     false-icon="mdi-close"
                   ></v-switch> 
                   <v-switch
                     v-model="showInputParcelado"
-                    color="primary"
+                    color="success"
                     label="Receita parcelada"
                     hide-details
+                    false-value="unica"
+                    true-value="parcelada"
                     true-icon="mdi-repeat"
                     false-icon="mdi-close"
                   ></v-switch> 
+                  <div class="d-flex align-center">
+                    <v-tooltip location="top" open-on-click>
+                      <template v-slot:activator="{ props }">
+                          <v-icon v-bind="props" icon="mdi-help-circle" size="25" class="ml-1" style="cursor: pointer;"></v-icon>
+                      </template>
+                      Ao marcar como fixa, serão geradas as próximas 12 ocorrências, para melhor previsibilidade e controle. Após esse período, você poderá renovar a recorrência.
+                  </v-tooltip>
+                  </div>
                 </div>
 
                 <v-col
-                  cols="12"
-                  md="6"
-                  sm="6"
-                  class="mt-3"
+                  cols="12" md="6" sm="6" class="mt-3"
                   >
                   <v-number-input
                   v-if="showInputParcelado"
+                  v-model="recorrenceForm.total_installments"
                   density="compact"
                   variant="underlined"
                   controlVariant="default"
@@ -406,13 +519,11 @@
                 </v-col>
 
                 <v-col
-                  cols="12"
-                  md="6"
-                  sm="6"
-                  class="mt-3"
+                  cols="12" md="6" sm="6" class="mt-3"
                   >
                   <v-select
                   v-if="showInputParcelado"
+                  v-model="recorrenceForm.frequency_recurrence"
                   label="Selecione a periodicidade*"
                   density="compact"
                   :items="['Dias', 'Semanas', 'Meses', 'Anos']"
@@ -429,18 +540,29 @@
           <v-divider></v-divider>
 
           <v-card-actions >
-            
             <v-btn
+              class="text-none"
               text="Fechar"
-              variant="plain"
-              @click="resetForm"
+              variant="text"
+              @click="resetFormAndCloseModal"
             ></v-btn>
             <v-spacer></v-spacer>
             <v-btn
-              color="primary"
-              text="Lançar"
-              variant="tonal"
-              :loading="isPending"
+              class="text-none"
+              value="btn-criar"
+              color="success"
+              text="Salvar e criar nova"
+              variant="outlined"
+              :loading="isPendingMovements"
+              @click="handleAddMovimentAndNotClean"
+            ></v-btn>
+            <v-btn
+              class="text-none"
+              value="btn-salvar"
+              color="success"
+              text="Salvar"
+              variant="flat"
+              :loading="isPendingMovements"
               @click="handleAddMovimentRevenue"
             ></v-btn>
           </v-card-actions>

@@ -202,15 +202,15 @@
     v-if="props.draft"
     >
       <v-dialog persistent v-model="modelValue" max-width="600">
-        <v-card prepend-icon="mdi mdi-pencil-box" title="Editar conta">
+        <v-card title="Editar conta">
           <v-divider></v-divider>
           <v-card-text>
             <form>
 
-              <CurrencyInput prepend-icon="mdi-bank"  autocomplete="off" hint="Salo lançado no ato do cadastro" v-model="props.draft.initial_balance" label="Saldo inicial" ></CurrencyInput>
+              <CurrencyInput prepend-inner-icon="mdi-bank"  autocomplete="off" hint="Saldo lançado no ato do cadastro" v-model="props.draft.initial_balance" label="Saldo inicial" ></CurrencyInput>
 
               <CurrencyInput 
-                prepend-icon="mdi-bank-check"
+                prepend-inner-icon="mdi-bank-check"
                 hint="Saldo calculado com base nas movimentações"
                 :model-value="props.draft.saldo_atual ?? 0"
                 label="Saldo atual"
@@ -223,11 +223,11 @@
                 color="primary"
                 v-model="props.draft.name_identifier"
                 :rules="nameRules"
-                prepend-icon="mdi-wallet"
+                prepend-inner-icon="mdi-wallet"
               >
               </v-text-field>
 
-              <v-select :rules="selectRules" prepend-icon="mdi-format-list-bulleted"  v-model="props.draft.type_account" color="primary" persistent-hint hint="Dúvidas sobre qual conta escolher? Clique no ícone de ajuda." label="Tipo *" :items="items" variant="underlined">
+              <v-select :rules="selectRules" prepend-inner-icon="mdi-format-list-bulleted"  v-model="props.draft.type_account" color="primary" persistent-hint hint="Dúvidas sobre qual conta escolher? Clique no ícone de ajuda." label="Tipo *" :items="items" variant="underlined">
                 <template v-slot:append>
                   <nuxt-link target="_blank" to="https://www.serasa.com.br/blog/conta-bancaria/">
                     <v-icon class="cursor-pointer" color="info" icon="mdi-chat-question" size="large"></v-icon>
@@ -240,9 +240,9 @@
                 </template>
               </v-select>
 
-              <v-text-field prepend-icon="mdi-credit-card" :rules="logoRules" persistent-hint hint="Logo de identifiação *"   color="primary"  v-model="props.draft.name_bank" readonly variant="underlined">
+              <v-text-field  :rules="logoRules" persistent-hint hint="Logo de identifiação *"   color="primary"  v-model="props.draft.name_bank" readonly variant="underlined">
                 <template v-slot:append>
-                    <v-icon @click="dialogAddInstitution = true" class="cursor-pointer icon-add-logo"  icon="mdi-plus" size="large"></v-icon>
+                    <v-icon @click="dialogAddInstitution = true" class="cursor-pointer icon-add-logo" icon="mdi-plus" size="large"></v-icon>
                     <v-tooltip
                       activator="parent"
                       location="top"
@@ -254,7 +254,7 @@
                   </template>
               </v-text-field>
 
-              <v-text-field  prepend-icon="mdi-palette" :rules="colorRules" persistent-hint hint="Cor de identifiação" color="primary" v-model="props.draft.color" readonly variant="underlined">
+              <v-text-field  :rules="colorRules" persistent-hint hint="Cor de identifiação" color="primary" v-model="props.draft.color" readonly variant="underlined">
                 <template v-slot:append>
                     <v-icon @click="dialogColorPicker = true" class="cursor-pointer icon-add-logo"  icon="mdi-eyedropper-variant" size="large"></v-icon>
                     <v-tooltip
@@ -288,18 +288,18 @@
           <v-divider></v-divider>
 
           <v-card-actions>
-            <v-spacer></v-spacer>
-
             <v-btn
+              class="text-none"
               text="Fechar"
               variant="plain"
               @click="modelValue = false"
             ></v-btn>
-
+            <v-spacer></v-spacer>
             <v-btn
+              class="text-none"
               color="primary"
               text="Editar"
-              variant="tonal"
+              variant="flat"
               :loading="isPending"
               @click="handleEditAccount"
             ></v-btn>

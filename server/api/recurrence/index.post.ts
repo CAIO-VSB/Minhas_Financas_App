@@ -1,6 +1,13 @@
 import { auth } from "~~/auth"
+import { z } from "zod"
 import { schemaMovements } from "~~/schemas/movements.schema"
-import { movementsRespository } from "~~/server/repositories/moviments.repository"
+import { schemaRecurrence } from "~~/schemas/recurrence.schema"
+import { recurrenceRepository } from "~~/server/repositories/recurrence.repository"
+
+const schemaUnified = z.object({
+    recurrence: schemaRecurrence,
+    movements: z.array(schemaMovements)
+})
 
 export default defineEventHandler( async (event) => {
 
@@ -15,10 +22,9 @@ export default defineEventHandler( async (event) => {
         })
     }
         
-    const result = await readValidatedBody(event, body => schemaMovements.safeParse(body))
+    const result = await readValidatedBody(event, body => schemaUnified.safeParse(body))
 
     if (!result.success) {
-        console.log("Erro de validação:", result.error.issues)
         throw createError({
             status: 422,
             statusMessage: "Unprocessable Entity",
@@ -26,21 +32,14 @@ export default defineEventHandler( async (event) => {
         })
     }
 
-    const id = Number(getRouterParam(event, "id"))
-
-    if (id === null) {
-        throw createError({
-            status: 404,
-            statusMessage: "Transferência não encontrada"
-        })
-    }
+    const { recurrence, movements } = result.data
 
     try {
 
-        return await movementsRespository.update(id, result.data)
+        return await recurrenceRepository.create(session.session.userId, recurrence, movements)
 
     } catch (error) {
-        console.log("Erro ao editar movimentação " + error)
+        console.log("Erro ao criar recorrência" + error)
         throw createError({
             status: 500,
             statusMessage: "Internal Server Error"

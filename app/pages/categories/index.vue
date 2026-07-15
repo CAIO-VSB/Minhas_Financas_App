@@ -14,7 +14,6 @@
   import { useInvalidate } from "~/composables/useInvalidate"
   import type { TOptionAction } from "~~/types/option_action/TOptionAction"
 
-
   //Importações composables
   const { getAllCategories } = useHttpCategories()
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
@@ -26,8 +25,7 @@
   const editDraft = ref<TCategorie | null>(null)
   const filterCategorieActive = ref<boolean | null>(true)
   const selectedTypeCategorie = ref("")
-
-  
+  const showOverflow = ref(true)
 
   const {isPending, data } = useQuery({
     queryKey: QUERY_KEYS.categories.all,
@@ -48,7 +46,6 @@
     },
 
   })
-
 
   /**
    * Função que intera no array e retorna o total Receitas
@@ -93,11 +90,13 @@
       title: 'Despesas',
       value: 'despesas',
       icon: "mdi-arrow-down-thin",
+      color: "error",
       total: totalDespesas
     },
     {
       title: 'Receitas',
       value: 'receitas',
+      color: "green",
       icon: "mdi-arrow-up-thin",
       total: totalReceitas
     },
@@ -121,7 +120,6 @@
     //Usamos structuredClone + toRaw para evitar mutar o objeto reativo do Vue
     editDraft.value = structuredClone(toRaw(categorie))
   }
-
 
   /**
    * Função principal por filtrar as categoiras com base nos filtros existentes na tela
@@ -215,7 +213,6 @@
 
 <template>
   <div class="container">
-
     <div class="card-filter">
       <v-card
         class="mx-auto"
@@ -247,25 +244,25 @@
           
           <v-divider :thickness="2" class="mt-2"></v-divider>
 
-          <div class="pa-1">
+          <div class="d-flex justify-space-between align-center mr-3 b">
+            <span class="ml-2 text-textSecundary" style="font-size: var(--text-base);">Somente ativas</span>
             <v-switch
+              size="small"
+              inset
               v-model="filterCategorieActive"
               hide-details
               color="primary"
             >
-            <template #label>
-              <span style="font-size: var(--text-base); white-space: nowrap;" class="text-now">Somente ativas</span>
-            </template>
             </v-switch>
+            
           </div>
 
         </v-list>
       </v-card>
     </div>
 
-    <div class="card-list elevation-1 rounded-lg">
-          
-      <v-list style="height: 100%;" lines="two" item-props>
+    <div class="card-list elevation-2 rounded-lg">
+      <v-list class="elevation-2"  style="height: 100%; z-index: 2000;" lines="two" item-props>
 
         <v-list-item
           v-for="(categorie, index) in filteredCategories ||  []"
@@ -273,15 +270,15 @@
           :prepend-icon="categorie.url_icon"
         >
 
-          <template #title>
-            <p :class="{'text-disabled': !categorie.active}" style="padding-bottom: 12px; ">{{ categorie.name_identifier }}</p>
-          </template>
+        <template #title>
+          <p :class="{'text-disabled': !categorie.active}" style="padding-bottom: 12px; ">{{ categorie.name_identifier }}</p>
+        </template>
 
-          <template #subtitle>
-            <p  style="padding-bottom: 12px;">{{ categorie.type_categorie }}</p>
-          </template>
+        <template #subtitle>
+          <p  style="padding-bottom: 12px;"><v-chip :color="(categorie.type_categorie === 'Despesa') ? 'error': 'green'">{{ categorie.type_categorie }}</v-chip></p>
+        </template>
 
-          <v-divider></v-divider>
+        <v-divider></v-divider>
            
           <template #append>
             <div class="text-center">
@@ -350,6 +347,10 @@
 
 
 <style scoped>
+
+.showOverflow {
+  overflow: hidden;
+}
 
 .container {
   display: flex;

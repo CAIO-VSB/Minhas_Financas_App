@@ -1,15 +1,16 @@
 export type TMovements = {
-    id?: number | null
-    type_transaction: string | null,
+    id?: number
+    type_transaction: string,
     value_transaction: number | null, 
-    date_transaction: Date | null,
+    date_transaction: Date,
     description_transaction: string,
     categorie_id: number | null,
     accounts_id: number | null,
     observation?: string | null,
     url_recibo?: string | null,
-    status_transaction: string | null,
-    is_deleted?: boolean | null,
+    status_transaction: string,
+    is_deleted?: boolean,
+    recurrence_id?: number | null
     year_date?: number | null,
     month_date?: number | null
 }

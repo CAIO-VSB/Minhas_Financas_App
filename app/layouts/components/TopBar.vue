@@ -27,7 +27,7 @@
     <v-app-bar :elevation="1" color="surface">
 
         <template #title>
-            <span class="font-weight-semibold" style="font-size: var( --text-xl);">{{ routes.meta.title }}</span>
+            <span class="font-weight-semibold" style="font-size: var( --text-md);">{{ routes.meta.title }}</span>
         </template>
         
 

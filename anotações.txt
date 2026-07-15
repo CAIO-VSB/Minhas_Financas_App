@@ -16,3 +16,5 @@ listagem pode trazer dados resumidos
 edição deve buscar a entidade completa
 
 datetime(ano, mes, dia, hora, minuto, segundo)
+
+text-none

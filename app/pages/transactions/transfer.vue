@@ -223,7 +223,7 @@
                 :color="ColorButtonOption"
                 prepend-icon="mdi-plus"
                 class="text-none btn-add-transfer elevation-1"
-                variant="tonal"
+                variant="flat"
                 @click="modalAddTransfer = true"
                 >
                 NOVA TRANSFERÊNCIA

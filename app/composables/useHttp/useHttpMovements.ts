@@ -1,10 +1,14 @@
 import type { TMovements, TMovementsSummary } from "~~/types/movements/TMovements"
 import type { TMovementsOnlyRenevue } from "~~/types/movements/TMovementsOnlyRevenue"
 import type { TMovementsOnlyExpenses } from "~~/types/movements/TMovementsOnlyExpenses"
+import { schemaMovements } from "~~/schemas/movements.schema"
+import type z from "zod"
+
+type TMovementsPaylodad = z.infer<typeof schemaMovements>
 
 export function useHttpMovements() {
 
-    const postMovements = async (data: TMovements) => {
+    const postMovements = async (data: TMovementsPaylodad) => {
         return $fetch<TMovements>("/api/movements", {method: "POST", body: data})
     }
 
@@ -36,7 +40,7 @@ export function useHttpMovements() {
         return $fetch<Pick<TMovementsSummary, "saldo_atual"> []>("/api/movements/index.getOnlyCurrentBalance", {method: "GET"})
     }
 
-    const patchMovementsById = async (id:number, data: TMovements) => {
+    const patchMovementsById = async (id:number, data: TMovementsPaylodad) => {
         return $fetch<TMovements>(`/api/movements/${id}`, {method: "PATCH", body: data},) 
     }
 

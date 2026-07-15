@@ -15,9 +15,9 @@ export default defineEventHandler( async (event) => {
         })
     }
         
-    const result = await readValidatedBody(event, body => schemaMovements.safeParse(body))
+    const resultMovements = await readValidatedBody(event, body => schemaMovements.safeParse(body))
 
-    if (!result.success) {
+    if (!resultMovements.success) {
         throw createError({
             status: 422,
             statusMessage: "Unprocessable Entity"
@@ -26,7 +26,7 @@ export default defineEventHandler( async (event) => {
 
     try {
 
-        return await movementsRespository.create(session.session.userId, result.data)
+        return await movementsRespository.create(session.session.userId, resultMovements.data)
 
     } catch (error) {
         console.log("Erro ao criar movimentação " + error)

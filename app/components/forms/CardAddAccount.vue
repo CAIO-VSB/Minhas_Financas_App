@@ -132,12 +132,12 @@
     @submit.prevent
     ref="form"
     >
-      <v-dialog  v-model="modelValue" max-width="600">
-        <v-card prepend-icon="mdi-plus-box" title="Nova Conta">
+      <v-dialog v-model="modelValue" max-width="600">
+        <v-card title="Nova conta bancária">
           <v-divider></v-divider>
           <v-card-text>
 
-              <CurrencyInput prepend-icon="mdi-bank" autocomplete="off" hint="Valor atual da conta no momento do cadastro." v-model="accountForm.initial_balance" label="Saldo inicial" />
+              <CurrencyInput prepend-inner-icon="mdi-bank" autocomplete="off" hint="Valor atual da conta no momento do cadastro." v-model="accountForm.initial_balance" label="Saldo inicial" />
 
               <v-text-field
                 label="Nome da conta *"
@@ -149,11 +149,11 @@
                 :rules="nameRules"
                 maxlength="45"
                 counter="45"
-                prepend-icon="mdi-wallet"
+                prepend-inner-icon="mdi-wallet"
               >
               </v-text-field>
 
-              <v-select prepend-icon="mdi-format-list-bulleted" :rules="selectRules" v-model="accountForm.type_account" color="primary" persistent-hint hint="Dúvidas sobre qual conta escolher? Clique no ícone de ajuda." label="Tipo *" :items="items" variant="underlined">
+              <v-select prepend-inner-icon="mdi-format-list-bulleted" :rules="selectRules" v-model="accountForm.type_account" color="primary" persistent-hint hint="Dúvidas sobre qual conta escolher? Clique no ícone de ajuda." label="Tipo *" :items="items" variant="underlined">
                 <template v-slot:append>
                   <nuxt-link target="_blank" to="https://www.serasa.com.br/blog/conta-bancaria/">
                     <v-icon class="cursor-pointer" color="info" icon="mdi-chat-question" size="large"></v-icon>
@@ -167,7 +167,7 @@
                 </template>
               </v-select>
 
-              <v-text-field prepend-icon="mdi-credit-card"  :rules="logoRules" persistent-hint hint="Logo de identifiação *"   color="primary"  v-model="accountForm.name_bank" readonly variant="underlined">
+              <v-text-field   :rules="logoRules" persistent-hint hint="Logo de identifiação *"   color="primary"  v-model="accountForm.name_bank" readonly variant="underlined">
                 <template v-slot:append>
                     <v-icon @click="dialogAddInstitution = true" class="cursor-pointer icon-add-logo"  icon="mdi-plus" size="large"></v-icon>
                     <v-tooltip
@@ -181,7 +181,7 @@
                   </template>
               </v-text-field>
 
-              <v-text-field prepend-icon="mdi-palette" :rules="colorRules" persistent-hint hint="Cor de identifiação *" color="primary" v-model="accountForm.color" readonly variant="underlined">
+              <v-text-field :rules="colorRules" persistent-hint hint="Cor de identifiação *" color="primary" v-model="accountForm.color" readonly variant="underlined">
                 <template v-slot:append>
                     <v-icon @click="dialogColorPicker = true" class="cursor-pointer icon-add-logo"  icon="mdi-eyedropper-variant" size="large"></v-icon>
                     <v-tooltip
@@ -211,18 +211,18 @@
           <v-divider></v-divider>
 
           <v-card-actions>
-            <v-spacer></v-spacer>
-
             <v-btn
+              class="text-none"
               text="Fechar"
               variant="plain"
               @click="resetForm"
             ></v-btn>
-
+            <v-spacer></v-spacer>
             <v-btn
+              class="text-none"
               color="primary"
               text="Salvar"
-              variant="tonal"
+              variant="flat"
               :loading="isPending"
               @click="handleAddAccount"
             ></v-btn>

@@ -1,9 +1,10 @@
 import client from "~/utils/db"
+import { TMovementsPayload } from "~~/schemas/movements.schema"
 import type { TMovements } from "~~/types/movements/TMovements"
 
 export const movementsRespository = {
 
-    async create(userId: string, data: TMovements) {
+    async create(userId: string, data: TMovementsPayload) {
 
         const text = 
         `INSERT INTO movements(user_id, type_transaction, value_transaction, date_transaction, description_transaction, categorie_id, accounts_id, observation, url_recibo, status_transaction, is_deleted) 
@@ -12,9 +13,9 @@ export const movementsRespository = {
 
         const values = [userId, data.type_transaction, data.value_transaction, data.date_transaction, data.description_transaction, data.categorie_id, data.accounts_id, data.observation, data.url_recibo, data.status_transaction, data.is_deleted]
 
-        const moviments = client.query(text, values)
+        const movements = client.query(text, values)
 
-        return {message:"Movimentação criada com sucesso", status: 200, data: (await moviments).rows[0]}
+        return {message:"Movimentação criada com sucesso", status: 200, data: (await movements).rows[0]}
 
     },
 
@@ -59,8 +60,6 @@ export const movementsRespository = {
     },
 
     async findMovementsByFilter(userId: string, start_day: string, end_day: string, categorie_id: number[], accounts_id: number[], situation: string, for_type: string[]) {
-
-        console.log("Valor chegando para filtrar calica", userId, start_day, end_day, categorie_id, accounts_id, situation, for_type)
 
         const categorieParam = categorie_id.length > 0 ? categorie_id : null
         const accountsParam = accounts_id.length > 0 ? accounts_id : null
@@ -128,8 +127,6 @@ export const movementsRespository = {
 
     async findOnlyRevenuesByFilter(userId: string, start_day: string, end_day: string, categorie_id: number[], accounts_id: number[], situation: string, for_type: string[]) {
 
-        console.log("Valores recebidos no backEnd somente receitas", userId, start_day, end_day, categorie_id, accounts_id, situation, for_type)
-
         const categorieParam = categorie_id.length > 0 ? categorie_id : null
         const accountsParam = accounts_id.length > 0 ? accounts_id : null
         let situationParam = situation || null
@@ -161,9 +158,7 @@ export const movementsRespository = {
         return (await movementsByFilter).rows
     },
 
-    async update(id:number, data: TMovements) {
-
-        console.log("Na ponta da bala novamente", id, data)
+    async update(id:number, data: TMovementsPayload) {
 
         const text = 
         `UPDATE movements 

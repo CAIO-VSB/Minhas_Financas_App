@@ -6,8 +6,8 @@ export const categoriesRepository = {
     async findAll(userId: string, active?: boolean) {
 
     const text = active !== undefined
-        ? `SELECT * FROM categories WHERE categories.id NOT IN (83, 84) AND (user_id IS NULL OR user_id = $1) AND active = $2 ORDER BY  name_identifier ASC`
-        : `SELECT * FROM categories WHERE categories.id NOT IN (83, 84) AND (user_id IS NULL OR user_id = $1) ORDER BY name_identifier ASC`
+        ? `SELECT * FROM categories WHERE categories.id NOT IN (83, 84) AND (user_id IS NULL OR user_id = $1) AND active = $2 ORDER BY type_categorie DESC`
+        : `SELECT * FROM categories WHERE categories.id NOT IN (83, 84) AND (user_id IS NULL OR user_id = $1) ORDER BY type_categorie DESC`
 
         const params = active !== undefined ? [userId, active === true] : [userId]
 

@@ -18,8 +18,8 @@
   import { useValidateFields } from "~/composables/useValidateFields"
   import { useInvalidate } from "~/composables/useInvalidate"
   import { useHttpMovements } from '~/composables/useHttp/useHttpMovements'
-
   import type { TMovements } from "~~/types/movements/TMovements"
+  import type { TMovementsPayload } from "~~/schemas/movements.schema";
 
   const modelValue = defineModel<boolean>()
 
@@ -39,9 +39,8 @@
     queryFn: getAccountsOnlyActive,
   })
 
-    //Watch reponsável por mostrar a categoria e conta atual
+  //Watch reponsável por mostrar a categoria e conta atual
   watch(() => props.draft, (newDraft) => {
-    console.log("Valor que chegou", newDraft)
     if (newDraft) {
       modelAccounts.value = newDraft.accounts_id ?? null
     }
@@ -49,7 +48,7 @@
 
   //Watch responsável por atualizar a conta escolhida pelo usário no ato da edição
   watch(modelAccounts, (val) => {
-    if (props.draft) props.draft.accounts_id = val
+    if (props.draft?.accounts_id) props.draft.accounts_id = val
   })
 
   const showButtonSubmit = computed(() => {
@@ -68,7 +67,7 @@
 
   const  { mutate } = useMutation({
 
-    mutationFn: (payload: TMovements) => patchMovementsById(payload.id!, payload),
+    mutationFn: (payload: TMovementsPayload) => patchMovementsById(payload.id!, payload),
 
     onSuccess: () => {
       invalidate(QUERY_KEYS.movements.all)
@@ -91,11 +90,14 @@
       notifyError("Ops!", "Algo não parece certo. Confira os dados e tente novamente.")
       return
     } 
-
+    
     const raw = structuredClone(toRaw(props.draft))
 
-    const payload: TMovements = {
-      ...raw
+    const dateFormated = dateToDateOnly(raw.date_transaction)
+
+    const payload: TMovementsPayload = {
+      ...raw,
+      date_transaction: dateFormated,
     }
 
     if (props.draft.type_transaction === "receita") {

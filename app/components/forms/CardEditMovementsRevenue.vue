@@ -4,7 +4,6 @@
   import { useHttpCategories } from '~/composables/useHttp/useHttpCategories'
   import { useHttpAccounts } from "~/composables/useHttp/useHttpAccounts"
   import { useHttpMovements } from "~/composables/useHttp/useHttpMovements"
-
   import { useValidateSchemas } from "~/composables/useValidateSchema"
   import { useValidateFields } from "~/composables/useValidateFields"
   import { useInvalidate } from "~/composables/useInvalidate"
@@ -13,6 +12,7 @@
   import CardAddAccount from "~/components/forms/CardAddAccount.vue"
 
   import type { TMovements } from "~~/types/movements/TMovements"
+  import type { TMovementsPayload } from "~~/schemas/movements.schema"
 
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
   const { getCategoriesOnlyActive } = useHttpCategories()
@@ -109,7 +109,7 @@
 
   const  { mutate, isPending  } = useMutation({
     
-    mutationFn: (payload: TMovements) => patchMovementsById(payload.id!, payload),
+    mutationFn: (payload: TMovementsPayload) => patchMovementsById(payload.id!, payload),
 
     onSuccess: () => {
     invalidate(QUERY_KEYS.accounts.all)
@@ -138,19 +138,26 @@ async function handleEditMovementRevenue() {
     } 
 
     const formValid = await form.value.validate()
-    const resultSchema = validateSchemaMovements(props.draft)
-  
-    console.log("Valor sendo enviado" + JSON.stringify(props.draft))
-  
+
+    const raw = structuredClone(toRaw(props.draft))
+
+    const dateFormated = dateToDateOnly(raw.date_transaction)
+
+    const payload: TMovementsPayload = {
+      ...raw,
+      date_transaction: dateFormated
+    }
+
+    const resultSchema = validateSchemaMovements(payload)
+
     if (formValid) {
       if (resultSchema.success) {  
-        mutate(props.draft)
+        mutate(resultSchema.data)
       }
     }
 
   } catch (err) {
-
-    notifyInfo("Error", "Erro ao editar receita" + err)
+    notifyInfo("Erro", "Algo deu errado. Tente novamente em instantes.", 7000)
   } 
 }
 

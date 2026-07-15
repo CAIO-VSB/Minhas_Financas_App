@@ -1,3 +1,4 @@
+
 const { $authClient } = useNuxtApp()
 const { notifyError, notifyInfo } = useNotify()
 
@@ -27,8 +28,8 @@ export function handleErrorApplication(statusCode: number | undefined) {
         case 429:
             notifyInfo(
                 "Limite de tentativas atingido",
-                "Para proteger sua conta, aguarde 30 segundos antes de realizar uma nova tentativa",
-                30000,
+                "Para proteger sua conta, aguarde 5 segundos antes de realizar uma nova tentativa",
+                5000,
                 false,
                 false
                 )

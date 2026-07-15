@@ -1,10 +1,11 @@
+import { format } from "date-fns"
 
-export function formatDate(value: Date | string | null | undefined) {
+export function formatDate(value: string | null | undefined) {
 
     if (!value) {
         return ""
     }
 
-    return new Date(value).toLocaleDateString("pt-BR")
+    return format(value, "dd/MM/yyyy")
 
 }

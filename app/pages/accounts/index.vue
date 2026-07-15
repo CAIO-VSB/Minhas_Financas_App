@@ -105,7 +105,6 @@
   }
 
   function handleOpenModalEditAccount(account: TAccount) {
-
     modalEditAccount.value = true
     editDraft.value = {
       ...structuredClone(toRaw(account)),
@@ -137,7 +136,6 @@
 
   }
 
- 
 </script>
 
 
@@ -152,6 +150,7 @@
         size="default"
         rounded="lg"
         title="Nova conta"
+        class="elevation-1"
         @click="handleOpenModalAddAccount"
       >
       </v-btn>
@@ -167,6 +166,7 @@
                 variant="tonal"
                 size="default"
                 rounded="lg"
+                class="elevation-1"
               >
               </v-btn>
             </template>
@@ -203,8 +203,8 @@
      <v-card :loading="isPending" rounded="lg" elevation="1" class="pa-4" height="200">
         <div class="d-flex align-center justify-space-between mb-3">
           <div class="d-flex align-center ga-2">
-            <v-avatar color="primary" size="32" rounded="md">
-              <v-icon color="white" size="18">mdi-bank</v-icon>
+            <v-avatar color="primary" size="35" rounded="md">
+              <v-icon color="white" size="22">mdi-bank</v-icon>
             </v-avatar>
             <span class="text-medium-emphasis" style="font-size: calc(--text-base);">Saldo atual</span>
           </div>

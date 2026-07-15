@@ -114,7 +114,7 @@
     v-if="props.draft"
     >
       <v-dialog persistent v-model="modelValue" max-width="600">
-        <v-card prepend-icon="mdi-pencil-circle" title="Editar categoria">
+        <v-card title="Editar categoria">
           <v-divider></v-divider>
           <v-card-text>
             <form>
@@ -128,7 +128,7 @@
                 persistent-hint
                 :counter="45" 
                 maxlength="45"
-                prepend-icon="mdi-rename"
+                prepend-inner-icon="mdi-rename"
               >
 
                <template v-slot:append>
@@ -142,7 +142,7 @@
                 </template>
               </v-text-field>
 
-              <v-select prepend-icon="mdi-tag" :rules="selectRules" v-model="props.draft.type_categorie" color="primary" persistent-hint hint="Selecione o tipo de categoria" label="Tipo *" :items="items" variant="underlined">
+              <v-select prepend-inner-icon="mdi-tag" :rules="selectRules" v-model="props.draft.type_categorie" color="primary" persistent-hint hint="Selecione o tipo de categoria" label="Tipo *" :items="items" variant="underlined">
               </v-select>
 
               <v-switch
@@ -164,18 +164,20 @@
           <v-divider></v-divider>
 
           <v-card-actions>
-            <v-spacer></v-spacer>
+            
 
             <v-btn
+              class="text-none"
               text="Fechar"
               variant="plain"
               @click="modelValue = false"
             ></v-btn>
-
+            <v-spacer></v-spacer>
             <v-btn
+              class="text-none"
               color="primary"
               text="Editar"
-              variant="tonal"
+              variant="flat"
               :loading="isPending"
               @click="handleAddAccount"
             ></v-btn>

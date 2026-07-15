@@ -15,6 +15,7 @@
     import CardAddAccount from "~/components/forms/CardAddAccount.vue"
 
     import type { TMovements } from "~~/types/movements/TMovements"
+import type { TMovementsPayload } from "~~/schemas/movements.schema"
 
     const { notifyError, notifyInfo, notifySuccess } = useNotify()
     const { getCategoriesOnlyActive } = useHttpCategories()
@@ -114,7 +115,7 @@
 
     const  { mutate, isPending  } = useMutation({
 
-    mutationFn: (payload: TMovements) => patchMovementsById(payload.id!, payload),
+    mutationFn: (payload: TMovementsPayload) => patchMovementsById(payload.id!, payload),
 
     onSuccess: () => {
       invalidate(QUERY_KEYS.accounts.all)
@@ -141,22 +142,27 @@
         return
       } 
 
-
       const formValid = await form.value.validate()
-      const resultSchema = validateSchemaMovements(props.draft)
+
+      const raw = structuredClone(toRaw(props.draft))
+
+      const dateFormated = dateToDateOnly(raw.date_transaction)
+
+      const payload: TMovementsPayload = {
+        ...raw,
+        date_transaction: dateFormated
+      }
       
-      console.log("Objeto a ser envidado" + JSON.stringify(props.draft))
+      const resultSchema = validateSchemaMovements(payload)
       
       if (formValid) {
         if (resultSchema.success) {  
-          mutate(props.draft)
+          mutate(resultSchema.data)
         }
       }
 
     } catch (err) {
-        
-      notifyInfo("Error", "Erro ao criar conta bancária" + err)
-
+      notifyInfo("Erro", "Algo deu errado. Tente novamente em instantes.", 7000)
     } 
   }
 
