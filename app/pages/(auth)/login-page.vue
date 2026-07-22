@@ -17,8 +17,8 @@
   const showPassword = ref(false);
   const form = ref();
   const loginForm = ref<TLoginForm>({
-    email: "veltofinance@gmail.com",
-    password: "K7@mP#4xL!9qV$2N",
+    email: "caiob7517@gmail.com",
+    password: "Caio#2005",
   });
 
   const authStore = useAuthStore();

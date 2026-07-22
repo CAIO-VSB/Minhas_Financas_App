@@ -24,6 +24,7 @@
     import CardDeleteMovementTransfer from '~/components/forms/CardDeleteMovementTransfer.vue'
     import ListToolBar from './components/ListToolBar.vue'
     import AppCard from '~/components/ui/AppCard.vue'
+    import type { TMovementsPayload } from '~~/schemas/movements.schema.js'
 
     const { getMoviments, patchMovementsById, getCurrentBalance, getMovimentsByFilter } = useHttpMovements()
     const { getCategoriesOnlyActive } = useHttpCategories()
@@ -51,6 +52,7 @@
         text: ""
     })
     const editDraft = ref<TMovementsSummary | null>(null)
+    const confirmDraft = ref<TMovementsPayload | null>(null)
     const editDraftTransfer = ref<TTransfer | null>(null)
     const period = ref({
         month: new Date().getMonth(),
@@ -168,7 +170,7 @@
 
     const  { mutate } = useMutation({
 
-        mutationFn: (payload: TMovementsSummary) => patchMovementsById(payload.id!, payload),
+        mutationFn: (payload: TMovementsPayload) => patchMovementsById(payload.id!, payload),
 
         onSuccess: () => {
             invalidate(QUERY_KEYS.movements.all)
@@ -300,15 +302,25 @@
         }
 
         const raw = structuredClone(toRaw(data))
+        
+        if (!raw.date_transaction) {
+            notifyError(
+                "Data inválida",
+                "Não foi possível concluir a ação porque a data informada é inválida ou está ausente.",
+            )
+            return
+        }
 
-        const payload: TMovementsSummary = {
+        const dateFormated = dateToDateOnly(raw.date_transaction)
+
+        const payload = {
             ...raw,
             value_transaction: Number(raw.value_transaction ?? 0),
-            date_transaction: new Date(raw.date_transaction ?? "")
+            date_transaction: dateFormated
         }
 
         if (option.value === "efetivar" && data.type_transaction === "receita") {
-            editDraft.value = payload
+            confirmDraft.value = payload
             labelOptions.value.colorButton = "green"
             labelOptions.value.textButton = "Receber"
             labelOptions.value.title = "Deseja efetivar esta receita?"
@@ -317,7 +329,7 @@
             return
         } 
         if (option.value === "efetivar" && data.type_transaction === "despesa") {
-            editDraft.value = payload
+            confirmDraft.value = payload
             labelOptions.value.colorButton = "red"
             labelOptions.value.textButton = "Pagar"
             labelOptions.value.title = "Deseja efetivar esta despesa?"
@@ -326,7 +338,7 @@
             return
         }  
         if (option.value === "delete" && data.type_transaction === "receita") {
-            editDraft.value = payload
+            confirmDraft.value = payload
             payload.is_deleted = true
             labelOptions.value.colorButton = "green"
             labelOptions.value.textButton = "Deletar"
@@ -336,7 +348,7 @@
             return
         }
         if (option.value === "delete" && data.type_transaction === "despesa") {
-            editDraft.value = payload
+            confirmDraft.value = payload
             payload.is_deleted = true
             labelOptions.value.colorButton = "red"
             labelOptions.value.textButton = "Deletar"
@@ -346,7 +358,7 @@
             return
         } 
         if (option.value === "delete" && (data.type_transaction === "transferencia_entrada" || data.type_transaction === "transferencia_saida")) {
-            editDraft.value = payload
+            confirmDraft.value = payload
             payload.is_deleted = true
             labelOptions.value.colorButton = "blue"
             labelOptions.value.textButton = "Deletar"
@@ -365,9 +377,9 @@
 <template>
     <div class="mt-6 container-main">
 
-        <CardDeleteMovementTransfer @success="handleMutationSuccess" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="editDraft" v-model="cardDeleteTransfer" />
-        <CardDeletTransaction @success="handleMutationSuccess" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="editDraft" v-model="cardDeletTransaction" />
-        <CardSettleTransactionModal @success="handleMutationSuccess" v-model="cardPostValueTransaction" :draft="editDraft" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" />
+        <CardDeleteMovementTransfer @success="handleMutationSuccess" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="confirmDraft" v-model="cardDeleteTransfer" />
+        <CardDeletTransaction @success="handleMutationSuccess" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="confirmDraft" v-model="cardDeletTransaction" />
+        <CardSettleTransactionModal @success="handleMutationSuccess" v-model="cardPostValueTransaction" :draft="confirmDraft" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" />
         <CardEdtiMovementsExpenses @success="handleMutationSuccess" :draft="editDraft"  v-model="modalEditMovementesExpenses"/>
         <CardEditMovementsRevenue @success="handleMutationSuccess" :draft="editDraft" v-model="modalEditMovementsRevenue"/>
         <CardEditTransfer :draft="editDraftTransfer" v-model="modalEditTransfer"/>

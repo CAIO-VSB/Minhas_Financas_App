@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth"
 import { sendUserEmail } from "~~/server/api/auth/send-verification-email"
 import { sendForgotPassword } from "~~/server/api/auth/send-reset-password"
 import { Pool } from "pg"
+import { sendChangeEmail } from "~~/server/api/auth/send-change-email-confirmation"
 
 
 export const auth = betterAuth({
@@ -33,6 +34,15 @@ export const auth = betterAuth({
         sendOnSignUp: true
     },
 
+    user: {
+        changeEmail: {
+            enabled: true,
+            sendChangeEmailConfirmation: async ({user, newEmail, url}) => {
+                await sendChangeEmail({email: user.email, newEmail}, url)
+            },
+        },
+    },
+    
     socialProviders: {
         google: {
             clientId: process.env.GOOGLE_CLIENT_ID as string,
@@ -60,7 +70,9 @@ export const auth = betterAuth({
             console.log(e)
         },
         errorURL: "/error.vue"
-    }
+    },
+
+    trustedOrigins: ["http://localhost:3000", "http://10.20.20.7:3000"]
 
     
 })

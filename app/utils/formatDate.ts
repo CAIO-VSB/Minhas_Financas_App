@@ -1,6 +1,6 @@
 import { format } from "date-fns"
 
-export function formatDate(value: string | null | undefined) {
+export function formatDate(value: Date | null | undefined) {
 
     if (!value) {
         return ""

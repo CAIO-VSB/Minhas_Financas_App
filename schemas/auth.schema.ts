@@ -9,12 +9,12 @@ export const singUp = z.object({
     name: z.string().max(55, "Máximo 55 caracteres").min(3, "Campo nome vazio"),
     email: z.email("Formato do email inválido"),
     password: z.string("Campo senha vazio").
-    min(8, "Mínimo 8 caracteres)").
-    regex(/[A-Z]/, "Senha está faltando letra Maiúscula").
-    regex(/[a-z]/, "Senha está Faltando letra minúscula").
+    min(6, "Mínimo 6 caracteres)").
     regex(/[0-9]/, "Senha está faltando número").
-    regex(/[^A-Za-z0-9]/, "Senha está faltando caractere especial"),
-    confirmPassword: z.string("Campo senha vazio").min(8, "Mínimo 8 caracteres")
+    regex(/[^A-Za-z0-9]/, "Senha está faltando caractere especial").
+    regex(/[A-Z]/, "Senha faltando letra maiuscula").
+    regex(/[a-z]/, "Senha faltando letra minucula"),
+    confirmPassword: z.string("Campo senha vazio").min(6, "Mínimo 6 caracteres")
 }).superRefine((val, ctx) => {
     if (val.password !== val.confirmPassword) {
         ctx.addIssue({
@@ -28,12 +28,12 @@ export const singUp = z.object({
 
 export const passwordValidate = z.object({
     password: z.string("Campo senha vazio").
-    min(8, "Mínimo 8 caracteres)").
-    regex(/[A-Z]/, "Senha está faltando letra Maiúscula").
-    regex(/[a-z]/, "Senha está Faltando letra minúscula").
+    min(6, "Mínimo 6 caracteres").
     regex(/[0-9]/, "Senha está faltando número").
-    regex(/[^A-Za-z0-9]/, "Senha está faltando caractere especial"),
-    confirmPassword: z.string("Campo senha vazio").min(8, "Mínimo 8 caracteres")
+    regex(/[^A-Za-z0-9]/, "Senha está faltando caractere especial").
+    regex(/[A-Z]/, "Senha faltando letra maiuscula").
+    regex(/[a-z]/, "Senha faltando letra minucula"),
+    confirmPassword: z.string("Campo senha vazio").min(6, "Mínimo 6 caracteres")
 }).superRefine((val, ctx) => {
     if (val.password !== val.confirmPassword) {
         ctx.addIssue({

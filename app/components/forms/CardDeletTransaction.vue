@@ -5,7 +5,7 @@
     titleBotton: string,
     title: string,
     text: string,
-    draft: TMovements | null
+    draft: TMovementsPayload | null
   }>()
 
   const  emit = defineEmits<{
@@ -54,11 +54,8 @@ async function submitForm() {
 
   const raw = structuredClone(toRaw(props.draft))
 
-  const dateFormated = dateToDateOnly(raw.date_transaction)
-
-  const payload: TMovementsPayload = {
-    ...raw,
-    date_transaction: dateFormated
+  const payload = {
+    ...raw
   }
 
   if (props.draft.type_transaction === "receita") {
@@ -121,7 +118,7 @@ async function submitForm() {
               <v-card-actions style="display: flex; justify-content: space-between; margin-top: 13px;">
               <v-btn
                   text="Cancelar"
-                  variant="tonal"
+                  variant="text"
                   :color="props.colorBotton"
                   class="text-none "
                   @click="isActive.value = false"

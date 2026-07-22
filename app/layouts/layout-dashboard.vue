@@ -145,7 +145,7 @@
 
       <TopBar v-model="drawer"/>
 
-      <v-main style="overflow-y: auto;" class="bg-backgroundPrimary">
+      <v-main style="overflow-y: auto; overflow-x: hidden;" class="bg-backgroundPrimary">
         <div class="dashboard-content ">
           <slot></slot>
         </div>

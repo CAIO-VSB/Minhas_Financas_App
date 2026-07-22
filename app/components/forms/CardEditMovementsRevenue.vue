@@ -141,9 +141,17 @@ async function handleEditMovementRevenue() {
 
     const raw = structuredClone(toRaw(props.draft))
 
+    if (!raw.date_transaction) {
+      notifyError(
+        "Data inválida",
+        "Não foi possível concluir a ação porque a data informada é inválida ou está ausente.",
+      )
+      return
+    }
+
     const dateFormated = dateToDateOnly(raw.date_transaction)
 
-    const payload: TMovementsPayload = {
+    const payload = {
       ...raw,
       date_transaction: dateFormated
     }

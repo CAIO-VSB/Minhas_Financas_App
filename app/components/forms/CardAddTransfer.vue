@@ -1,7 +1,5 @@
 <script lang="ts" setup>
 
-  import { format } from 'date-fns'
-
   import { useValidateFields } from "~/composables/useValidateFields"
   import { useInvalidate } from "~/composables/useInvalidate"
   import CurrencyInput from "~/components/ui/CurrencyInput.vue"
@@ -9,6 +7,7 @@
   import { useHttpTransfer } from "~/composables/useHttp/useHttpTransfer"
   import { useValidateSchemas } from "~/composables/useValidateSchema" 
   import type { TTransfer } from "~~/types/transfer/TTransfer"
+  import type { TTransferPayload } from '~~/schemas/transfer.schema'
 
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
   const {  selectRules, currencyRules, dateRules } = useValidateFields() 
@@ -22,11 +21,12 @@
   const modelAccountOrigin = ref<number | null>(null)
   const modelAccountDestination = ref<number | null>(null)
   const transferForm = ref<TTransfer>({
-  value_transfer: 0.00,
-  date_transfer: new Date(),
-  account_destination: null,
-  account_origin: null,
-  observation: ""
+    value_transfer: 0.00,
+    date_transfer: new Date(),
+    account_destination: null,
+    account_origin: null,
+    observation: "",
+    is_deleted: false
   })
 
   const { data:accounts } = useQuery({
@@ -60,7 +60,7 @@
 
   const  { mutate, isPending  } = useMutation({
 
-  mutationFn: (payload: TTransfer) => postTransfer(payload),
+  mutationFn: (payload: TTransferPayload) => postTransfer(payload),
 
   onSuccess: () => {
     invalidate(QUERY_KEYS.tranfer.all)
@@ -82,21 +82,35 @@
   })
 
   async function handleAddAccount() {
-
-  try {
-    const formValid = await form.value.validate()
-    const resultSchema = validateSchemaTransfer(transferForm.value)
-
-    console.log("Objeto a ser envidado" + JSON.stringify(transferForm.value))
-    
-    if (formValid) {
-      if (resultSchema.success) {  
-        mutate(transferForm.value)
-      }
+    if (!transferForm.value.date_transfer) {
+      notifyError(
+        "Data inválida",
+        "Não foi possível concluir a ação porque a data informada é inválida ou está ausente.",
+      )
+      return
     }
-  } catch (err) {
-    notifyError("Error", "Erro ao criar tranferência. Tente novamente")
-  }
+
+    try {
+      const formValid = await form.value.validate()
+      const dateFormated = dateToDateOnly(transferForm.value.date_transfer)
+      
+      if (formValid) {
+        const transferPayload = {
+          ...transferForm.value,
+          date_transfer: dateFormated
+        }
+
+        const resultSchema = validateSchemaTransfer(transferPayload)
+
+        if (resultSchema.success) {
+          mutate(resultSchema.data)
+        }
+
+      }
+
+    } catch (err) {
+      notifyInfo("Erro", "Algo deu errado. Tente novamente em instantes.", 7000)
+    }
 
   }
 

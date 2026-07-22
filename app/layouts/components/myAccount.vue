@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-  import defaultUser from "@/assets/default-user.webp"
+  import defaultUser from "~/assets/aura.gif"
 
   const { $authClient } = useNuxtApp()
 
@@ -13,10 +13,13 @@
 
   const authClientStore = useAuthStore()
 
-  function handleSignout() {
+  function handleSignOut() {
     authClientStore.logout()
   }
 
+  function handleConfigApplication() {
+    navigateTo("/config/access")
+  }
 
 </script>
 
@@ -35,9 +38,8 @@
           color="black text-none"
         >
           Minha conta
-
           <template #prepend>
-            <v-icon size="25" color="gray" icon="mdi-account-circle"></v-icon>
+            <img style="border-radius: 100%; width: 2rem; height: 2rem;" :src="session?.user.image || defaultUser" alt="">
           </template>
         </v-btn>
       </template>
@@ -70,6 +72,7 @@
                 <v-btn
                 icon
                 v-bind="props"
+                @click="handleConfigApplication"
                 >
                 <v-icon >
                     mdi-cog
@@ -86,7 +89,7 @@
                 <v-btn
                 icon
                 v-bind="props"
-                @click="handleSignout"
+                @click="handleSignOut"
                 >
                 <v-icon color="red">
                   mdi-power

@@ -15,27 +15,33 @@
 </script>
 
 <template>
-    <v-empty-state
-    class="text-center my-12 empty-404"
-    headline="Página não encontrada"
-    title="Código do erro: 404"
-    text="Ops! Parece que você tentou acessar uma área que não existe. Verifique a URL ou volte para a tela de login."
-    size="420px"
-    :image="img404"
-    >
-  <v-btn
-    color="primary"
-    class="mt-6"
-    rounded
-    @click="onClickAction"
-  >
-    Tela de login
-  </v-btn>
-</v-empty-state>
-
+    <div class="container">
+        <v-empty-state
+        class="text-center "
+        headline="Página não encontrada"
+        title="Código do erro: 404"
+        text="Ops! Parece que você tentou acessar uma área que não existe. Verifique a URL ou volte para a tela de login."
+        size="420px"
+        :image="img404"
+        >
+        <v-btn
+            color="primary"
+            class="mt-6"
+            rounded
+            @click="onClickAction"
+        >
+            Tela de login
+        </v-btn>
+        </v-empty-state>
+    </div>
 </template>
 
 <style scoped>
+
+.container {
+    overflow-y: auto !important;
+    height: 100vh;
+}
 
 ::v-deep(.v-empty-state__text) {
     font-size: 1.3rem;

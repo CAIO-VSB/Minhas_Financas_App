@@ -17,6 +17,7 @@
     import CardEditMovementsRevenue from '~/components/forms/CardEditMovementsRevenue.vue'
     import CardDeletTransaction from '~/components/forms/CardDeletTransaction.vue'
     import FilterDrawer from './components/FilterDrawer.vue'
+    import type { TMovementsPayload } from '~~/schemas/movements.schema.js'
 
     type option = {
         title: string,
@@ -26,11 +27,12 @@
     }
 
     const { patchMovementsById,  getMovimentsOnlyRevenuesByFilter } = useHttpMovements()
-    const {  notifyInfo, notifySuccess } = useNotify()
+    const {  notifyInfo, notifySuccess, notifyError } = useNotify()
     const { invalidate } = useInvalidate()
     const { getOnlyRevenues } = useHttpMovements()
 
     const editDraft = ref<TMovements | null>(null)
+    const confirmDraft = ref<TMovementsPayload | null>(null)
 
     const route = useRoute()
 
@@ -173,7 +175,7 @@
 
     const  { mutate } = useMutation({
 
-        mutationFn: (payload: TMovements) => patchMovementsById(payload.id!, payload),
+        mutationFn: (payload: TMovementsPayload) => patchMovementsById(payload.id!, payload),
 
         onSuccess: () => {
             invalidate(QUERY_KEYS.movements.all)
@@ -212,17 +214,24 @@
             return
         }
 
-
         const raw = structuredClone(toRaw(data))
+        if (!raw.date_transaction) {
+            notifyError(
+                "Data inválida",
+                "Não foi possível concluir a ação porque a data informada é inválida ou está ausente.",
+            )
+            return
+        }
+        const dateFormated = dateToDateOnly(raw.date_transaction)
 
-        const payload: TMovements = {
+        const payload: TMovementsPayload = {
             ...raw,
             value_transaction: Number(raw.value_transaction ?? 0),
-            date_transaction: new Date(raw.date_transaction ?? ""),
+            date_transaction: dateFormated,
         }
 
         if (option.value === "efetivar" && data.type_transaction === "receita") {
-            editDraft.value = payload
+            confirmDraft.value = payload
             labelOptions.value.colorButton = "green"
             labelOptions.value.textButton = "Receber"
             labelOptions.value.title = "Deseja efetivar esta receita?"
@@ -231,7 +240,7 @@
             return
         } else if (option.value === "delete" && data.type_transaction === "receita") {
             payload.is_deleted = true
-            editDraft.value = payload
+            confirmDraft.value = payload
             labelOptions.value.colorButton = "green"
             labelOptions.value.textButton = "Deletar"
             labelOptions.value.title = "Deseja deletar esta receita?"
@@ -251,9 +260,9 @@
     <div class="mt-7 container-main">
 
         <CardAddMovimentsRevenue v-model="modalAddRevenue" />
-        <CardDeletTransaction @success="handleMutationSuccess" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="editDraft" v-model="cardDeletTransaction" />
+        <CardDeletTransaction @success="handleMutationSuccess" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="confirmDraft" v-model="cardDeletTransaction" />
         <CardEditMovementsRevenue @success="handleMutationSuccess" :draft="editDraft" v-model="modalEditMovementsRevenue"/>
-        <CardSettleTransactionModal @success="handleMutationSuccess" v-model="cardPostValueTransaction" :draft="editDraft" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" />
+        <CardSettleTransactionModal @success="handleMutationSuccess" v-model="cardPostValueTransaction" :draft="confirmDraft" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" />
 
         <FilterDrawer :items="[ 'Recebidas', 'Pendentes']" :field-type-active="true" color-button="green" @apply-filter="handleApplyFilter" @reset-filter="handleClearFilter" v-model="drawer"/>
 
@@ -316,9 +325,8 @@
         </div>
 
          <div class="main-cards">
-            <v-card>
-                <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
-                <div v-else  class="d-flex align-center ga-2 pl-2 mb-2">
+            <v-card :loading="isPending">
+                <div class="d-flex align-center ga-2 pl-2 mb-2">
                     <div class="pa-2 rounded-lg">
                         <v-avatar 
                         color="green" 
@@ -334,8 +342,7 @@
 
             </v-card>
             <v-card :loading="isPending" subtitle="Receitas recebidas">
-                 <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
-                 <div v-else class="d-flex align-center ga-2 pl-2 mb-2">
+                 <div class="d-flex align-center ga-2 pl-2 mb-2">
                     <div class="pa-2 rounded-lg">
                         <v-avatar 
                         color="green" 
@@ -351,8 +358,7 @@
 
             </v-card>
             <v-card :loading="isPending" subtitle="Total">
-                <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
-                 <div v-else  class="d-flex align-center ga-2 pl-2 mb-2">
+                 <div class="d-flex align-center ga-2 pl-2 mb-2">
                     <div class="pa-2 rounded-lg">
                         <v-avatar 
                         color='primary' 

@@ -1,6 +1,7 @@
 import { defineStore } from "pinia"
 import type { TUser } from "../../types/auth/Tauth.types";
 import type { TLoginForm, TRegisterForm } from "../../types/user/Tuser.types";
+import { reloadNuxtApp } from '#imports'
 
 
 export const useAuthStore = defineStore('auth', () => {
@@ -8,6 +9,8 @@ export const useAuthStore = defineStore('auth', () => {
     const user = ref<TUser>()
     const isAuthenticated = ref<boolean>(false)
     const disableButton = ref<boolean>(false)
+    const showDialogAlertEmail = ref<boolean>(false)
+    const showDialogAlertPassword = ref<boolean>(false)
 
     const { notifyError, notifyInfo, notifySuccess } = useNotify()
 
@@ -28,7 +31,15 @@ export const useAuthStore = defineStore('auth', () => {
                     if (context.error.status === 401) {
                         notifyError("Não foi possível fazer login", "E-mail ou senha incorretos. Verifique os dados e tente novamente", 7000)
                         return
-                    } else {
+                    } else if (context.error.status === 403) {
+                        notifyInfo(
+                        "E-mail não verificado",
+                        "Enviamos um novo e-mail de verificação. Acesse sua caixa de entrada e confirme seu e-mail para continuar.",
+                        7000
+                        )
+                        return
+                    } 
+                    else {
                         handleErrorApplication(context.error.status)
                         return
                     }
@@ -95,6 +106,101 @@ export const useAuthStore = defineStore('auth', () => {
         }
     }
 
+    const alterUser = async (data: Partial<TUser>) => {
+        await $authClient.updateUser({
+            name: data.name,
+        }, {
+            onSuccess() {
+                notifySuccess("Sucesso", "Nome alterado com sucesso", 6000)
+                reloadNuxtApp({
+                    path: "/config/access"
+                })
+            },
+            onError(context) {
+                notifyError("Erro interno", "Ocorreu um erro inesperado. Tente novamente em alguns instantes.", 7000)
+                console.log("Erro ao modificar nome" + JSON.stringify(context.error))
+            },
+        })
+    }
+    
+    const alterEmail = async (newEmail: string) => {
+
+        try {
+            await $authClient.changeEmail({
+            newEmail: newEmail,
+            callbackURL: "/register-page"
+        }, {
+            onSuccess() {
+
+                showDialogAlertEmail.value = true
+            },
+            onError(context) {
+
+                if (context.error.status === 400 && context.error.message === "Invalid body parameters") {
+                    notifyInfo("Atenção", "O e-mail inserido é inválido. Tente novamente", 5000)
+                    return
+                }
+
+                if (context.error.status === 400 && context.error.message === "Email is the same") {
+                    notifyError("Email já cadastrado", "O novo e-mail deve ser diferente do e-mail atual", 5000)
+                    return
+                }
+
+                notifyError("Erro interno", "Ocorreu um erro inesperado. Tente novamente em alguns instantes.", 7000)
+                
+            },
+        })
+        
+        } catch (e) {
+            notifyError("Erro interno", "Ocorreu um erro inesperado. Tente novamente em alguns instantes.")
+        }
+        
+    }
+
+    const alterPassword = async (newPassowrd: string, currentPassword: string) => {
+
+        try {
+            await $authClient.changePassword({
+            newPassword: newPassowrd,
+            currentPassword: currentPassword,
+            revokeOtherSessions: true
+        }, {
+            onSuccess() {
+                showDialogAlertPassword.value = true
+            },
+            onError(context) {
+
+                if (context.error.status === 400 && context.error.message === "Invalid password") {
+                    console.log("Erro" + JSON.stringify(context.error))
+                    notifyInfo(
+                    "Atenção",
+                    "A senha atual informada está incorreta. Tente novamente.",
+                    5000
+                    )
+                    return
+                }
+
+                if (context.error.status === 400 && context.error.message === "Password too short") {
+                    console.log("Erro" + JSON.stringify(context.error))
+                   notifyInfo(
+                    "Atenção",
+                    "A senha é muito curta. Utilize pelo menos 6 caracteres.",
+                    5000
+                    )
+                    return
+                }
+
+                notifyError("Erro interno", "Ocorreu um erro inesperado. Tente novamente em alguns instantes.", 7000)
+                
+            },
+        })
+        
+        } catch (e) {
+            notifyError("Erro interno", "Ocorreu um erro inesperado. Tente novamente em alguns instantes.")
+        }
+        
+    }
+
     const logout  = async () => {
         await $authClient.signOut({
             fetchOptions: {
@@ -105,6 +211,7 @@ export const useAuthStore = defineStore('auth', () => {
         })
     }
 
-    return { login, loginGoogle, loginDiscord, register, logout, isAuthenticated, user, disableButton }
+
+    return { login, loginGoogle, loginDiscord, register, logout, alterUser, alterEmail, alterPassword, isAuthenticated, user, disableButton, showDialogAlertEmail, showDialogAlertPassword }
 
 })

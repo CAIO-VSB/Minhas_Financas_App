@@ -1,11 +1,20 @@
 <script lang="ts" setup>
 
   const props = defineProps<{
-    text: string | undefined,
     title: string,
+    persistentModal?: boolean
+  }>()
+
+  const emits = defineEmits<{
+    closeModal: []
   }>()
 
   const modelValue = defineModel<boolean>()
+
+  function closeModal() {
+    modelValue.value = false
+    emits("closeModal")
+  }
 
 </script>
 
@@ -15,22 +24,21 @@
       :model-value="modelValue"
       width="auto"
       transition="dialog-top-transition"
+      :persistent="props.persistentModal"
     >
       <v-card
-        max-width="400"
+        max-width="600"
         prepend-icon="mdi mdi-bell-alert"
-        :text="props.text"
         :title="props.title"
       >
-      
+        <slot></slot>
         <template v-slot:actions>
            <v-spacer></v-spacer>
           <v-btn
             class="ms-auto"
             text="Ok"
-            @click="modelValue = false"
+            @click="closeModal"
           ></v-btn>
-
         </template>
       </v-card>
     </v-dialog>

@@ -5,7 +5,7 @@ export function useValidateFields() {
 
     const nameRules = ref([
         (val: string) => !!val || "Campo nome é obrigatório",
-        (val: string) => (val && val.length <= 55) || "Nome não pode conter mais de 55 caracteres",
+        (val: string) => (val && val.length <= 30) || "Nome não pode conter mais de 30 caracteres",
         (val: string) => (val && val.length > 1) || "Nome precisa ter no minímo 1 caracteres"
     ])
 
@@ -16,7 +16,8 @@ export function useValidateFields() {
 
     const passwordRules = ref([
         (val: string) => !!val || "Campo senha é obrigatório",
-        (val: string) => (val && val.length >= 6) || "A senha deve conter no minímo 6 caracteres"
+        (val: string) => (val && val.length >= 6) || "A senha deve conter no minímo 6 caracteres",
+        (val: string) => /[0-9]/.test(val) || "A senha deve conter pelo menos um número"
     ])
 
     const selectRules = ref([

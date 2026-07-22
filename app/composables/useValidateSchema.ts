@@ -2,26 +2,20 @@ import { schemaAccount } from "~~/schemas/account.schema"
 import { singIn, singUp, passwordValidate, emailValidate } from "~~/schemas/auth.schema"
 import { schemaCategories } from "~~/schemas/categories.schema"
 import { schemaCreditCard } from "~~/schemas/creditCard.schema"
-import { schemaMovements } from "~~/schemas/movements.schema"
-import { schemaTransfer } from "~~/schemas/transfer.schema"
-import { schemaRecurrence } from "~~/schemas/recurrence.schema"
+import { schemaMovements, type TMovementsPayload } from "~~/schemas/movements.schema"
+import { schemaTransfer, type TTransferPayload } from "~~/schemas/transfer.schema"
+import { schemaRecurrence, type TRecurrencePayload } from "~~/schemas/recurrence.schema"
 import type { TAccount } from "~~/types/account/TAccount.types"
 import type { TUser } from "~~/types/auth/Tauth.types"
 import type { TCategorie } from "~~/types/categorie/TCategorie"
 import type { TCreditCard } from "~~/types/credit_card/TCredit-card"
 import type { TRecoveryForm, TLoginForm, TResetForm } from "~~/types/user/Tuser.types"
-import type { TMovements } from "~~/types/movements/TMovements"
 import type { TTransfer } from "~~/types/transfer/TTransfer"
-import type { TRecurrence } from "~~/types/recurrence/TRecurrence"
-import type z from "zod"
 
 //Tipo para validar o retorno de cada função
 type ValidateResult<T> = 
     | { success: true; data: T}
     | { success: false }
-
-type TMovementsPaylodad = z.infer<typeof schemaMovements>
-type TRecurrencePayload = z.infer<typeof schemaRecurrence>
 
 export function useValidateSchemas() {
 
@@ -113,7 +107,7 @@ export function useValidateSchemas() {
         return {success: true, data: result.data}
     }
 
-    const validateSchemaMovements = (data: unknown):ValidateResult<TMovementsPaylodad> => {
+    const validateSchemaMovements = (data: unknown):ValidateResult<TMovementsPayload> => {
         
         const result = schemaMovements.safeParse(data)
 
@@ -125,7 +119,7 @@ export function useValidateSchemas() {
         return {success: true, data: result.data}
     }
 
-    const validateSchemaTransfer = (data: TTransfer):ValidateResult<TTransfer> => {
+    const validateSchemaTransfer = (data: unknown):ValidateResult<TTransferPayload> => {
         
         const result = schemaTransfer.safeParse(data)
 

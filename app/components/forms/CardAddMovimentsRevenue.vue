@@ -220,7 +220,13 @@
   })
 
   async function handleAddMovimentRevenue() {
-    if (!movementsForm.value.date_transaction) return
+    if (!movementsForm.value.date_transaction) {
+      notifyError(
+        "Data inválida",
+        "Não foi possível concluir a ação porque a data informada é inválida ou está ausente.",
+      )
+      return
+    }
 
     const dateFormated = dateToDateOnly(movementsForm.value.date_transaction)
 

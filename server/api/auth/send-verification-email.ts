@@ -101,7 +101,7 @@ export const sendUserEmail = async (user: User, url: string) => {
 
   try {
     const info = await transporter.sendMail({
-      from: "E-mail de verificação <financevelto@gmail.com>", 
+      from: "Confirmação de e-mail <financevelto@gmail.com>", 
       to: user.email, 
       subject: "Verifique seu e-mail",
       text: "Siga as intruções para fazer a verificação do seu e-mail", 

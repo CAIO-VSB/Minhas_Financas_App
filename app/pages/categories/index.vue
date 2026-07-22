@@ -262,7 +262,7 @@
     </div>
 
     <div class="card-list elevation-2 rounded-lg">
-      <v-list class="elevation-2"  style="height: 100%; z-index: 2000;" lines="two" item-props>
+      <v-list class="elevation-2" style="height: 100%;" lines="two" item-props>
 
         <v-list-item
           v-for="(categorie, index) in filteredCategories ||  []"

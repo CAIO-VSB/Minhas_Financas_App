@@ -5,7 +5,7 @@
     titleBotton: string,
     title: string,
     text: string,
-    draft: TMovements | null
+    draft: TMovementsPayload | null
   }>()
 
   const  emit = defineEmits<{
@@ -93,11 +93,8 @@
     
     const raw = structuredClone(toRaw(props.draft))
 
-    const dateFormated = dateToDateOnly(raw.date_transaction)
-
-    const payload: TMovementsPayload = {
+    const payload = {
       ...raw,
-      date_transaction: dateFormated,
     }
 
     if (props.draft.type_transaction === "receita") {
@@ -208,17 +205,17 @@
             <v-card-actions style="display: flex; justify-content: space-between; margin-top: 13px;">
               <v-btn
                 text="Cancelar"
-                variant="outlined"
+                variant="text"
                 :color="props.colorBotton"
-                class="text-none rounded-xl button-singup"
+                class="text-none "
                 @click="isActive.value = false"
               ></v-btn>
               
               <v-btn
                 :text="props.titleBotton"
-                variant="elevated"
+                variant="flat"
                 :color="props.colorBotton"
-                class="text-none rounded-xl button-singup"
+                class="text-none"
                 :disabled="buttonSubmitDisabled"
                 @click="submitForm"
               ></v-btn>

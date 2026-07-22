@@ -29,7 +29,7 @@
           await $authClient.requestPasswordReset(
             {
               email: formEmail.value.email,
-              redirectTo: "http://localhost:3000/reset-password-page",
+              redirectTo: "http://10.20.20.7:3000/reset-password-page",
             },
             {
               onRequest() {

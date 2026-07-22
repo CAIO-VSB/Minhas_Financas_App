@@ -1,4 +1,5 @@
 import client from "~/utils/db"
+import { TTransferPayload } from "~~/schemas/transfer.schema"
 import type { TTransfer } from "~~/types/transfer/TTransfer"
 
 export const transferRepository = {
@@ -24,7 +25,7 @@ export const transferRepository = {
         return (await query).rows[0]
     },
 
-    async create(userId: string, data: TTransfer) {
+    async create(userId: string, data: TTransferPayload) {
 
         await client.query('BEGIN')
 
@@ -42,13 +43,13 @@ export const transferRepository = {
             await client.query(`
                 INSERT INTO movements(user_id, type_transaction, value_transaction, date_transaction, description_transaction, categorie_id, accounts_id, observation, url_recibo, status_transaction, is_deleted, transfer_id) 
                 VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
-                [userId, 'transferencia_saida', data.value_transfer, data.date_transfer, 'Transferência de saída', 840, data.account_origin, null, null, 'saida', false, transferId]
+                [userId, 'transferencia_saida', data.value_transfer, data.date_transfer, 'Transferência de saída', 150, data.account_origin, null, null, 'saida', false, transferId]
             )
 
             await client.query(`
                 INSERT INTO movements(user_id, type_transaction, value_transaction, date_transaction, description_transaction, categorie_id, accounts_id, observation, url_recibo, status_transaction, is_deleted, transfer_id) 
                 VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
-                [userId, 'transferencia_entrada', data.value_transfer, data.date_transfer, 'Transferência de entrada', 804, data.account_destination, null, null, 'entrada', false, transferId]
+                [userId, 'transferencia_entrada', data.value_transfer, data.date_transfer, 'Transferência de entrada', 150, data.account_destination, null, null, 'entrada', false, transferId]
             )
 
             await client.query('COMMIT')
@@ -62,7 +63,7 @@ export const transferRepository = {
 
     },
 
-    async update(id: number, data: TTransfer) {
+    async update(id: number, data: TTransferPayload) {
 
         console.log("valor" + id, data)
         
@@ -97,7 +98,7 @@ export const transferRepository = {
                         status_transaction = $9,
                         is_deleted = $10
                     WHERE transfer_id = $11 AND type_transaction = $12`,
-                ['transferencia_saida', data.value_transfer, data.date_transfer, 'Transferência de saída', 80, data.account_origin, null, null, 'saida', false, id,'transferencia_saida']
+                ['transferencia_saida', data.value_transfer, data.date_transfer, 'Transferência de saída', 150, data.account_origin, null, null, 'saida', false, id,'transferencia_saida']
             )
 
             await client.query(`
@@ -115,7 +116,7 @@ export const transferRepository = {
                         is_deleted = $10
                     WHERE transfer_id = $11 AND type_transaction = $12
                 `,
-                ['transferencia_entrada', data.value_transfer, data.date_transfer, 'Transferência de entrada', 80, data.account_destination, null, null, 'entrada', false, id, 'transferencia_entrada']
+                ['transferencia_entrada', data.value_transfer, data.date_transfer, 'Transferência de entrada', 150, data.account_destination, null, null, 'entrada', false, id, 'transferencia_entrada']
             )
 
             await client.query('COMMIT')

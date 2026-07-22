@@ -21,5 +21,8 @@ export const QUERY_KEYS = {
     },
     tranfer: {
         all: ['transfer']
+    },
+    auth: {
+        all: ['auth']
     }
 }

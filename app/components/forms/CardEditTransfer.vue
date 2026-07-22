@@ -7,6 +7,7 @@
   import { useHttpTransfer } from "~/composables/useHttp/useHttpTransfer"
   import { useValidateSchemas } from "~/composables/useValidateSchema" 
   import type { TTransfer } from "~~/types/transfer/TTransfer"
+import type { TTransferPayload } from "~~/schemas/transfer.schema"
 
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
   const {  selectRules, currencyRules, dateRules } = useValidateFields() 
@@ -78,7 +79,7 @@
 
   const  { mutate, isPending  } = useMutation({
 
-    mutationFn: (payload: TTransfer) => patchTransferById(payload.id!, payload),
+    mutationFn: (payload: TTransferPayload) => patchTransferById(payload.id!, payload),
 
     onSuccess: () => {
       invalidate(QUERY_KEYS.tranfer.all)
@@ -100,22 +101,38 @@
 
     try {
 
-    if(!props.draft) {
-      notifyError("Ops!", "Algo não parece certo. Confira os dados e tente novamente.")
-      return
-    } 
+      if(!props.draft) {
+        notifyError("Ops!", "Algo não parece certo. Confira os dados e tente novamente.")
+        return
+      } 
+  
       const formValid = await form.value.validate()
-      const resultSchema = validateSchemaTransfer(props.draft)
+      const raw = structuredClone(toRaw(props.draft))
+    
+      if (!raw.date_transfer) {
+        notifyError(
+          "Data inválida",
+          "Não foi possível concluir a ação porque a data informada é inválida ou está ausente.",
+        )
+        return
+      }
 
-      console.log("Objeto a ser envidado" + JSON.stringify(props.draft))
-      
+      const dateFormated = dateToDateOnly(raw.date_transfer)
+
       if (formValid) {
+        const transferPayload = {
+          ...raw,
+          date_transfer: dateFormated
+        }
+
+        const resultSchema = validateSchemaTransfer(transferPayload)
+
         if (resultSchema.success) {  
-          mutate(props.draft)
+          mutate(resultSchema.data)
         }
       }
     } catch (err) {
-      notifyError("Error", "Erro ao criar tranferência. Tente novamente")
+      notifyInfo("Erro", "Algo deu errado. Tente novamente em instantes.", 7000)
     }
 
   }
@@ -131,16 +148,16 @@
     v-if="props.draft"
     >
       <v-dialog persistent v-model="modelValue" max-width="600">
-        <v-card prepend-icon="mdi-swap-horizontal" title="Editar Transferência">
+        <v-card  title="Editar Transferência">
           <v-divider></v-divider>
           <v-card-text>
             <form>
 
-              <CurrencyInput :rules="currencyRules" prepend-icon="mdi-cash" input-color="#2196F3" base-color="#2196F3" color="#2196F3" text-color="#2196F3" autocomplete="off" label="Valor*" v-model="props.draft.value_transfer"/>
+              <CurrencyInput :rules="currencyRules" prepend-inner-icon="mdi-cash" input-color="#2196F3" base-color="#2196F3" color="#2196F3" text-color="#2196F3" autocomplete="off" label="Valor*" v-model="props.draft.value_transfer"/>
               
-              <v-date-input :rules="dateRules" v-model="props.draft.date_transfer" prepend-icon="mdi-calendar"  autocomplete="off" name="date" label="Data*" variant="underlined" ></v-date-input>
+              <v-date-input :rules="dateRules" v-model="props.draft.date_transfer" prepend-inner-icon="mdi-calendar" prepend-icon=""  autocomplete="off" name="date" label="Data*" variant="underlined" ></v-date-input>
 
-              <v-select v-model="modelAccountOrigin" clearable  prepend-icon="mdi-bank-transfer-out" :rules="selectRules" item-value="id" item-title="name_identifier" color="primary" label="Conta origem*" :items="accountsFilteredOrigin" variant="underlined">      
+              <v-select v-model="modelAccountOrigin" clearable  prepend-inner-icon="mdi-bank-transfer-out" :rules="selectRules" item-value="id" item-title="name_identifier" color="primary" label="Conta origem*" :items="accountsFilteredOrigin" variant="underlined">      
                  <template v-slot:selection="{item}">
                     <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
                       <v-img  :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
@@ -159,7 +176,7 @@
                   </template>
               </v-select>
 
-              <v-select v-model="modelAccountDestination" clearable prepend-icon="mdi-bank-transfer-in" :rules="selectRules" item-value="id" item-title="name_identifier"  color="primary" label="Conta destino*" :items="accountsFilteredDestination" variant="underlined">
+              <v-select v-model="modelAccountDestination" clearable prepend-inner-icon="mdi-bank-transfer-in" :rules="selectRules" item-value="id" item-title="name_identifier"  color="primary" label="Conta destino*" :items="accountsFilteredDestination" variant="underlined">
                  <template v-slot:selection="{item}">
                     <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
                       <v-img  :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
@@ -178,7 +195,7 @@
                   </template>
               </v-select>
 
-              <v-text-field v-model="props.draft.observation" prepend-icon="mdi-note-text" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="underlined"></v-text-field >
+              <v-text-field v-model="props.draft.observation" prepend-inner-icon="mdi-note-text" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="underlined"></v-text-field >
 
             </form>
 
@@ -190,18 +207,18 @@
           <v-divider></v-divider>
 
           <v-card-actions>
-            <v-spacer></v-spacer>
-
             <v-btn
+              class="text-none"
               text="Cancelar"
               variant="plain"
               @click="resetForm"
             ></v-btn>
-
+            <v-spacer></v-spacer>
             <v-btn
+              class="text-none"
               color="primary"
-              text="Lançar"
-              variant="tonal"
+              text="Salvar"
+              variant="flat"
               :loading="isPending"
               @click="handleEditTransfer"
             ></v-btn>

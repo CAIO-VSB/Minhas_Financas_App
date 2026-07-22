@@ -1,5 +1,5 @@
+import { APIError } from "better-auth"
 import { auth } from "~~/auth"
-import { accountsRepository } from "~~/server/repositories/account.repository"
 
 export default defineEventHandler( async (event) => {
 
@@ -14,19 +14,25 @@ export default defineEventHandler( async (event) => {
         })
     }
 
-    const { active } = getQuery(event)
+    const { password } = await readBody(event)
 
     try {
 
-        return await accountsRepository.findAll(
-            session.session.userId,
-            active !== undefined ? active === "true" : undefined 
-        )
+        await auth.api.verifyPassword({
+            body: {
+                password: password
+            },
+            headers: event.headers
+        })
+
+        return { valid: true }
 
     } catch (error) {
 
-        console.log("Erro ao tentar buscar contas", error)
-
+        if (error instanceof APIError) {
+            return { valid: false}
+        }
+        console.log("Erro ao verificar senha:", error)
         throw createError({
             status: 500,
             statusMessage: "Internal Server Error"

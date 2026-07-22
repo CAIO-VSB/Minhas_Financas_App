@@ -5,12 +5,23 @@
     titleBotton: string,
     title: string,
     text: string,
-    draft: TMovementsWithTransfer | null
+    draft: TTransferMovementsPayload | null
   }>()
 
-  import type {  TMovementsWithTransfer } from "~~/types/movements/TMovements"
+  type TTransferMovementsPayload = TMovementsPayload & {
+    account_origin?: number | null,
+    account_destination?: number | null,
+    transfer_id?: number | null
+  }
+
+  type TDeleteTransferPayload = TTransferMovementsPayload & {
+    value_transfer: number
+    date_transfer: string
+  }
+
   import { useInvalidate } from "~/composables/useInvalidate"
   import { useHttpTransfer } from '~/composables/useHttp/useHttpTransfer'
+  import type { TMovementsPayload } from "~~/schemas/movements.schema";
 
   const { invalidate } = useInvalidate()
   const { deleteTransferById } = useHttpTransfer()
@@ -20,7 +31,7 @@
 
    const  { mutate } = useMutation({
 
-    mutationFn: (payload: TMovementsWithTransfer) => deleteTransferById(payload.transfer_id!, {is_deleted: true}),
+    mutationFn: (payload: TDeleteTransferPayload) => deleteTransferById(payload.transfer_id!, payload),
 
     onSuccess: () => {
       invalidate(QUERY_KEYS.movements.all)
@@ -49,13 +60,20 @@
 
     const raw = structuredClone(toRaw(props.draft))
 
-    const payload: TMovementsWithTransfer = {
-      ...raw
+    if (typeof raw.value_transaction !== "number" || !raw.date_transaction) {
+      notifyError("Ops!", "A transferência não possui valor ou data válidos.")
+      return
+    }
+
+    const transferPayload: TDeleteTransferPayload = {
+      ...raw,
+      value_transfer: raw.value_transaction,
+      date_transfer: raw.date_transaction,
+      is_deleted: true
     }
 
     if (props.draft.type_transaction === "transferencia_entrada" || props.draft.type_transaction === "transferencia_saida") {
-      payload.is_deleted = true
-      mutate(payload)
+      mutate(transferPayload)
       return
     }
 
@@ -105,9 +123,9 @@
               <v-card-actions style="display: flex; justify-content: space-between; margin-top: 13px;">
               <v-btn
                   text="Cancelar"
-                  variant="outlined"
+                  variant="text"
                   :color="props.colorBotton"
-                  class="text-none rounded-xl button-singup"
+                  class="text-none"
                   @click="isActive.value = false"
               ></v-btn>
               
@@ -115,7 +133,7 @@
                   :text="props.titleBotton"
                   variant="elevated"
                   :color="props.colorBotton"
-                  class="text-none rounded-xl button-singup"
+                  class="text-none"
                   @click="submitForm"
               ></v-btn>
               </v-card-actions>

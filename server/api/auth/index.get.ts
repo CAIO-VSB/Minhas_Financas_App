@@ -1,5 +1,5 @@
 import { auth } from "~~/auth"
-import { accountsRepository } from "~~/server/repositories/account.repository"
+import { authRepository } from "~~/server/repositories/auth.respository"
 
 export default defineEventHandler( async (event) => {
 
@@ -14,14 +14,9 @@ export default defineEventHandler( async (event) => {
         })
     }
 
-    const { active } = getQuery(event)
-
     try {
 
-        return await accountsRepository.findAll(
-            session.session.userId,
-            active !== undefined ? active === "true" : undefined 
-        )
+        return await authRepository.findAll(session.session.userId)
 
     } catch (error) {
 

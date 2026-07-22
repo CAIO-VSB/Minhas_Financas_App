@@ -21,6 +21,7 @@
   const loading = ref(false);
   const showPassword = ref(false);
   const form = ref();
+  const showValidatePassword = ref(false)
   const registerForm = ref<TRegisterForm>({
     id: "",
     name: "",
@@ -37,7 +38,42 @@
       val === registerForm.value.password || "As senha não coincidem",
   ]);
 
+  function resetForm() {
+    registerForm.value.name = ""
+    registerForm.value.email = ""
+    registerForm.value.password = ""
+    registerForm.value.confirmPassword = ""
+  }
 
+  const regexValidateNumber = computed(() => {
+    return /\d/.test(registerForm.value.password)
+  })
+
+  const regexValidateMaiuscula = computed(() => {
+    return /[A-Z]/.test(registerForm.value.password)
+  })
+
+  const regexValidateMinuscula = computed(() => {
+    return /[a-z]/.test(registerForm.value.password)
+  })
+
+  const regexValidateEspecial = computed(() => {
+    return /[^A-Za-z0-9]/.test(registerForm.value.password)
+  })
+
+  const regexValidateMinimoSeis = computed(() => {
+    return registerForm.value.password.length >= 6
+  })
+
+  function validateRulesPassword() {
+    regexValidateEspecial
+    regexValidateMaiuscula
+    regexValidateMinimoSeis
+    regexValidateMinuscula
+    regexValidateNumber
+    showValidatePassword.value = true
+  }
+  
   async function handleRegisterUser() {
     try {
       loading.value = true;
@@ -49,6 +85,7 @@
       if (formValid) {
         if (resultSchema.success) {
           await authStore.register(registerForm.value);
+          resetForm()
         }
       }
     } catch (error) {
@@ -56,11 +93,6 @@
       console.log("Erro ao criar usuário" + error);
     } finally {
       loading.value = false;
-      registerForm.value.confirmPassword = ""
-      registerForm.value.email = ""
-      registerForm.value.id = ""
-      registerForm.value.name = ""
-      registerForm.value.password = ""
     }
   }
 
@@ -123,6 +155,7 @@
         name="name"
         clearable
         :rules="nameRules"
+        @keyup.enter="handleRegisterUser"
         ></v-text-field>
 
         <v-text-field
@@ -136,6 +169,7 @@
         autocomlete="email"
         name="email"
         clearable
+        @keyup.enter="handleRegisterUser"
         ></v-text-field>
 
         <v-text-field
@@ -151,6 +185,8 @@
         :rules="passwordRules"
         autocomplete="off"
         hide-details="auto"
+        @keyup="validateRulesPassword"
+        @keyup.enter="handleRegisterUser"
         >
         </v-text-field>
         <div class="password-meter">
@@ -158,7 +194,32 @@
             v-model="registerForm.password"
             :strength-meter-only="true"
           />
+          <v-expand-transition>
+          <div v-if="showValidatePassword" class="ml-1">          
+            <div>
+              <v-icon :color="regexValidateMinimoSeis ? 'green':'red'" :icon="regexValidateMinimoSeis ? 'mdi-check-circle-outline': 'mdi-close-circle-outline'" size="small"></v-icon>
+              Pelo menos 6 caracteres
+            </div>
+            <div>
+              <v-icon :color="regexValidateMaiuscula ? 'green':'red'" :icon="regexValidateMaiuscula ? 'mdi-check-circle-outline': 'mdi-close-circle-outline'"  size="small"></v-icon>
+              Uma letra maiúscula
+            </div>
+            <div>
+              <v-icon :color="regexValidateMinuscula ? 'green':'red'" :icon="regexValidateMinuscula ? 'mdi-check-circle-outline': 'mdi-close-circle-outline'" size="small"></v-icon>
+              Uma letra minúscula
+            </div>
+            <div>
+              <v-icon :color="regexValidateNumber ? 'green':'red'" :icon="regexValidateNumber ? 'mdi-check-circle-outline': 'mdi-close-circle-outline'" size="small"></v-icon>
+              Um número
+            </div>
+            <div>
+              <v-icon :color="regexValidateEspecial ? 'green':'red'" :icon="regexValidateEspecial ? 'mdi-check-circle-outline': 'mdi-close-circle-outline'" size="small"></v-icon>
+              Um caractere especial
+            </div>
+          </div>
+          </v-expand-transition>
       </div>
+
         
         <v-text-field
         v-model="registerForm.confirmPassword"

@@ -85,7 +85,7 @@ export const sendForgotPassword = async (user: User, url: string) => {
 
   try {
     const info = await transporter.sendMail({
-        from: "Redefinição de Senha <financevelto@gmail.com>", 
+        from: "Redefinição de senha <financevelto@gmail.com>", 
         to: user.email, 
         subject: "Redefinir Senha",
         text: "Siga as intruções para fazer a redefinir sua senha", 

@@ -18,6 +18,7 @@
     import type { TMovementsByFilter } from "~~/types/movements/TMovementsByFilter"
     import type { TOptionAction } from '~~/types/option_action/TOptionAction'
     import type { TPeriod } from '~~/types/period/TPeriod'
+    import type { TMovementsPayload } from '~~/schemas/movements.schema.js'
 
     type option = {
         title: string,
@@ -27,6 +28,7 @@
     }
 
     const editDraft = ref<TMovements | null>(null)
+    const confirmDraft = ref<TMovementsPayload | null>(null)
 
     const { getOnlyExpenses, getMovimentsOnlyExpensesByFilter, patchMovementsById } = useHttpMovements()
     const { notifyError, notifyInfo, notifySuccess } = useNotify()
@@ -147,7 +149,7 @@
 
     const  { mutate } = useMutation({
 
-        mutationFn: (payload: TMovements) => patchMovementsById(payload.id!, payload),
+        mutationFn: (payload: TMovementsPayload) => patchMovementsById(payload.id!, payload),
 
         onSuccess: () => {
             invalidate(QUERY_KEYS.movements.all)
@@ -213,17 +215,18 @@
             return
         }
 
-
         const raw = structuredClone(toRaw(data))
+        
+        const dateFormated = dateToDateOnly(raw.date_transaction || new Date())
 
-        const payload: TMovements = {
+        const payload = {
             ...raw,
-            value_transaction: Number(raw.value_transaction ?? 0),
-            date_transaction: new Date(raw.date_transaction ?? ""),
+            value_transaction: raw.value_transaction ?? 0.00,
+            date_transaction: dateFormated,
         }
 
         if (option.value === "efetivar" && data.type_transaction === "despesa") {
-            editDraft.value = payload
+            confirmDraft.value = payload
             labelOptions.value.colorButton = "red"
             labelOptions.value.textButton = "Pagar"
             labelOptions.value.title = "Deseja efetivar esta despesa?"
@@ -231,7 +234,7 @@
             cardPostValueTransaction.value = true
             return
         } else if (option.value === "delete" && data.type_transaction === "despesa") {
-            editDraft.value = payload
+            confirmDraft.value = payload
             payload.is_deleted = true
             labelOptions.value.colorButton = "red"
             labelOptions.value.textButton = "Deletar"
@@ -252,8 +255,8 @@
     <div class="mt-7 container-main">
 
         <CardAddMovimentsExpenses v-model="modalAddExpenses" />
-        <CardDeletTransaction @success="handleMutationSuccess" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="editDraft" v-model="cardDeletTransaction" />
-        <CardSettleTransactionModal @success="handleMutationSuccess" v-model="cardPostValueTransaction" :draft="editDraft" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" />
+        <CardDeletTransaction @success="handleMutationSuccess" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="confirmDraft" v-model="cardDeletTransaction" />
+        <CardSettleTransactionModal @success="handleMutationSuccess" v-model="cardPostValueTransaction" :draft="confirmDraft" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" />
         <CardEdtiMovementsExpenses @success="handleMutationSuccess" :draft="editDraft"  v-model="modalEditMovementesExpenses"/>
 
         <FilterDrawer :items="['Pendentes', 'Pagas']" :field-type-active="true"  color-button="red" @apply-filter="handleApplyFilter" @reset-filter="handleClearFilter" v-model="drawer"/>
@@ -367,21 +370,10 @@
         </div>
         
         <div class="w-100 pa-2 container-table">
-
-            <template v-if="isPending">
-                <v-skeleton-loader 
-                    v-for="n in 12" 
-                    :key="n" 
-                    type="list-item-avatar"
-                    class="mb-2"
-                />
-            </template>
-            
             <v-card
                 flat
                 class="table elevation-2"
                 :loading="isPending"
-                v-else
             >
             <template v-slot:text>
 

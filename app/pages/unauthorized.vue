@@ -9,7 +9,8 @@ const goToLogin = () => {
 </script>
 
 <template>
-  <v-empty-state
+  <div class="container">
+      <v-empty-state
     :image="Restricted"
     size="350px"
     title="Código do erro"
@@ -43,9 +44,16 @@ const goToLogin = () => {
       </v-btn>
     </template>
   </v-empty-state>
+  </div>
 </template>
 
 <style scoped>
+
+.container {
+  overflow-y: auto !important;
+  height: 100vh;
+}
+
 ::v-deep(.v-empty-state__text) {
   font-size: 1.2rem;
   max-width: 750px !important;

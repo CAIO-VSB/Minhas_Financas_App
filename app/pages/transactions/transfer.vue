@@ -14,6 +14,7 @@
     import CardAddTransfer from '~/components/forms/CardAddTransfer.vue'
     import CardEditTransfer from '~/components/forms/CardEditTransfer.vue'
     import CardDeleteTransfer from '~/components/forms/CardDeleteTransfer.vue'
+    import type { TTransferPayload } from '~~/schemas/transfer.schema'
 
     type option = {
         title: string,
@@ -24,10 +25,10 @@
 
     const { getTransfer } = useHttpTransfer()
     const { getMoviments, getCurrentBalance } = useHttpMovements()
-    const {  notifyInfo, notifySuccess } = useNotify()
+    const {  notifyInfo, notifySuccess, notifyError } = useNotify()
 
-    
     const editDraft = ref<TTransfer | null>(null)
+    const confirmDraft = ref<TTransferPayload | null>(null)
    
     const route = useRoute()
     const search = ref('')
@@ -123,7 +124,7 @@
         navigateTo(item.route)
     }
 
-    function getOptions(transfer: TTransfer): TOptionAction [] {
+    function getOptions(): TOptionAction [] {
         return [
         { title: 'Editar',  value: "edit", icon: "mdi-pencil" },
         { title: 'Deletar', value: "delete", icon: "mdi-delete-forever" }
@@ -154,17 +155,26 @@
             return
         }
 
-
         const raw = structuredClone(toRaw(data))
 
-        const payload: TTransfer = {
+        if (!raw.date_transfer) {
+            notifyError(
+                "Data inválida",
+                "Não foi possível concluir a ação porque a data informada é inválida ou está ausente.",
+            )
+            return
+        }
+
+        const dateFormated = dateToDateOnly(raw.date_transfer)
+
+        const payload = {
             ...raw,
             value_transfer: Number(raw.value_transfer ?? 0),
-            date_transfer: new Date(raw.date_transfer ?? ""),
+            date_transfer: dateFormated,
         }
 
         if (option.value === "delete") {
-            editDraft.value = data
+            confirmDraft.value = payload
             payload.is_deleted = true
             labelOptions.value.colorButton = "blue"
             labelOptions.value.textButton = "Deletar"
@@ -182,7 +192,7 @@
     
     <CardAddTransfer v-model="modalAddTransfer"/>
     <CardEditTransfer :draft="editDraft" v-model="modalEditTransfer" />
-    <CardDeleteTransfer :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="editDraft" v-model="cardDeleteTransfer" />
+    <CardDeleteTransfer :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="confirmDraft" v-model="cardDeleteTransfer" />
 
     <div class="mt-7 container-main">
 
@@ -413,7 +423,7 @@
                             </template>
                             <v-list>
                                 <v-list-item
-                                v-for="action in getOptions(item)"
+                                v-for="action in getOptions()"
                                 :key="action.title"
                                 :value="action.value"
                                 :prepend-icon="action.icon"

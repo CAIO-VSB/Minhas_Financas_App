@@ -5,12 +5,13 @@
     titleBotton: string,
     title: string,
     text: string,
-    draft: TTransfer | null
+    draft: TTransferPayload | null
   }>()
 
   import { useInvalidate } from "~/composables/useInvalidate"
   import { useHttpTransfer } from '~/composables/useHttp/useHttpTransfer'
   import type { TTransfer } from "~~/types/transfer/TTransfer";
+  import type { TTransferPayload } from "~~/schemas/transfer.schema";
 
   const { invalidate } = useInvalidate()
   const { deleteTransferById } = useHttpTransfer()
@@ -20,7 +21,7 @@
 
   const  { mutate } = useMutation({
 
-  mutationFn: (payload: TTransfer) => deleteTransferById(payload.id!, {is_deleted: true}),
+  mutationFn: (payload: TTransferPayload) => deleteTransferById(payload.id!, payload),
 
   onSuccess: () => {
     invalidate(QUERY_KEYS.movements.all)
@@ -49,11 +50,9 @@ async function submitForm() {
 
   const raw = structuredClone(toRaw(props.draft))
 
-  const payload: TTransfer = {
+  const payload: TTransferPayload = {
     ...raw
   }
-
-  console.log("Valor a ser envidao", payload)
 
   if (props.draft.id) {
     payload.is_deleted = true
@@ -118,17 +117,17 @@ async function submitForm() {
               <v-card-actions style="display: flex; justify-content: space-between; margin-top: 13px;">
               <v-btn
                   text="Cancelar"
-                  variant="outlined"
+                  variant="text"
                   :color="props.colorBotton"
-                  class="text-none rounded-xl button-singup"
+                  class="text-none"
                   @click="isActive.value = false"
               ></v-btn>
               
               <v-btn
                   :text="props.titleBotton"
-                  variant="elevated"
+                  variant="flat"
                   :color="props.colorBotton"
-                  class="text-none rounded-xl button-singup"
+                  class="text-none"
                   @click="submitForm"
               ></v-btn>
               </v-card-actions>
