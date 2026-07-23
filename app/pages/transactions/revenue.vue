@@ -5,6 +5,8 @@
         layout: "layout-dashboard"
     })
 
+    import { useHttpCategories } from '~/composables/useHttp/useHttpCategories'
+    import { useHttpAccounts } from "~/composables/useHttp/useHttpAccounts"
     import CardAddMovimentsRevenue from '~/components/forms/CardAddMovimentsRevenue.vue'
     import { useHttpMovements } from '~/composables/useHttp/useHttpMovements'
     import DateInput from "~~/app/components/ui/DateInput.vue"
@@ -18,6 +20,7 @@
     import CardDeletTransaction from '~/components/forms/CardDeletTransaction.vue'
     import FilterDrawer from './components/FilterDrawer.vue'
     import type { TMovementsPayload } from '~~/schemas/movements.schema.js'
+    import AppCard from '~/components/ui/AppCard.vue'
 
     type option = {
         title: string,
@@ -30,6 +33,8 @@
     const {  notifyInfo, notifySuccess, notifyError } = useNotify()
     const { invalidate } = useInvalidate()
     const { getOnlyRevenues } = useHttpMovements()
+    const { getCategoriesOnlyActive } = useHttpCategories()
+    const { getAccountsOnlyActive } = useHttpAccounts()
 
     const editDraft = ref<TMovements | null>(null)
     const confirmDraft = ref<TMovementsPayload | null>(null)
@@ -71,6 +76,17 @@
         queryFn: () => getOnlyRevenues(period.value.month, period.value.year),
     })
 
+    const { data:categories } = useQuery({
+      queryKey: QUERY_KEYS.categories.active,
+      queryFn: getCategoriesOnlyActive,
+    })
+
+    const { data:accounts } = useQuery({
+      queryKey: QUERY_KEYS.accounts.active,
+      queryFn: getAccountsOnlyActive,
+    })
+
+
     function handleGetPeriod(value: TPeriod) {
         period.value = value
         refetch()
@@ -106,6 +122,20 @@
             receitas_efetivadas: Number(row?.t_receitas_efetivadas ?? 0.00),
             total_geral: Number(row?.total_geral_receitas ?? 0.00),
         }
+    })
+
+    const lastFilterLabels = computed(() => {
+        const cats = lastFilter.value?.categorie_id?.map(id => {
+            const found = categories.value?.find(c => c.id === id) 
+            return found ? {id: found.id, name: found.name_identifier} : null
+        })
+
+        const accs = lastFilter.value?.accounts_id?.map(id => {
+            const found = accounts.value?.find(a => a.id === id)
+            return found ? {id: found.id, name: found.name_identifier} : null
+        })
+
+        return { cats, accs}
     })
 
     const itemsRouter = [
@@ -155,6 +185,55 @@
     function getTitleRouter(item: option) {
         navigateTo(item.route)
     }
+
+    function handleClearFilterAdvanced(value: string, filter?: TMovementsByFilter | null, idCategorie?: number, idAccount?: number) {
+        switch (value) {
+            case "period":
+                lastFilter.value!.start_day = null
+                lastFilter.value!.end_day = null
+                isFiltered.value = false
+                break;
+            case "categories":
+                if (!filter) return
+                const categorieId = idCategorie
+                const categoriesRemaining = filter.categorie_id?.filter(id => id !== categorieId) ?? null
+                const payloadCategorie: TMovementsByFilter = {
+                    ...filter,
+                    categorie_id: categoriesRemaining?.length ? categoriesRemaining : null
+                }
+                handleApplyFilter(payloadCategorie)
+                break;
+            case "accounts":
+                if (!filter) return
+                const accountId = idAccount
+                const accountsRemaining = filter.accounts_id?.filter(id => id !== accountId) ?? null
+                const payloadAccounts: TMovementsByFilter = {
+                    ...filter,
+                    accounts_id: accountsRemaining?.length ? accountsRemaining : null
+                }
+                handleApplyFilter(payloadAccounts)
+                break; 
+            case "situation":
+                if (!filter) return
+                const payloadSituation: TMovementsByFilter = {
+                    ...filter,
+                    situation: null
+                }
+                handleApplyFilter(payloadSituation)
+                break; 
+            case "for_type":
+                if (!filter) return
+                const payloadFortype: TMovementsByFilter = {
+                    ...filter,
+                    for_type: null
+                }
+                handleApplyFilter(payloadFortype)
+                break; 
+            default:
+                break;
+        }
+    }
+
 
     function getOptions(moviments: TMovementsSummary): TOptionAction [] {
 
@@ -325,53 +404,9 @@
         </div>
 
          <div class="main-cards">
-            <v-card :loading="isPending">
-                <div class="d-flex align-center ga-2 pl-2 mb-2">
-                    <div class="pa-2 rounded-lg">
-                        <v-avatar 
-                        color="green" 
-                        icon="mdi-arrow-down-thin-circle-outline"
-                        variant="tonal"
-                        size="40"
-                        rounded="lg"
-                        ></v-avatar>
-                    </div>
-                    <span class="font-weight-semibold card-value">{{ formatCurrency(sumary.receitas_pendentes) }}</span>
-                </div>
-                <template #subtitle> <span class="card-label">Receitas pendentes</span> </template>
-
-            </v-card>
-            <v-card :loading="isPending" subtitle="Receitas recebidas">
-                 <div class="d-flex align-center ga-2 pl-2 mb-2">
-                    <div class="pa-2 rounded-lg">
-                        <v-avatar 
-                        color="green" 
-                        icon="mdi-arrow-up-thin-circle-outline"
-                        variant="tonal"
-                        size="40"
-                        rounded="lg"
-                        ></v-avatar>
-                    </div>
-                    <span class="font-weight-semibold card-value">{{ formatCurrency(sumary.receitas_efetivadas) }}</span>
-                </div>
-                <template #subtitle> <span class="card-label">Receitas recebidas</span> </template>
-
-            </v-card>
-            <v-card :loading="isPending" subtitle="Total">
-                 <div class="d-flex align-center ga-2 pl-2 mb-2">
-                    <div class="pa-2 rounded-lg">
-                        <v-avatar 
-                        color='primary' 
-                        icon="mdi-scale-balance"
-                        variant="tonal"
-                        size="40"
-                        rounded="lg"
-                        ></v-avatar>
-                    </div>
-                    <span class="font-weight-semibold card-value"> {{ formatCurrency(sumary.total_geral) }}</span>
-                </div>
-                <template #subtitle> <span class="card-label">Total</span> </template>
-            </v-card>
+            <AppCard subtitle="Receitas pendentes" :loading="isPending" size="40" :value="sumary.receitas_pendentes" color="green" icon="mdi-arrow-down-thin-circle-outline"></AppCard>
+            <AppCard subtitle="Receitas recebidas" :loading="isPending" size="40" :value="sumary.receitas_efetivadas" color="green" icon="mdi-arrow-up-thin-circle-outline"></AppCard>
+            <AppCard subtitle="Total" :loading="isPending" size="40" :value="sumary.total_geral" color="primary" icon="mdi-scale-balance"></AppCard>
         </div>
         
         <div class=" w-100 pa-2 container-table">
@@ -383,8 +418,66 @@
             >
             <template v-slot:text>
 
-            <div style="margin-bottom: 10px;">
-                <DateInput @apply-filter-month="handleGetPeriod" ></DateInput>
+            <v-expand-transition>
+                <div v-show="isFiltered" class=" mb-2 ml-2  ">
+                    <span v-if="isFiltered" class="font-weight-semibold" style="font-size: var(--text-base); font-weight: 600;">Filtros:</span>
+                    <v-chip
+                    v-if="lastFilter?.start_day && lastFilter.end_day"
+                    class="ma-2"
+                    @click:close="handleClearFilterAdvanced('period')"
+                    color="primary"
+                    closable
+                    >
+                    {{ `De ${new Date(lastFilter?.start_day ?? new Date()).toLocaleDateString("pt-br", {timeZone: "UTC"})} à ${new Date(lastFilter?.end_day ?? new Date()).toLocaleDateString("pt-br", {timeZone: "UTC"})}`}}
+                    </v-chip>
+
+                    <v-chip
+                    v-if="lastFilterLabels.cats"
+                    value="categories"
+                    class="ma-2"
+                    closable
+                    @click:close="handleClearFilterAdvanced('categories', lastFilter, categorie?.id)"
+                    :key="categorie?.name"
+                    v-for="categorie in lastFilterLabels.cats"
+                    >
+                    {{ categorie?.name }}
+                    </v-chip>
+
+                    <v-chip
+                    v-if="lastFilterLabels.accs"
+                    class="ma-2"
+                    closable
+                    @click:close="handleClearFilterAdvanced('accounts', lastFilter, account?.id)"
+                    :key="account?.name"
+                    v-for="account in lastFilterLabels.accs"
+                    >
+                    {{ account?.name }}
+                    </v-chip>
+
+                    <v-chip
+                    v-if="lastFilter?.situation"
+                    class="ma-2"
+                    closable
+                    @click:close="handleClearFilterAdvanced('situation',  lastFilter)"
+                    :color="(lastFilter?.situation === 'Pagas' || lastFilter?.situation === 'Recebidas') ? 'success' : 'error'"
+                    >
+                    {{ lastFilter?.situation }}
+                    </v-chip>
+
+                    <v-chip
+                    class="ma-2"
+                    closable
+                    @click:close="handleClearFilterAdvanced('for_type',  lastFilter)"
+                    color="primary"
+                    v-for="type in lastFilter?.for_type"
+                    >
+                    {{ type }}
+                    </v-chip>
+                </div>
+            </v-expand-transition>
+
+            <div v-if="!isFiltered" style="margin-bottom: 12px;">
+                <DateInput  @apply-filter-month="handleGetPeriod"></DateInput>
             </div>
 
             <v-text-field
@@ -451,8 +544,6 @@
             </v-card>
         </div>
     </div>
-
-    
 
 </template>
 
@@ -571,7 +662,6 @@
         padding: 10px;
     }
 
-  
 }
 
 </style>

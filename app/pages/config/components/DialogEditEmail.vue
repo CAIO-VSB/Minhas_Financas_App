@@ -30,7 +30,7 @@
     }
     
     function redirectPageLogin() {
-        authStore.showDialogAlertPassword = false
+        authStore.showDialogAlertEmail = false
         navigateTo("/login-page")
         notifySuccess(
         "Sucesso",
@@ -96,6 +96,18 @@
             </template>
 
             </v-toolbar>
+
+            <div class="ml-4 mr-5">
+                <v-alert
+                type="warning"
+                variant="tonal"
+                density="comfortable"
+                icon="mdi-information-outline"
+                class="mt-3"
+                >
+                    Todas as sessões ativas serão desconectadas.
+                </v-alert>
+            </div>
 
             <v-card-text class="text-display-large pa-6">
                 <v-text-field prepend-inner-icon="mdi-email" readonly v-model="props.email" label="Email atual*" variant="underlined"></v-text-field>
