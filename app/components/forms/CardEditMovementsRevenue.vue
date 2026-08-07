@@ -189,7 +189,7 @@ async function handleEditMovementRevenue() {
 
             <v-date-input prepend-icon="mdi-calendar" :rules="dateRules" autocomplete="off" name="date" label="Data*" variant="underlined" v-model="props.draft.date_transaction"></v-date-input>
 
-            <v-text-field prepend-icon="mdi-pencil" :rules="nameRules" :counter="45" maxlength="45"  autocomplete="name" name="name" label="Descrição*" variant="underlined" v-model="props.draft.description_transaction"></v-text-field>
+            <v-text-field prepend-icon="mdi-pencil" :rules="nameRules" :counter="30" maxlength="30"  autocomplete="name" name="name" label="Descrição*" variant="underlined" v-model="props.draft.description_transaction"></v-text-field>
 
             <v-select
               autocomplete="off"

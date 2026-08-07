@@ -22,6 +22,9 @@
     import type { TMovementsPayload } from '~~/schemas/movements.schema.js'
     import { useHttpCategories } from '~/composables/useHttp/useHttpCategories'
     import { useHttpAccounts } from "~/composables/useHttp/useHttpAccounts"
+    import CardEditRecurrenceExpense from '~/components/forms/CardEditRecurrenceExpense.vue'
+    import useOptions from '~/pages/transactions/composable/useOptions'
+    import CardDeleteMovementRecurrence from '~/components/forms/CardDeleteMovementRecurrence.vue'
 
     type option = {
         title: string,
@@ -52,6 +55,10 @@
     const modalEditMovementesExpenses = ref(false)
 
     const cardDeletTransaction = ref(false)
+
+    const modelEditRecurrenceExpense = ref(false)
+
+    const cardDeletTransactionRecurrence = ref(false)
 
     const isFiltered = ref(false)
 
@@ -197,6 +204,11 @@
 
     function handleClearFilterAdvanced(value: string, filter?: TMovementsByFilter | null, idCategorie?: number, idAccount?: number) {
         switch (value) {
+            case "todos": 
+                lastFilter.value!.start_day = null
+                lastFilter.value!.end_day = null
+                isFiltered.value = false
+                break;  
             case "period":
                 lastFilter.value!.start_day = null
                 lastFilter.value!.end_day = null
@@ -262,6 +274,9 @@
     function handleMutationSuccess() {
         if (isFiltered.value && lastFilter.value) {
             handleApplyFilter(lastFilter.value)
+            reloadNuxtApp({
+                path: "/transactions/revenue"
+            })
         }
     }
 
@@ -271,17 +286,26 @@
     }
 
     function handleOpenModalEditMovementsExpense(movements: TMovementsSummary) {
-
         //Usamos structuredClone + toRaw para evitar mutar o objeto reativo do Vue
         const rawMovements =  structuredClone(toRaw(movements))
-
         editDraft.value = parseMovementToEdit(rawMovements)
-
         modalEditMovementesExpenses.value = true
+    }
+
+    function handleOpenModalEditRecurrenceExpense(movements: TMovementsSummary) {
+        //Usamos structuredClone + toRaw para evitar mutar o objeto reativo do Vue
+        const rawMovements =  structuredClone(toRaw(movements))
+        editDraft.value = parseMovementToEdit(rawMovements)
+        modelEditRecurrenceExpense.value = true
     }
 
 
     function handleOptionClick(option: TOptionAction, data: TMovementsSummary) {
+
+        if (option.value === "edit" && data.type_transaction === "despesa" && (data.type_recurrence === "fixa" || data.type_recurrence === "parcelada")) {
+            handleOpenModalEditRecurrenceExpense(data)
+            return
+        }
 
         if (option.value === "edit" && data.type_transaction === "despesa") {
             handleOpenModalEditMovementsExpense(data)
@@ -294,31 +318,53 @@
         }
 
         const raw = structuredClone(toRaw(data))
+
+        if (!raw.date_transaction) {
+            notifyError(
+                "Data inválida",
+                "Não foi possível concluir a ação porque a data informada é inválida ou está ausente.",
+            )
+            return
+        }
         
-        const dateFormated = dateToDateOnly(raw.date_transaction || new Date())
+        const dateFormated = dateToDateOnly(raw.date_transaction)
 
         const payload = {
             ...raw,
-            value_transaction: raw.value_transaction ?? 0.00,
+            value_transaction: Number(raw.value_transaction) ?? 0.00,
             date_transaction: dateFormated,
         }
 
-        if (option.value === "efetivar" && data.type_transaction === "despesa") {
+        if (option.value === "delete" && (data.type_transaction === "despesa" || data.type_transaction === "receita") && (data.type_recurrence === "fixa" || data.type_recurrence === "parcelada")) {
             confirmDraft.value = payload
-            labelOptions.value.colorButton = "red"
-            labelOptions.value.textButton = "Pagar"
-            labelOptions.value.title = "Deseja efetivar esta despesa?"
-            labelOptions.value.text = "Ao efetivar essa despesa será descontado o valor na Conta."
-            cardPostValueTransaction.value = true
+            cardDeletTransactionRecurrence.value = true
             return
-        } else if (option.value === "delete" && data.type_transaction === "despesa") {
+        }
+
+        if (option.value !== "efetivar" && option.value !== "delete") {
+            return
+        }
+        
+        const config = useOptions[option.value]?.[data.type_transaction]
+        
+        if (config) {
             confirmDraft.value = payload
-            payload.is_deleted = true
-            labelOptions.value.colorButton = "red"
-            labelOptions.value.textButton = "Deletar"
-            labelOptions.value.title = "Deseja deletar esta despesa?"
-            labelOptions.value.text = "Essa ação não poderá ser desfeita. O valor será retornado ao saldo da conta."
-            cardDeletTransaction.value = true
+            labelOptions.value = {
+                colorButton: config.colorButton,
+                textButton: config.textButton,
+                title: config.title,
+                text: config.text
+            }
+
+            switch (config.modal) {
+                case "settle":
+                    cardPostValueTransaction.value = true
+                    break
+                case "deleteMovement":
+                    cardDeletTransaction.value = true
+                    break
+            }
+
             return
         }
 
@@ -331,10 +377,12 @@
 <template>
     <div class="mt-7 container-main">
 
-        <CardAddMovimentsExpenses v-model="modalAddExpenses" />
+        <CardAddMovimentsExpenses @success="handleMutationSuccess" v-model="modalAddExpenses" />
         <CardDeletTransaction @success="handleMutationSuccess" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="confirmDraft" v-model="cardDeletTransaction" />
         <CardSettleTransactionModal @success="handleMutationSuccess" v-model="cardPostValueTransaction" :draft="confirmDraft" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" />
         <CardEdtiMovementsExpenses @success="handleMutationSuccess" :draft="editDraft"  v-model="modalEditMovementesExpenses"/>
+        <CardEditRecurrenceExpense @success="handleMutationSuccess" v-model="modelEditRecurrenceExpense" :draft="editDraft" />
+        <CardDeleteMovementRecurrence :draft="confirmDraft" v-model="cardDeletTransactionRecurrence" />
 
         <FilterDrawer :items="['Pendentes', 'Pagas']" :field-type-active="true"  color-button="red" @apply-filter="handleApplyFilter" @reset-filter="handleClearFilter" v-model="drawer"/>
         
@@ -396,7 +444,7 @@
         <div class="main-cards">
         <AppCard subtitle="Despesas pendentes" :loading="isPending" size="40" :value="sumary.despesas_pendentes" color="red" icon="mdi-arrow-down-thin-circle-outline" ></AppCard>
         <AppCard subtitle="Despesas pagas" :loading="isPending" size="40" :value="sumary.despesas_efetivadas" color="red" icon="mdi-arrow-up-thin-circle-outline"></AppCard>
-        <AppCard subtitle="Balanço mensal" :loading="isPending" size="40" :value="sumary.total_geral" color="primary" icon="mdi-scale-balance" icon-tool-tip="mdi-information-outline" ></AppCard>
+        <AppCard subtitle="Balanço mensal" :loading="isPending" size="40" :value="sumary.total_geral" color="primary" icon="mdi-scale-balance"></AppCard>
         </div>
         
         <div class="w-100 pa-2 container-table">
@@ -503,6 +551,15 @@
                     <v-chip color="red">
                     {{ formatCurrency(item.value_transaction) }}
                     </v-chip>
+                </template>
+
+                <template v-slot:item.description_transaction="{item}">
+                    <span>
+                        {{ item.description_transaction }}
+                        <span v-if="item.total_installments">
+                            {{ `(${item.installment_current} / ${item.total_installments})` }}
+                        </span>
+                    </span>
                 </template>
 
                 <template v-slot:item.date_transaction="{item}">

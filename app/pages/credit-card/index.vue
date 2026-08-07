@@ -8,7 +8,6 @@
   import alertImg from "~/assets/img-credit-card-alert.png"
   import CardAddCartao from "~/components/forms/CardAddCreditCard.vue"
   import { useHttpCreditsCards } from "~/composables/useHttp/useHttpCreditCard"
-  import { ptBR } from 'date-fns/locale';
   import BaseFab from "~/components/ui/BaseFab.vue";
   import type { TCreditCard } from "~~/types/credit_card/TCredit-card"
   import CardEditCard from "~/components/forms/CardEditCreditCard.vue";
@@ -16,6 +15,8 @@
   import type { TOptionAction } from "~~/types/option_action/TOptionAction";
   import CardInfoCreditCard from "~/pages/credit-card/components/CardInfoCreditCard.vue";
   import CardMovementsCreditCard from "~/pages/credit-card/components/CardMovementsCreditCard.vue";
+  import DateInput from '~/components/ui/DateInput.vue'
+  import CardAddMovimentsCreditCard from "~/components/forms/CardAddMovimentsCreditCard.vue";
 
   const { getCreditCardOnlyActive, patchCreditCardById, getCreditCardOnlyDisable } = useHttpCreditsCards()
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
@@ -32,22 +33,15 @@
   })
 
   const showMenu = ref(false)
+  const value = ref(87)
   const menu = ref(false)
   const modalAddCard = ref(false)
   const modalEditCard = ref(false)
+  const modalAddMovementCreditCard = ref(false)
   const editDraft = ref<TCreditCard | null>(null)
   const selectedCardData = ref<TCreditCard | null>(null)
   const selectedCard = ref("")
   const selectdLogo = ref("")
-  const period = ref({
-    month: new Date().getMonth(),
-    year: new Date().getFullYear(),
-  })
-
-  const monthName = computed(() => {
-    const nameMonth = new Date(period.value.year, period.value.month, 1)
-    return nameMonth.toLocaleString('pt-BR', { month: 'long' }).charAt(0).toUpperCase() + nameMonth.toLocaleString('pt-BR', {month: 'long'}).slice(1).toLowerCase()
-  })
 
   const  { mutate } = useMutation({
 
@@ -59,7 +53,7 @@
   },
 
   onError: (error) => {
-    handleErrorApplication(error)
+    handleErrorApplication(error.data)
   },
 
   })
@@ -75,6 +69,7 @@
       selectedCard.value = current?.name_identifier ?? ""
       selectdLogo.value = current?.url_logo ?? ""
       selectedCardData.value = current ?? null
+      editDraft.value = current ?? null
     }
   }, {immediate: true})
 
@@ -86,7 +81,7 @@
         icon: creditCard.active ? "mdi-minus-circle-off" : "mdi-check-circle",
         value: creditCard.active ? false : true
       },
-      { title: 'Adicionar novo Cartão', icon: 'mdi-plus-circle', value: "new" }
+      { title: 'Adicionar novo cartão', icon: 'mdi-plus-circle', value: "new" }
     ]
 }
 
@@ -95,6 +90,7 @@
     selectdLogo.value = card.url_logo ?? ""
     selectedCardData.value = card 
     menu.value = false
+    editDraft.value = structuredClone(toRaw(card))
   }
 
   function handleOpenModalEditCardCredit(creditCard: TCreditCard) {
@@ -129,8 +125,6 @@
    
   }
 
-
-
 </script>
 
 <template>
@@ -150,114 +144,113 @@
     <div class="container-side-left">
       <div>
         <v-card :loading="isPending">
-          <div class="flex align-baseline w-full !p-1">
-            <div class=" flex flex-col gap-5 text-center w-full mt-5 mb-3">
-              <v-menu
-              v-model="menu"
-              :close-on-content-click="false"
-              location="center"
-              >
-                <template  v-slot:activator="{ props }">
-                <v-list-item
-                style="border-bottom: 1px solid black; padding: 3px; "
-                color="black"
-                v-bind="props"
-                :prepend-avatar="selectdLogo"
-                >
-                  {{ selectedCard }}
-                </v-list-item>
-                </template>
-                
-                <v-card min-width="350"
-                  title="Cartões ativos"
-                  subtitle="Lista de cartões ativos"
-                >
-                  <v-divider></v-divider>
-                  <v-list>
-                    <v-list-item @click="handleSelectedCard(card)" v-for="card in allCreditCard" rounded="xl" :prepend-avatar="card.url_logo" :value="card" >
-                      <v-list-item-title>{{ card.name_identifier }}</v-list-item-title>
-                    </v-list-item>
-                  </v-list>
-                  <v-divider></v-divider>
-                  <v-list>
-                    <v-list-item
-                      prepend-icon="mdi-plus"
-                      title="Adicionar novo cartão"
-                      value="new"
-                      @click="handleAddCarton"
-                    >
-                    </v-list-item>
-                  </v-list>
-                  <v-divider></v-divider>
-                  <v-card v-if="allDeactivatedCrediCard?.length !== 0" subtitle="Lista de cartões desativados">
-                     <v-divider></v-divider>
-                    <v-list>
-                    <v-list-item @click="handleSelectedCard(card)" v-for="card in allDeactivatedCrediCard" rounded="xl" :prepend-avatar="card.url_logo" :value="card" >
-                      <v-list-item-title :class="{'text-disabled': !card.active}">{{ card.name_identifier }}</v-list-item-title>
-                    </v-list-item>
-                  </v-list>
-                  </v-card>
-                </v-card>
-              </v-menu>
+          <div class="flex align-baseline pa-4">
+            
+            <div class="flex flex-col gap-4 text-center w-full mt-5 mb-3">
 
-              <div>
-                <span>Período da fatura: {{ monthName }}</span>
-                <VueDatePicker :teleport="true" :locale="ptBR" v-model="period" month-picker :formats="{ month: 'LLLL' }" />
+              <div class="d-flex align-center ga-2">
+                <v-menu
+                v-model="menu"
+                :close-on-content-click="false"
+                location="center"
+                style=""
+                >
+                  <template  v-slot:activator="{ props }">
+                  <v-list-item
+                  style="border-bottom: 2px ridge #1867c0; padding: 3px; flex: 1;"
+                  color="black"
+                  v-bind="props"
+                  :prepend-avatar="selectdLogo"
+                  >
+                    {{ selectedCard }}
+                  </v-list-item>
+                  </template>
+                  
+                  <v-card min-width="380"
+                    title="Cartões ativos"
+                    subtitle="Lista de cartões ativos"
+                  >
+                    <v-divider></v-divider>
+                    <v-list>
+                      <v-list-item @click="handleSelectedCard(card)" v-for="card in allCreditCard" rounded="xl" :prepend-avatar="card.url_logo" :value="card" >
+                        <v-list-item-title>{{ card.name_identifier }}</v-list-item-title>
+                      </v-list-item>
+                    </v-list>
+                    <v-divider></v-divider>
+                    <v-list>
+                      <v-list-item
+                        prepend-icon="mdi-plus"
+                        title="Adicionar novo cartão"
+                        value="new"
+                        @click="handleAddCarton"
+                      >
+                      </v-list-item>
+                    </v-list>
+                    <v-divider></v-divider>
+                    <v-card v-if="allDeactivatedCrediCard?.length !== 0" subtitle="Lista de cartões desativados">
+                       <v-divider></v-divider>
+                      <v-list>
+                      <v-list-item @click="handleSelectedCard(card)" v-for="card in allDeactivatedCrediCard" rounded="xl" :prepend-avatar="card.url_logo" :value="card" >
+                        <v-list-item-title :class="{'text-disabled': !card.active}">{{ card.name_identifier }}</v-list-item-title>
+                      </v-list-item>
+                    </v-list>
+                    </v-card>
+                  </v-card>
+                </v-menu>
+
+                <v-menu v-if="selectedCardData">
+                  <template v-slot:activator="{ props }">
+                    <v-btn
+                      icon="mdi-dots-vertical"
+                      size="10"
+                      variant="text"
+                      v-bind="props"
+                      v-tooltip="'Opções'"
+                    >
+                    </v-btn>
+                  </template>
+
+                  <v-list >
+                    <v-list-item
+                      v-for="item in getOptions(selectedCardData)"
+                      :key="item.title!"
+                      :value="item.title"
+                      :prepend-icon="item.icon!"
+                      @click="handleOptionClick(item, selectedCardData)"
+                    >
+                      <v-list-item-title >{{ item.title }}</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
               </div>
 
-            </div>
-        
-          <div class="text-center">
-            <v-menu v-if="selectedCardData">
-              <template v-slot:activator="{ props }">
-                <v-btn
-                  icon="mdi-dots-vertical"
-                  size="30"
-                  variant="text"
-                  v-bind="props"
-                >
-                </v-btn>
-              </template>
+              <div class="mt-4 mb-4">
+                <div class="d-flex ml-1 align-center ga-2 justify-space-between">
+                  <span class="text-textSecundary">Limite Utilizado</span>
+                  <small class="mr-2" style="font-weight: 600; font-size: var(--text-sm);">{{ value.toFixed() }}%</small>
+                </div>
+                <v-progress-linear height="15" rounded :color="(value < 85 ? 'primary' : 'red')" class="mt-2" :model-value="value">
+                </v-progress-linear>
+                <div class="d-flex justify-space-between mt-2">
+                  <div class="ml-1 text-textSecundary">R$ 13</div>
+                  <div class="mr-1 text-textSecundary">R$ 5.000</div>
+                </div>
+              </div>
+              <v-divider></v-divider>
+              <div style="margin-bottom: 12px; margin-top: 12px;">
+                <DateInput ></DateInput>
+              </div>
 
-              <v-list >
-                <v-list-item
-                  v-for="item in getOptions(selectedCardData)"
-                  :key="item.title!"
-                  :value="item.title"
-                  :prepend-icon="item.icon!"
-                  @click="handleOptionClick(item, selectedCardData)"
-                >
-                  <v-list-item-title >{{ item.title }}</v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-menu>
-            <v-menu
-            v-model="showMenu"
-            location="bottom end"
-            scroll-strategy="close"
-            >
-              <v-list
-                class="py-0"
-                density="compact"
-                item-value="code"
-                item-props
-                slim
-              >
-                <template v-slot:prepend>
-                  <v-icon class="mr-n2" size="small"></v-icon>
-                </template>
-              </v-list>
-            </v-menu>
           </div>
         </div>
-        </v-card>
+      </v-card>
         
       </div>
 
-      <div>
-        <CardInfoCreditCard />
+      <div class="mt-5">
+        <CardInfoCreditCard :credit-card="editDraft" />
       </div>
-    
+  
     </div>
 
     <div >
@@ -272,6 +265,7 @@
           color="blue"
           icon="mdi-plus"
           size="60"
+          @click="modalAddMovementCreditCard = true"
           />
         </template>
       </v-tooltip>
@@ -285,6 +279,8 @@
       <CardEditCard
       :draft="editDraft"
       v-model="modalEditCard" />
+
+      <CardAddMovimentsCreditCard v-model="modalAddMovementCreditCard" />
       
     </div>
     
@@ -298,7 +294,7 @@
   margin-top: 20px;
   display: grid;
   grid-template-columns: minmax(350px, 0.65fr) minmax(0, 1.5fr);
-  gap: 5px;
+  gap: 10px;
 }
 
 .fab-wrapper {
@@ -312,8 +308,7 @@
   text-decoration: line-through;
 }
 
-
-@media (max-width: 950px) {
+@media (max-width: 1650px) {
   .main-container {
     display: grid;
     grid-template-columns: 1fr;

@@ -51,11 +51,6 @@
               <template #title>
                 <span class="size-item-title">{{ item.title }}</span>
               </template>
-
-              <v-tooltip
-              activator="parent"
-              location="start"
-              >{{ item.title }}</v-tooltip>
             </v-list-item>
 
             <v-list-item

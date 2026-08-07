@@ -17,7 +17,8 @@
     const newPassword = ref("")
     const confirmPassword = ref("")
     const currentPassword = ref("")
-    const showPassword = ref(false);
+    const showPassword = ref(false)
+    const form = ref()
 
     const confirmPasswordRules = ref([
         (val: string) => !!val || "Campo confirmar senha é obrigatório",
@@ -48,6 +49,9 @@
     function closeModalSubmitChangePassword() {
         modelValue.value = false
         emits("closeModal")
+        currentPassword.value = ""
+        newPassword.value = ""
+        confirmPassword.value = ""
     }
 
     function redirectPageLogin() {
@@ -61,21 +65,22 @@
     }
     
     async function handleUpatePassword() {
-        if (!newPassword.value) {
-            notifyInfo("Atenção", "Campo nova senha é obrigatório", 6000, true)
-            return
-        }
 
         loading.value = true
 
         try {
-            await authStore.alterPassword(newPassword.value, currentPassword.value)
+
+            const formValid = await form.value.validate()
+
+            if (formValid) {
+                await authStore.alterPassword(newPassword.value, currentPassword.value)
+            }
+
         } catch (e) {
             console.log("Erro ao enviar solicitação" + e)
             notifyInfo("Erro", "Algo deu errado. Tente novamente em instantes.", 7000)
         } finally {
             loading.value = false
-            modelValue.value = false
         }
 
     }
@@ -114,62 +119,64 @@
             </div>
 
             <v-card-text class="text-display-large pa-6">
-                <v-text-field  
-                :type="showPassword ? 'text' : 'password'"
-                :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-                @click:append-inner="showPassword = !showPassword"
-                :rules="passwordRules" autocomplete="off" v-model="currentPassword" label="Senha atual*" variant="underlined">
-                    <template #prepend-inner>
-                        <v-icon icon="mdi-lock-question"></v-icon>
-                    </template>
-                </v-text-field>
+                <v-form ref="form">
+                    <v-text-field  
+                    :type="showPassword ? 'text' : 'password'"
+                    :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+                    @click:append-inner="showPassword = !showPassword"
+                    :rules="passwordRules" autocomplete="off" v-model="currentPassword" label="Senha atual*" variant="underlined">
+                        <template #prepend-inner>
+                            <v-icon icon="mdi-lock-question"></v-icon>
+                        </template>
+                    </v-text-field>
 
-                <v-text-field
-                :type="showPassword ? 'text' : 'password'"
-                :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-                @click:append-inner="showPassword = !showPassword"
-                :rules="passwordRules" v-model="newPassword" label="Nova senha*" variant="underlined">
-                    <template #prepend-inner>
-                        <v-icon icon="mdi-lock-check"></v-icon>
-                    </template>
-                </v-text-field>
+                    <v-text-field
+                    :type="showPassword ? 'text' : 'password'"
+                    :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+                    @click:append-inner="showPassword = !showPassword"
+                    :rules="passwordRules" v-model="newPassword" label="Nova senha*" variant="underlined">
+                        <template #prepend-inner>
+                            <v-icon icon="mdi-lock-check"></v-icon>
+                        </template>
+                    </v-text-field>
 
-                <v-text-field 
-                :type="showPassword ? 'text' : 'password'"
-                :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-                @click:append-inner="showPassword = !showPassword"
-                :rules="confirmPasswordRules" v-model="confirmPassword" autocomplete="off" label="Confirmar nova senha*" variant="underlined">
-                    <template  #prepend-inner>
-                        <v-icon icon="mdi-lock"></v-icon>
-                    </template>
-                </v-text-field>
-                    <div class="validate-password">
-                        <span class="font-weight-bold mb-2">Sua senha deve conter no mínimo:</span>
-                        <v-expand-transition>
-                        <div class="ml-1 bg-gray">          
-                            <div>
-                            <v-icon :color="regexValidateMinimoSeis ? 'green':'red'" :icon="regexValidateMinimoSeis ? 'mdi-check-circle-outline': 'mdi-close-circle-outline'" size="small"></v-icon>
-                            6 caracteres
-                            </div>
-                            <div>
-                            <v-icon :color="regexValidateMaiuscula ? 'green':'red'" :icon="regexValidateMaiuscula ? 'mdi-check-circle-outline': 'mdi-close-circle-outline'"  size="small"></v-icon>
-                            Uma letra maiúscula
-                            </div>
-                            <div>
-                            <v-icon :color="regexValidateMinuscula ? 'green':'red'" :icon="regexValidateMinuscula ? 'mdi-check-circle-outline': 'mdi-close-circle-outline'" size="small"></v-icon>
-                            Uma letra minúscula
-                            </div>
-                            <div>
-                            <v-icon :color="regexValidateNumber ? 'green':'red'" :icon="regexValidateNumber ? 'mdi-check-circle-outline': 'mdi-close-circle-outline'" size="small"></v-icon>
-                            Um número
-                            </div>
-                            <div>
-                            <v-icon :color="regexValidateEspecial ? 'green':'red'" :icon="regexValidateEspecial ? 'mdi-check-circle-outline': 'mdi-close-circle-outline'" size="small"></v-icon>
-                            Um caractere especial
-                            </div>
-                        </div>
-                        </v-expand-transition>
-                </div>
+                    <v-text-field 
+                    :type="showPassword ? 'text' : 'password'"
+                    :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+                    @click:append-inner="showPassword = !showPassword"
+                    :rules="confirmPasswordRules" v-model="confirmPassword" autocomplete="off" label="Confirmar nova senha*" variant="underlined">
+                        <template  #prepend-inner>
+                            <v-icon icon="mdi-lock"></v-icon>
+                        </template>
+                    </v-text-field>
+                        <div class="validate-password">
+                            <span class="font-weight-bold mb-2">Sua senha deve conter no mínimo:</span>
+                            <v-expand-transition>
+                                <div class="ml-1 bg-gray">          
+                                    <div>
+                                    <v-icon :color="regexValidateMinimoSeis ? 'green':'red'" :icon="regexValidateMinimoSeis ? 'mdi-check-circle-outline': 'mdi-close-circle-outline'" size="small"></v-icon>
+                                    6 caracteres
+                                    </div>
+                                    <div>
+                                    <v-icon :color="regexValidateMaiuscula ? 'green':'red'" :icon="regexValidateMaiuscula ? 'mdi-check-circle-outline': 'mdi-close-circle-outline'"  size="small"></v-icon>
+                                    Uma letra maiúscula
+                                    </div>
+                                    <div>
+                                    <v-icon :color="regexValidateMinuscula ? 'green':'red'" :icon="regexValidateMinuscula ? 'mdi-check-circle-outline': 'mdi-close-circle-outline'" size="small"></v-icon>
+                                    Uma letra minúscula
+                                    </div>
+                                    <div>
+                                    <v-icon :color="regexValidateNumber ? 'green':'red'" :icon="regexValidateNumber ? 'mdi-check-circle-outline': 'mdi-close-circle-outline'" size="small"></v-icon>
+                                    Um número
+                                    </div>
+                                    <div>
+                                    <v-icon :color="regexValidateEspecial ? 'green':'red'" :icon="regexValidateEspecial ? 'mdi-check-circle-outline': 'mdi-close-circle-outline'" size="small"></v-icon>
+                                    Um caractere especial
+                                    </div>
+                                </div>
+                            </v-expand-transition>
+                    </div>
+                </v-form>
             </v-card-text>
 
             <v-divider></v-divider>

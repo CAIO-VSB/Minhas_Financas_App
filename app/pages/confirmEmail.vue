@@ -1,37 +1,22 @@
 <script setup lang="ts">
-
-    definePageMeta({
-        title: "Confirme seu novo e-mail"
-    })
-
-    import imgConfirmEmail from "~/assets/confirmEmail.svg"
-
-    function onClickAction() {
-        navigateTo({ path: "/login-page" })
-    }
-
+    definePageMeta({ title: "Confirmação de e-mail" })
 </script>
 
 <template>
     <div class="container">
         <v-empty-state
-        class="text-center my-12 empty-404"
-        headline="Falta só mais um passo"
-        title="Confirme seu novo e-mail"
-        :text="'Enviamos um link de confirmação para o seu novo e-mail. Acesse essa caixa de entrada e clique no link para finalizar a alteração.'"
-        size="310px"
-        icon="mdi-email-check-outline"
-        :image="imgConfirmEmail"
+        headline="Confirmação recebida"
+        title="Link confirmado com sucesso"
+        text="Se esta era a última etapa pendente, seu e-mail já foi atualizado e você pode fazer login normalmente. Caso ainda tenha recebido outro e-mail de confirmação, é só clicar nele também para concluir a alteração."
+        size="420px"
+        color="success"
+        icon="mdi-email-check"
+        class="mt-3 pa-2"
     >
-        <v-btn
-            color="primary"
-            class="mt-6"
-            rounded
-            @click="onClickAction"
-        >
-            Voltar para o login
+        <v-btn color="primary" class="mt-6" rounded @click="navigateTo('/login-page')">
+            Ir para o login
         </v-btn>
-        </v-empty-state>
+    </v-empty-state>
     </div>
 
 </template>
@@ -40,6 +25,8 @@
 
 .container {
     overflow: auto;
+    display: flex;
+    justify-content: center;
 }
 
 ::v-deep(.v-empty-state__text) {

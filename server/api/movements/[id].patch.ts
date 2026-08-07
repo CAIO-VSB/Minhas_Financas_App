@@ -18,7 +18,6 @@ export default defineEventHandler( async (event) => {
     const result = await readValidatedBody(event, body => schemaMovements.safeParse(body))
 
     if (!result.success) {
-        console.log("Erro de validação:", result.error.issues)
         throw createError({
             status: 422,
             statusMessage: "Unprocessable Entity",
@@ -28,10 +27,10 @@ export default defineEventHandler( async (event) => {
 
     const id = Number(getRouterParam(event, "id"))
 
-    if (id === null) {
+    if (!id || Number.isNaN(id)) {
         throw createError({
             status: 404,
-            statusMessage: "Transferência não encontrada"
+            statusMessage: "Movimentação não encontrada"
         })
     }
 

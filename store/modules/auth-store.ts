@@ -128,7 +128,7 @@ export const useAuthStore = defineStore('auth', () => {
         try {
             await $authClient.changeEmail({
             newEmail: newEmail,
-            callbackURL: "/register-page"
+            callbackURL: "/confirmEmail"
         }, {
             onSuccess() {
 

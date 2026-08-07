@@ -1,16 +1,18 @@
 import type { TRecurrence } from "~~/types/recurrence/TRecurrence"
-import { schemaRecurrence } from "~~/schemas/recurrence.schema"
-import type z from "zod"
-
-type TRecurrencePayload = z.infer<typeof schemaRecurrence>
+import type { TRecurrencePayload } from "~~/schemas/recurrence.schema"
 
 export function useHttpRecurrence() {
 
-    const postRecurrence = async (data: TRecurrencePayload) => {
-        return $fetch<TRecurrence>("/api/recurrence", {method: "POST", body: data})
+    const postRecurrenceMovements = async (data: TRecurrencePayload) => {
+        return $fetch<TRecurrence>("/api/recurrence/movements", {method: "POST", body: data})
+    }
+
+    const postRecurrenceCreditCard = async (data: TRecurrencePayload) => {
+        return $fetch<TRecurrence>("/api/recurrence/credit-card", {method: "POST", body: data})
     }
 
     return {
-        postRecurrence,
+        postRecurrenceMovements,
+        postRecurrenceCreditCard
     }
 }

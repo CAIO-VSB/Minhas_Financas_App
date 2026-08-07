@@ -147,8 +147,8 @@
                 autocomplete="name"
                 v-model="accountForm.name_identifier"
                 :rules="nameRules"
-                maxlength="45"
-                counter="45"
+                maxlength="30"
+                counter="30"
                 prepend-inner-icon="mdi-wallet"
               >
               </v-text-field>

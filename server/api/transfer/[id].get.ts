@@ -16,10 +16,10 @@ export default defineEventHandler( async (event) => {
 
     const id = Number(getRouterParam(event, "id"))
 
-    if (id === null) {
+    if (!id || Number.isNaN(id)) {
         throw createError({
             status: 404,
-            statusMessage: "Transferência não encontrada"
+            statusMessage: "Movimentação não encontrada"
         })
     }
         

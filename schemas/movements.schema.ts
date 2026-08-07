@@ -12,6 +12,9 @@ export const schemaMovements = z.object({
     url_recibo: z.string().nullish(),
     status_transaction: z.string("Status ausente").min(1).nullish(),
     is_deleted: z.boolean().default(false).optional().nullish(),
+    installment_current: z.number().nullish(),
+    recurrence_id: z.number().nullish(),
+    type_recurrence: z.string().nullish()
 })
 
 export type TMovementsPayload = z.infer<typeof schemaMovements>

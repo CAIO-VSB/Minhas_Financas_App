@@ -219,7 +219,7 @@
 
   })
 
-  async function handleAddMovimentRevenue() {
+  async function submitMovement(options: {closeAfterSave: boolean}) {
     if (!movementsForm.value.date_transaction) {
       notifyError(
         "Data inválida",
@@ -232,71 +232,42 @@
 
     try {
       const formValid = await form.value.validate()
+
       if (formValid) {
+
         const movementsPayload = {
           ...movementsForm.value,
           date_transaction: dateFormated,
         }
+
         const recurrencePayload = {
           ...recorrenceForm.value,
           day_maturity: movementsForm.value.date_transaction
         }
 
         const resultSchema = validateSchemaMovements(movementsPayload)
+        if (!resultSchema.success) return
 
-        if (resultSchema.success) {
-          if (showInputFixa.value || showInputParcelado.value) {
-            await recurrenceStore.movementsFormated(movementsForm.value, recurrencePayload)
-            invalidate(QUERY_KEYS.movements.all)
-            notifySuccess("Sucesso", "Receita lançada com sucesso", 6000)
-            resetForm()
-            modelValue.value = false
-            emit("success")
-          } else {
-            mutateMovements(resultSchema.data)
-            modelValue.value = false
-          }
+        if (showInputFixa.value || showInputParcelado.value) {
+          await recurrenceStore.movementsFormated(movementsForm.value, recurrencePayload)
+          invalidate(QUERY_KEYS.movements.all)
+          invalidate(QUERY_KEYS.movements.only_revenues)
+          notifySuccess("Sucesso", "Receita lançada com sucesso", 6000)
+          emit("success")
+        } else {
+          mutateMovements(resultSchema.data)
+        } 
+
+        resetForm()
+        if (options.closeAfterSave) {
+          modelValue.value = false
         }
-          
+
       }
     } catch (err) {
       notifyInfo("Erro", "Algo deu errado. Tente novamente em instantes.", 7000)
     } 
   }
-
-async function handleAddMovimentAndNotClean() {
-    if (!movementsForm.value.date_transaction) return
-
-    const dateFormated = dateToDateOnly(movementsForm.value.date_transaction)
-
-    try {
-      const formValid = await form.value.validate()
-
-      if (formValid) {
-        const movementsPayload = {
-        ...movementsForm.value,
-        date_transaction: dateFormated
-      }
-
-      const resultSchema = validateSchemaMovements(movementsPayload)
-
-      if (resultSchema.success) {
-          if (showInputFixa.value || showInputParcelado.value) {
-            await recurrenceStore.movementsFormated(movementsForm.value, recorrenceForm.value)
-            invalidate(QUERY_KEYS.movements.all)
-            notifySuccess("Sucesso", "Receita lançada com sucesso", 6000)
-            emit("success")
-            resetForm()
-          } else {
-            mutateMovements(resultSchema.data)
-            resetForm()
-          }
-        }
-      }
-  } catch (err) {
-      notifyInfo("Erro", "Algo deu errado. Tente novamente em instantes.", 7000)
-  }
-}
 
 </script>
 
@@ -560,7 +531,7 @@ async function handleAddMovimentAndNotClean() {
               text="Salvar e criar nova"
               variant="outlined"
               :loading="isPendingMovements"
-              @click="handleAddMovimentAndNotClean"
+              @click="submitMovement({closeAfterSave: false})"
             ></v-btn>
             <v-btn
               class="text-none"
@@ -569,7 +540,7 @@ async function handleAddMovimentAndNotClean() {
               text="Salvar"
               variant="flat"
               :loading="isPendingMovements"
-              @click="handleAddMovimentRevenue"
+              @click="submitMovement({closeAfterSave: true})"
             ></v-btn>
           </v-card-actions>
         </v-card>

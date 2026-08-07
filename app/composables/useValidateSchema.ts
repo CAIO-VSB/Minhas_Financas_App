@@ -11,6 +11,7 @@ import type { TCategorie } from "~~/types/categorie/TCategorie"
 import type { TCreditCard } from "~~/types/credit_card/TCredit-card"
 import type { TRecoveryForm, TLoginForm, TResetForm } from "~~/types/user/Tuser.types"
 import type { TTransfer } from "~~/types/transfer/TTransfer"
+import { schemaMovementCreditCard, type TMovementCreditCardPayload } from "~~/schemas/movementCreditCard.schema"
 
 //Tipo para validar o retorno de cada função
 type ValidateResult<T> = 
@@ -119,6 +120,18 @@ export function useValidateSchemas() {
         return {success: true, data: result.data}
     }
 
+    const validateSchemaMovementsCreditCard = (data: unknown):ValidateResult<TMovementCreditCardPayload> => {
+        
+        const result = schemaMovementCreditCard.safeParse(data)
+
+        if (!result.success) {
+            console.log("Erro ao validar o formato de movimentaçãos do cartao de credito", result.error)
+            return {success: false}
+        }
+
+        return {success: true, data: result.data}
+    }
+
     const validateSchemaTransfer = (data: unknown):ValidateResult<TTransferPayload> => {
         
         const result = schemaTransfer.safeParse(data)
@@ -153,6 +166,7 @@ export function useValidateSchemas() {
         validateSchemaSignUp,
         validateShemaCrediCard,
         validateSchemaMovements,
+        validateSchemaMovementsCreditCard,
         validateSchemaTransfer,
         validateSchemaRecurrence
     }

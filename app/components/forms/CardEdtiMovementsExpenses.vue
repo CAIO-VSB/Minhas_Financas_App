@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 
-
     import CurrencyInput from "~/components/ui/CurrencyInput.vue"
 
     import { useHttpCategories } from '~/composables/useHttp/useHttpCategories'
@@ -15,7 +14,7 @@
     import CardAddAccount from "~/components/forms/CardAddAccount.vue"
 
     import type { TMovements } from "~~/types/movements/TMovements"
-import type { TMovementsPayload } from "~~/schemas/movements.schema"
+    import type { TMovementsPayload } from "~~/schemas/movements.schema"
 
     const { notifyError, notifyInfo, notifySuccess } = useNotify()
     const { getCategoriesOnlyActive } = useHttpCategories()
@@ -112,7 +111,6 @@ import type { TMovementsPayload } from "~~/schemas/movements.schema"
       modalAddAccount.value = true
     }
 
-
     const  { mutate, isPending  } = useMutation({
 
     mutationFn: (payload: TMovementsPayload) => patchMovementsById(payload.id!, payload),
@@ -133,7 +131,7 @@ import type { TMovementsPayload } from "~~/schemas/movements.schema"
 
     })
 
-    async function handleEditMovimentExpenses() {
+    async function submitEditMovement() {
 
     try {
 
@@ -186,16 +184,95 @@ import type { TMovementsPayload } from "~~/schemas/movements.schema"
     v-if="props.draft"
     >
       <v-dialog v-model="modelValue" max-width="600">
-        <v-card prepend-icon="mdi-bank-plus" title="Editar despesa">
+        <v-card prepend-icon="mdi-bank-plus" title="Editar Despesa">
           <v-divider></v-divider>
           <v-card-text>
+            <v-row dense>
 
-            <CurrencyInput prepend-icon="mdi-cash"  input-color="#C62828" base-color="#C62828" color="#C62828" :rules="currencyRules"  autocomplete="off" label="Valor*" v-model="props.draft.value_transaction" />
+            <v-col
+              dense cols="12" md="6" sm="12"
+              >
+            <CurrencyInput prepend-inner-icon="mdi-cash"  input-color="#C62828" base-color="#C62828" color="#C62828" :rules="currencyRules"  autocomplete="off" label="Valor*" v-model="props.draft.value_transaction" />
+            </v-col>
 
-            <v-date-input prepend-icon="mdi-calendar" :rules="dateRules" autocomplete="off" name="date" label="Data*" variant="underlined" v-model="props.draft.date_transaction"></v-date-input>
+            <v-col
+              dense cols="12" md="6" sm="12"
+              >
+            <v-date-input prepend-inner-icon="mdi-calendar" prepend-icon="" :rules="dateRules" autocomplete="off" name="date" label="Data*" variant="underlined" v-model="props.draft.date_transaction"></v-date-input>
+            </v-col>
 
-            <v-text-field prepend-icon="mdi-pencil" :rules="nameRules" :counter="45" maxlength="45"  autocomplete="name" name="name" label="Descrição*" variant="underlined" v-model="props.draft.description_transaction"></v-text-field>
+            <v-col
+            dense cols="12" md="6" sm="12"
+            >
+            <v-text-field prepend-inner-icon="mdi-pencil" :rules="nameRules" :counter="45" maxlength="45"  autocomplete="name" name="name" label="Descrição*" variant="underlined" v-model="props.draft.description_transaction"></v-text-field>
+            </v-col>
 
+            <v-col
+            dense cols="12" md="6" sm="12"
+            >
+              <v-select
+                v-model="modelAccounts"
+                v-model:menu="menuAccounts"
+                :items="filterAccounts"
+                :rules="selectRules"
+                item-title="name_identifier"
+                item-value="id"
+                variant="underlined"
+                label="Conta*"
+                hint="O valor será debitado desta conta"
+                persistent-hint
+                autocomplete="off"
+                prepend-inner-icon="mdi-bank"
+                > 
+                
+                <template #append-inner>
+                  <v-tooltip
+                  activator="parent"
+                  location="top"
+                  >Nova conta</v-tooltip>
+                  <v-icon @click.stop="handleOpenModalAddAccount"  class="button-hover" icon="mdi-plus-box"></v-icon>
+                </template>
+
+                <template v-slot:selection="{item}">
+                  <v-avatar style="width: 25px; height: 24px; margin-right: 12px;"> 
+                    <v-img  :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
+                  </v-avatar>
+                  <span >{{ item.raw.name_identifier }}</span>
+                </template>
+
+                <template v-slot:item="{props, item}">
+                  <v-list-item  v-bind="props">
+                    <template v-slot:prepend>
+                      <v-avatar>
+                        <v-img :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
+                      </v-avatar>
+                    </template>
+                  </v-list-item>
+                </template>
+
+                <template v-slot:prepend-item>
+                  <div class="pa-2 border-b">
+                    <v-text-field
+                      v-model="searchAccounts"
+                      :error="!!searchAccounts && !filterAccounts?.length"
+                      density="compact"
+                      placeholder="Buscar..."
+                      prepend-inner-icon="mdi-magnify"
+                      variant="outlined"
+                      @click.stop
+                      @keydown.stop
+                      @mousedown.stop
+                      hide-details="auto"
+                    >                 
+                  </v-text-field>
+                  </div>
+                </template>
+              </v-select>
+            </v-col>
+
+            <v-col
+            dense cols="12" md="12" sm="12"
+            >
             <v-select
               autocomplete="off"
               :loading="isPending"
@@ -208,7 +285,7 @@ import type { TMovementsPayload } from "~~/schemas/movements.schema"
               label="Categoria*"
               persistent-hint
               :rules="selectRules"
-              prepend-icon="mdi-shape"
+              prepend-inner-icon="mdi-shape"
               >
                 <template #append-inner>
                   <v-tooltip
@@ -252,67 +329,17 @@ import type { TMovementsPayload } from "~~/schemas/movements.schema"
                   </div>
                 </template>
               </v-select>
+            </v-col>
 
-              <v-select
-                  v-model="modelAccounts"
-                  v-model:menu="menuAccounts"
-                  :items="filterAccounts"
-                  :rules="selectRules"
-                  item-title="name_identifier"
-                  item-value="id"
-                  variant="underlined"
-                  label="Conta*"
-                  hint="O valor será debitado desta conta"
-                  persistent-hint
-                  autocomplete="off"
-                  prepend-icon="mdi-bank"
-                >
-                  <template #append-inner>
-                    <v-tooltip
-                    activator="parent"
-                    location="top"
-                    >Nova conta</v-tooltip>
-                    <v-icon @click.stop="handleOpenModalAddAccount"  class="button-hover" icon="mdi-plus-box"></v-icon>
-                  </template>
+            <v-col
+            dense cols="12" md="12" sm="12"
+            >
+              <v-text-field prepend-inner-icon="mdi-note-text" v-model="props.draft.observation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="underlined"></v-text-field >
+            </v-col>
 
-                  <template v-slot:selection="{item}">
-                    <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
-                      <v-img  :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
-                    </v-avatar>
-                    <span >{{ item.raw.name_identifier }}</span>
-                  </template>
-
-                  <template v-slot:item="{props, item}">
-                    <v-list-item  v-bind="props">
-                      <template v-slot:prepend>
-                        <v-avatar>
-                          <v-img :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
-                        </v-avatar>
-                      </template>
-                    </v-list-item>
-                  </template>
-
-                  <template v-slot:prepend-item>
-                    <div class="pa-2 border-b">
-                      <v-text-field
-                        v-model="searchAccounts"
-                        :error="!!searchAccounts && !filterAccounts?.length"
-                        density="compact"
-                        placeholder="Buscar..."
-                        prepend-inner-icon="mdi-magnify"
-                        variant="outlined"
-                        @click.stop
-                        @keydown.stop
-                        @mousedown.stop
-                        hide-details="auto"
-                      >                 
-                    </v-text-field>
-                    </div>
-                  </template>
-                </v-select>
-
-                <v-text-field prepend-icon="mdi-note-text" v-model="props.draft.observation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="underlined"></v-text-field >
-
+            <v-col
+              dens cols="12" md="12" sm="12"
+            >
               <v-switch
                 v-model="switchValue"
                 color="error"
@@ -323,29 +350,32 @@ import type { TMovementsPayload } from "~~/schemas/movements.schema"
                 true-icon="mdi-check"
                 false-icon="mdi-close"
               ></v-switch> 
+            </v-col>
 
             <small class="text-caption text-medium-emphasis"
               >* Indica campos obrigatórios</small
             >
+
+            </v-row>
           </v-card-text>
 
           <v-divider></v-divider>
 
           <v-card-actions>
-            <v-spacer></v-spacer>
-
             <v-btn
+              class="text-none"
               text="Fechar"
               variant="plain"
               @click="modelValue = false"
             ></v-btn>
-
+            <v-spacer></v-spacer>
             <v-btn
+              class="text-none"
               color="primary"
-              text="Lançar"
+              text="Salvar"
               variant="tonal"
               :loading="isPending"
-              @click="handleEditMovimentExpenses"
+              @click="submitEditMovement"
             ></v-btn>
           </v-card-actions>
         </v-card>

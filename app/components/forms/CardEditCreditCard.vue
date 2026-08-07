@@ -8,8 +8,7 @@
   import { useValidateSchemas } from "~/composables/useValidateSchema"
   import { useValidateFields } from "~/composables/useValidateFields"
   import { useInvalidate } from "~/composables/useInvalidate"
-import flags from "~~/shared/flags/catalog"
-
+  import flags from "~~/shared/flags/catalog"
 
   const { getAllAccounts } = useHttpAccounts()
   const { patchCreditCardById } = useHttpCreditsCards()
@@ -25,6 +24,7 @@ import flags from "~~/shared/flags/catalog"
   const modelLogos = ref<string | null>("")
   const menuLogos = ref(false)
   const modelValue = defineModel<boolean>()
+  const showAlertDueDayDffClosingDay = ref(false)
   const { invalidate } = useInvalidate()
 
   const props = defineProps<{
@@ -49,7 +49,6 @@ import flags from "~~/shared/flags/catalog"
   const closingDayRules = ref([
     (val: number) => !!val || "Campo obrigatório"
   ])
-
 
   /**
    * Observa a mudança do menu, e com base no status, ele limpa o campo de pesquisa
@@ -100,6 +99,12 @@ import flags from "~~/shared/flags/catalog"
 
   async function handleEditCreditCard() {
 
+    if (props.draft?.due_day === props.draft?.closing_day) {
+      showAlertDueDayDffClosingDay.value = true
+      return
+    }
+
+
     try {
 
       if (!props.draft) {
@@ -146,6 +151,15 @@ import flags from "~~/shared/flags/catalog"
         prepend-icon="mdi-wallet-plus"
         title="Editar cartão de crédito"
       >
+        <div class="ml-2 mr-3">
+          <v-alert
+          v-model="showAlertDueDayDffClosingDay"
+          type="warning"
+          variant="tonal"
+          title="Atenção"
+          text="O dia de vencimento deve ser diferente do dia de fechamento da fatura."
+          ></v-alert>
+        </div>
         <v-card-text>
           <v-row dense>
 
@@ -200,7 +214,7 @@ import flags from "~~/shared/flags/catalog"
                 :min="1"
                 :rules="dueDayRules"
                 isent
-                v-model="props.draft.due_day"
+                v-model="props.draft.closing_day"
                 prepend-inner-icon="mdi-calendar-remove"
               ></v-number-input>
             </v-col>
@@ -218,7 +232,7 @@ import flags from "~~/shared/flags/catalog"
                 :max="31"
                 :min="1"
                 :rules="closingDayRules"
-                v-model="props.draft.closing_day"
+                v-model="props.draft.due_day"
                 prepend-inner-icon="mdi-calendar-clock"
               ></v-number-input>
             </v-col>
@@ -299,7 +313,7 @@ import flags from "~~/shared/flags/catalog"
                 item-value="url"
                 clearable
                 variant="underlined"
-                label="Logo*"
+                label="Bandeira*"
                 hint="Bandeira do cartão"
                 persistent-hint
                 :rules="selectRules"
@@ -367,18 +381,18 @@ import flags from "~~/shared/flags/catalog"
         <v-divider></v-divider>
 
         <v-card-actions>
-          <v-spacer></v-spacer>
-
           <v-btn
+            class="text-none"
             text="Cancelar"
             variant="plain"
             @click="modelValue = false"
           ></v-btn>
-
+            <v-spacer></v-spacer>
           <v-btn
+            class="text-none"
             color="primary"
             text="Editar"
-            variant="tonal"
+            variant="flat"
             :loading="isPending"
             @click="handleEditCreditCard"
           ></v-btn>

@@ -71,13 +71,13 @@
     function resetForm() {
         filterFrom.value.for_type = []
         filterFrom.value.situation = null
+        filterFrom.value.end_day = null,
+        filterFrom.value.start_day = null,
         modelAccounts.value = [],
         modelCategorias.value = [],
         startDate.value = null
         endDate.value = null
-
         modelValue.value = false
-
         emit("resetFilter", "todos")
     }
 
@@ -283,9 +283,10 @@
             
                 <v-btn
                 class="text-none"
-                text="Limpar e sair"
+                text="Cancelar"
                 variant="text"
                 @click="resetForm"
+                v-tooltip="'Remove todos os filtros e restaura a pesquisa'"
                 ></v-btn>
 
                 <v-btn

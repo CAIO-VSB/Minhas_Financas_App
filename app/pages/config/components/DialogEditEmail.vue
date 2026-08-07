@@ -23,9 +23,12 @@
     const authStore = useAuthStore()
     const showPassword = ref(false)
     const password = ref("")
+    const form = ref()
 
     function closeModalSubmitChangeEmail() {
         modelValue.value = false
+        newEmail.value = ""
+        password.value = ""
         emits("closeModal")
     }
     
@@ -40,30 +43,24 @@
     }
     
     async function handleUpateEmail() {
-        if (!newEmail.value) {
-            notifyInfo("Atenção", "Campo e-mail é obrigatório", 6000, true)
-            return
-        }
-
-        if (!password.value) {
-            notifyInfo("Atenção", "Campo senha de acesso é obrigatório", 6000, true)
-            return
-        }
-
         loading.value = true
 
         try {
 
-            const resultValidatePassword = await postVerifyPassword(password.value)
+            const formValid = await form.value.validate()
 
-            if (resultValidatePassword.valid) {
-                await authStore.alterEmail(newEmail.value)
-            } else {
-                notifyInfo(
-                "Atenção",
-                "Não foi possível confirmar sua identidade. Verifique sua senha atual e tente novamente.",
-                5000
-                )
+            if (formValid) {
+                const resultValidatePassword = await postVerifyPassword(password.value)
+
+                if (resultValidatePassword.valid) {
+                    await authStore.alterEmail(newEmail.value)
+                } else {
+                    notifyInfo(
+                    "Atenção",
+                    "Não foi possível confirmar sua identidade. Verifique sua senha atual e tente novamente.",
+                    6000
+                    )
+                }
             }
 
         } catch (e) {
@@ -71,7 +68,6 @@
             notifyInfo("Erro", "Algo deu errado. Tente novamente em instantes.", 7000)
         } finally {
             loading.value = false
-            modelValue.value = false
         }
 
     }
@@ -99,28 +95,30 @@
 
             <div class="ml-4 mr-5">
                 <v-alert
-                type="warning"
+                type="info"
                 variant="tonal"
                 density="comfortable"
                 icon="mdi-information-outline"
                 class="mt-3"
                 >
-                    Todas as sessões ativas serão desconectadas.
+                    Esse processo pode levar alguns segundos e envolve duas confirmações por e-mail: uma no seu e-mail atual e outra no novo endereço.
                 </v-alert>
             </div>
 
             <v-card-text class="text-display-large pa-6">
-                <v-text-field prepend-inner-icon="mdi-email" readonly v-model="props.email" label="Email atual*" variant="underlined"></v-text-field>
-                <v-text-field prepend-inner-icon="mdi-email-check" :rules="emailRules" v-model="newEmail" name="email" autocomplete="email" label="Novo email*" variant="underlined"></v-text-field>
-                <v-text-field
-                :type="showPassword ? 'text' : 'password'"
-                :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-                @click:append-inner="showPassword = !showPassword"
-                :rules="passwordRules" v-model="password" label="Senha de acesso*" variant="underlined">
-                    <template #prepend-inner>
-                        <v-icon icon="mdi-lock"></v-icon>
-                    </template>
-                </v-text-field>
+                <v-form ref="form">
+                    <v-text-field prepend-inner-icon="mdi-email" readonly v-model="props.email" label="Email atual*" variant="underlined"></v-text-field>
+                    <v-text-field prepend-inner-icon="mdi-email-check" :rules="emailRules" v-model="newEmail" name="email" autocomplete="email" label="Novo email*" variant="underlined"></v-text-field>
+                    <v-text-field
+                    :type="showPassword ? 'text' : 'password'"
+                    :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+                    @click:append-inner="showPassword = !showPassword"
+                    :rules="passwordRules" v-model="password" label="Senha de acesso*" variant="underlined">
+                        <template #prepend-inner>
+                            <v-icon icon="mdi-lock"></v-icon>
+                        </template>
+                    </v-text-field>
+                </v-form>
             </v-card-text>
 
             <v-divider></v-divider>
@@ -140,8 +138,22 @@
     <BaseModal :persistent-modal="true" @close-modal="redirectPageLogin" :model-value="authStore.showDialogAlertEmail" title="Confirmação de alteração de e-mail">
         <div class="pa-2">
             <p>Para proteger sua conta, toda alteração de e-mail precisa ser confirmada.</p>
-            <p>Enviaremos uma mensagem para o seu e-mail atual com as instruções para autorizar a mudança.</p> <br>
-            <p>Após a confirmação, o novo e-mail passará a ser utilizado para acessar sua conta e receber comunicações do Velto Finance. Por segurança, será necessário fazer login novamente com o novo endereço de e-mail.</p>
+
+            <p>
+                Enviaremos uma mensagem para o seu e-mail atual com as instruções para autorizar a mudança.
+            </p>
+
+            <br>
+
+            <p>
+                Após a confirmação, o novo e-mail passará a ser utilizado para acessar sua conta e receber comunicações do Velto Finance. Por segurança, será necessário fazer login novamente com o novo endereço de e-mail.
+            </p>
+
+            <br>
+
+            <p class="text-caption text-medium-emphasis">
+                <strong>Observação:</strong> ao clicar em <strong>OK</strong>, você será redirecionado para a tela de login.
+            </p>
         </div>
     </BaseModal>
 

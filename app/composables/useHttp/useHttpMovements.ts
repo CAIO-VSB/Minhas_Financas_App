@@ -41,9 +41,16 @@ export function useHttpMovements() {
     }
 
     const patchMovementsById = async (id:number, data: TMovementsPaylodad) => {
-        return $fetch<TMovements>(`/api/movements/${id}`, {method: "PATCH", body: data},) 
+        return $fetch<TMovements>(`/api/movements/${id}`, {method: "PATCH", body: data}) 
     }
 
+    const patchMovementsRecurrenceById = async (id:number, data: TMovementsPaylodad, editingOption?: string, recurrenceId?: number) => {
+        return $fetch<TMovements>(`/api/movements/patchMovementsRecurrenceById/${id}`, {method: "PATCH", body: data, query: {editingOption, recurrenceId}},) 
+    }
+    
+    const deleteMovementsRecurrenceById = async (id:number, data: TMovementsPaylodad, editingOption?: string, recurrenceId?: number) => {
+        return $fetch<TMovements>(`/api/movements/patchMovementsRecurrenceById/${id}`, {method: "DELETE", body: data, query: {editingOption, recurrenceId}},) 
+    }
 
     return {
         postMovements,
@@ -51,6 +58,8 @@ export function useHttpMovements() {
         getOnlyRevenues,
         getOnlyExpenses,
         patchMovementsById,
+        patchMovementsRecurrenceById,
+        deleteMovementsRecurrenceById,
         getCurrentBalance,
         getMovimentsByFilter,
         getMovimentsOnlyExpensesByFilter,

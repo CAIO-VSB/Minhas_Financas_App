@@ -71,14 +71,14 @@
         
         <v-expand-transition>
             <div v-show="!expanded" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
-                <v-btn style="color: #1867c0;" icon="mdi-chevron-left" variant="text" @click="prevMonth" />
+                <v-btn style="color: #9DA5B2;" icon="mdi-chevron-left" variant="text" @click="prevMonth" />
                 <span
                     @click="expanded = true"
-                    style="cursor: pointer; font-size: 16px; font-weight: 500; text-transform: capitalize; border: 2.1px solid #1867c0; color: #1867c0; padding: 4px 16px; border-radius: 20px;"
+                    style="cursor: pointer; font-size: 16px; font-weight: 800; text-transform: capitalize; background-color: #EFF6FF; color: #2563EB; padding: 4px 16px; border-radius: 20px;"
                 >
                     {{ monthLabel }}
                 </span>
-                <v-btn style="color: #1867c0;" icon="mdi-chevron-right" variant="text" @click="nextMonth" />
+                <v-btn style="color: #9DA5B2;" icon="mdi-chevron-right" variant="text" @click="nextMonth" />
             </div>
         </v-expand-transition>
 
@@ -86,7 +86,7 @@
             <div v-show="expanded">
                 <div style="display: flex; align-items: center; justify-content: center; gap: 24px; margin-bottom: 1rem;">
                     <v-btn style="color: #1867c0;" icon="mdi-chevron-left" variant="text" @click="changeYear(-1)" />
-                    <span style="font-size: 16px; font-weight: 500; color: #1867c0;">{{ currentYear }}</span>
+                    <span style="font-size: 16px; font-weight: 600; color: #2563EB;">{{ currentYear }}</span>
                     <v-btn style="color: #1867c0;" icon="mdi-chevron-right" variant="text" @click="changeYear(1)" />
                 </div>
 
@@ -95,7 +95,7 @@
                         <v-btn
                             v-for="(month, index) in months"
                             :key="index"
-                            :variant="isActive(index) ? 'tonal' : 'outlined'"
+                            :variant="isActive(index) ? 'tonal' : 'text'"
                             :color="isActive(index) ? 'primary' : ''"
                             rounded="xl"
                             size="small"
@@ -108,7 +108,3 @@
         </v-expand-transition>
     </div>
 </template>
-
-<style lang="scss">
-  
-</style>

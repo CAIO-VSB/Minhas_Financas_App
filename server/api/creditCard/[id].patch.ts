@@ -27,13 +27,13 @@ export default defineEventHandler( async (event) => {
 
     const id = Number(getRouterParam(event, "id"))
 
-    if (id === null) {
+    if (!id || Number.isNaN(id)) {
         throw createError({
             status: 404,
-            statusMessage: "Cartão não encontrado"
+            statusMessage: "Movimentação não encontrada"
         })
     }
-
+    
     try {
 
        return await creditCardRespository.update(id, result.data)

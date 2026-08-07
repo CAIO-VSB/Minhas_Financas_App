@@ -25,6 +25,10 @@
     import ListToolBar from './components/ListToolBar.vue'
     import AppCard from '~/components/ui/AppCard.vue'
     import type { TMovementsPayload } from '~~/schemas/movements.schema.js'
+    import CardEditRecurrenceExpense from '~/components/forms/CardEditRecurrenceExpense.vue'
+    import CardEditRecurrenceRevenue from '~/components/forms/CardEditRecurrenceRevenue.vue'
+    import CardDeleteMovementRecurrence from '~/components/forms/CardDeleteMovementRecurrence.vue'
+    import useOptions from '~/pages/transactions/composable/useOptions'
 
     const { getMoviments, patchMovementsById, getCurrentBalance, getMovimentsByFilter } = useHttpMovements()
     const { getCategoriesOnlyActive } = useHttpCategories()
@@ -33,12 +37,14 @@
     const { notifyError, notifyInfo, notifySuccess } = useNotify()
     const { invalidate } = useInvalidate()
 
-    
     const search = ref('')
     const drawer = ref(false)
     const cardPostValueTransaction = ref(false)
+    const cardDeletTransactionRecurrence = ref(false)
     const modalEditMovementsRevenue = ref(false)
     const modalEditMovementesExpenses = ref(false)
+    const modelEditRecurrenceExpense = ref(false)
+    const modelEditRecurrenceRevenue = ref(false)
     const modalEditTransfer = ref(false)
     const cardDeletTransaction = ref(false)
     const cardDeleteTransfer = ref(false)
@@ -189,11 +195,17 @@
     function handleMutationSuccess() {
         if (isFiltered.value && lastFilter.value) {
             handleApplyFilter(lastFilter.value)
+            invalidate(QUERY_KEYS.movements.only_revenues)
         }
     }
 
     function handleClearFilter(value: string, filter?: TMovementsByFilter | null, idCategorie?: number, idAccount?: number) {
         switch (value) {
+            case "todos": 
+                lastFilter.value!.start_day = null
+                lastFilter.value!.end_day = null
+                isFiltered.value = false
+                break;  
             case "period":
                 lastFilter.value!.start_day = null
                 lastFilter.value!.end_day = null
@@ -247,23 +259,31 @@
     }
 
     function handleOpenModalEditMovementsRevenue(movements: TMovementsSummary) {
-
         //Usamos structuredClone + toRaw para evitar mutar o objeto reativo do Vue
         const rawMovements =  structuredClone(toRaw(movements))
-
         editDraft.value = parseMovementToEdit(rawMovements)
-
         modalEditMovementsRevenue.value = true
     }
 
     function handleOpenModalEditMovementsExpense(movements: TMovementsSummary) {
-
         //Usamos structuredClone + toRaw para evitar mutar o objeto reativo do Vue
         const rawMovements =  structuredClone(toRaw(movements))
-
         editDraft.value = parseMovementToEdit(rawMovements)
-
         modalEditMovementesExpenses.value = true
+    }
+
+    function handleOpenModalEditRecurrenceExpense(movements: TMovementsSummary) {
+        //Usamos structuredClone + toRaw para evitar mutar o objeto reativo do Vue
+        const rawMovements =  structuredClone(toRaw(movements))
+        editDraft.value = parseMovementToEdit(rawMovements)
+        modelEditRecurrenceExpense.value = true
+    }
+
+    function handleOpenModalEditRecurrenceRevenue(movements: TMovementsSummary) {
+        //Usamos structuredClone + toRaw para evitar mutar o objeto reativo do Vue
+        const rawMovements =  structuredClone(toRaw(movements))
+        editDraft.value = parseMovementToEdit(rawMovements)
+        modelEditRecurrenceRevenue.value = true
     }
 
     async function handleOpenModalEditTransfer(transfer: TMovementsWithTransfer) {
@@ -277,14 +297,23 @@
 
         //Usamos structuredClone + toRaw para evitar mutar o objeto reativo do Vue
         const rawTransfer =  structuredClone(toRaw(Datatransfer))
-
         editDraftTransfer.value = parseTransferToEdit(rawTransfer)
-        
         modalEditTransfer.value = true
     }
 
 
-    function handleOptionClick(option: TOptionAction, data: TMovementsSummary) {        
+    function handleOptionClick(option: TOptionAction, data: TMovementsSummary) {  
+
+        if (option.value === "edit" && (data.type_transaction === "receita") && (data.type_recurrence === "fixa" || data.type_recurrence === "parcelada")) {
+            handleOpenModalEditRecurrenceRevenue(data)
+            return
+        }
+        
+        if (option.value === "edit" && data.type_transaction === "despesa" && (data.type_recurrence === "fixa" || data.type_recurrence === "parcelada")) {
+            handleOpenModalEditRecurrenceExpense(data)
+            return
+        }
+
         const optionsMap: Record<string, () => void> = {
             "arquivo": () => notifyInfo("Em desenvolvimento", "Estamos trabalhando nesta funcionalidade para disponibilizá-la em breve.", 6000, true),
             "edit_receita": () =>  handleOpenModalEditMovementsRevenue(data),
@@ -319,52 +348,39 @@
             date_transaction: dateFormated
         }
 
-        if (option.value === "efetivar" && data.type_transaction === "receita") {
+        if (option.value === "delete" && (data.type_transaction === "despesa" || data.type_transaction === "receita") && (data.type_recurrence === "fixa" || data.type_recurrence === "parcelada")) {
             confirmDraft.value = payload
-            labelOptions.value.colorButton = "green"
-            labelOptions.value.textButton = "Receber"
-            labelOptions.value.title = "Deseja efetivar esta receita?"
-            labelOptions.value.text = "Ao efetivar essa receita será adicionado o valor na Conta."
-            cardPostValueTransaction.value = true
-            return
-        } 
-        if (option.value === "efetivar" && data.type_transaction === "despesa") {
-            confirmDraft.value = payload
-            labelOptions.value.colorButton = "red"
-            labelOptions.value.textButton = "Pagar"
-            labelOptions.value.title = "Deseja efetivar esta despesa?"
-            labelOptions.value.text = "Ao efetivar essa despesa será descontado o valor na Conta."
-            cardPostValueTransaction.value = true
-            return
-        }  
-        if (option.value === "delete" && data.type_transaction === "receita") {
-            confirmDraft.value = payload
-            payload.is_deleted = true
-            labelOptions.value.colorButton = "green"
-            labelOptions.value.textButton = "Deletar"
-            labelOptions.value.title = "Deseja deletar esta receita?"
-            labelOptions.value.text = "Essa ação não poderá ser desfeita. O valor será removido da conta."
-            cardDeletTransaction.value = true
+            cardDeletTransactionRecurrence.value = true
             return
         }
-        if (option.value === "delete" && data.type_transaction === "despesa") {
-            confirmDraft.value = payload
-            payload.is_deleted = true
-            labelOptions.value.colorButton = "red"
-            labelOptions.value.textButton = "Deletar"
-            labelOptions.value.title = "Deseja deletar esta despesa?"
-            labelOptions.value.text = "Essa ação não poderá ser desfeita. O valor será retornado ao saldo da conta."
-            cardDeletTransaction.value = true
+
+        if (option.value !== "efetivar" && option.value !== "delete") {
             return
-        } 
-        if (option.value === "delete" && (data.type_transaction === "transferencia_entrada" || data.type_transaction === "transferencia_saida")) {
+        }
+        
+        const config = useOptions[option.value]?.[data.type_transaction]
+        
+        if (config) {
             confirmDraft.value = payload
-            payload.is_deleted = true
-            labelOptions.value.colorButton = "blue"
-            labelOptions.value.textButton = "Deletar"
-            labelOptions.value.title = "Deletar transferência"
-            labelOptions.value.text = "Essa ação não poderá ser desfeita."
-            cardDeleteTransfer.value = true
+            labelOptions.value = {
+                colorButton: config.colorButton,
+                textButton: config.textButton,
+                title: config.title,
+                text: config.text
+            }
+
+            switch (config.modal) {
+                case "settle":
+                    cardPostValueTransaction.value = true
+                    break
+                case "deleteMovement":
+                    cardDeletTransaction.value = true
+                    break
+                case "deleteTransfer":
+                    cardDeleteTransfer.value = true
+                    break
+            }
+
             return
         }
 
@@ -383,7 +399,9 @@
         <CardEdtiMovementsExpenses @success="handleMutationSuccess" :draft="editDraft"  v-model="modalEditMovementesExpenses"/>
         <CardEditMovementsRevenue @success="handleMutationSuccess" :draft="editDraft" v-model="modalEditMovementsRevenue"/>
         <CardEditTransfer :draft="editDraftTransfer" v-model="modalEditTransfer"/>
-        
+        <CardEditRecurrenceExpense @success="handleMutationSuccess" v-model="modelEditRecurrenceExpense" :draft="editDraft" />
+        <CardEditRecurrenceRevenue :draft="editDraft" @success="handleMutationSuccess" v-model="modelEditRecurrenceRevenue" />
+        <CardDeleteMovementRecurrence :draft="confirmDraft" v-model="cardDeletTransactionRecurrence" />
         
         <FilterDrawer :items="[ 'Recebidas', 'Pagas', 'Pendentes']" :field-type-active="false" color-button="primary" @apply-filter="handleApplyFilter" @reset-filter="handleClearFilter" v-model="drawer"/>
           
@@ -471,7 +489,7 @@
                 </v-expand-transition>
 
                 <div v-if="!isFiltered" style="margin-bottom: 12px;">
-                    <DateInput  @apply-filter-month="handleGetPeriod"></DateInput>
+                    <DateInput @apply-filter-month="handleGetPeriod"></DateInput>
                 </div>
 
                 <v-text-field
@@ -483,6 +501,7 @@
                     single-line
                     autocomplete="off"
                 ></v-text-field>
+                
             </template>
                 <v-data-table
                 :headers="headers"
@@ -509,6 +528,15 @@
                     <v-chip :color="item.type_transaction ===  'receita' || item.type_transaction === 'transferencia_entrada' ? 'green' : 'red'">
                         {{ formatCurrency(item.value_transaction) }}
                     </v-chip>
+                </template>
+
+                <template v-slot:item.description_transaction="{item}">
+                    <span>
+                        {{ item.description_transaction }}
+                        <span v-if="item.total_installments">
+                            {{ `(${item.installment_current} / ${item.total_installments})` }}
+                        </span>
+                    </span>
                 </template>
 
                 <template v-slot:item.date_transaction="{item}"> 

@@ -8,7 +8,7 @@
   import { useValidateSchemas } from "~/composables/useValidateSchema"
   import { useValidateFields } from "~/composables/useValidateFields"
   import { useInvalidate } from "~/composables/useInvalidate"
-import flags from "~~/shared/flags/catalog"
+  import flags from "~~/shared/flags/catalog"
 
   const { getAccountsOnlyActive } = useHttpAccounts()
   const { postCreditCard } = useHttpCreditsCards()
@@ -25,6 +25,7 @@ import flags from "~~/shared/flags/catalog"
   const menuAccounts = ref(false)
   const modelLogos = ref<string | null>(null)
   const menuLogos = ref(false)
+  const showAlertDueDayDffClosingDay = ref(false)
   const modelValue = defineModel<boolean>()
   const cardCredit = ref<TCreditCard>({
     name_identifier: "",
@@ -64,9 +65,6 @@ import flags from "~~/shared/flags/catalog"
     (val: string) => !!val || "Campo obrigatório"
   ])
 
-  // onMounted(() => {
-    
-  // })
 
   watch(cardCredit, (val) => {
     if (val) return val.name_identifier = ""
@@ -105,6 +103,7 @@ import flags from "~~/shared/flags/catalog"
     modelAccounts.value = 0
     modelLogos.value = ""
     modelValue.value = false
+    showAlertDueDayDffClosingDay.value = true
   }
 
   const  { mutate, isPending  } = useMutation({
@@ -124,6 +123,11 @@ import flags from "~~/shared/flags/catalog"
   })
 
   async function handleAddCreditCard() {
+
+    if (cardCredit.value.due_day === cardCredit.value.closing_day) {
+      showAlertDueDayDffClosingDay.value = true
+      return
+    }
 
     cardCredit.value.accounts_id = toRaw(modelAccounts.value ?? -1)
     cardCredit.value.url_logo = toRaw(modelLogos.value ?? "")
@@ -156,6 +160,7 @@ import flags from "~~/shared/flags/catalog"
     @submit.prevent
     ref="form"
     >
+    
     <v-dialog
       v-model="modelValue"
       max-width="640"
@@ -164,6 +169,16 @@ import flags from "~~/shared/flags/catalog"
         prepend-icon="mdi-wallet-plus"
         title="Novo cartão de crédito"
       >
+        <div class="ml-2 mr-3">
+          <v-alert
+          v-model="showAlertDueDayDffClosingDay"
+          type="warning"
+          variant="tonal"
+          title="Atenção"
+          text="O dia de vencimento deve ser diferente do dia de fechamento da fatura."
+          ></v-alert>
+        </div>
+
         <v-card-text>
           <v-row dense>
 
@@ -179,8 +194,8 @@ import flags from "~~/shared/flags/catalog"
                 name="cc-name"
                 v-model="cardCredit.name_identifier"
                 autocomplete="cc-name"
-                maxlength="45"
-                counter="45"
+                maxlength="30"
+                counter="30"
                 prepend-inner-icon="mdi-card-text"
               ></v-text-field>
             </v-col>
@@ -385,18 +400,18 @@ import flags from "~~/shared/flags/catalog"
         <v-divider></v-divider>
 
         <v-card-actions>
-          <v-spacer></v-spacer>
-
           <v-btn
+            class="text-none"
             text="Cancelar"
             variant="plain"
             @click="resetForm"
           ></v-btn>
-
+          <v-spacer></v-spacer>
           <v-btn
+            class="text-none"
             color="primary"
-            text="Adicionar"
-            variant="tonal"
+            text="Salvar"
+            variant="flat"
             :loading="isPending"
             @click="handleAddCreditCard"
           ></v-btn>

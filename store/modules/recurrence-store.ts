@@ -2,7 +2,8 @@ import { defineStore } from "pinia"
 import type { TMovements } from "../../types/movements/TMovements"
 import type { TRecurrence } from "../../types/recurrence/TRecurrence"
 import type { TRecurrencePayload } from "~~/schemas/recurrence.schema"
-import { RRule} from "rrule"
+import type { TMovementCreditCard } from "../../types/credit_card/TMovementCreditCard"
+import { RRule } from "rrule"
 
 export const useRecurrenceStore = defineStore("recurrence", () => {
 
@@ -33,11 +34,8 @@ export const useRecurrenceStore = defineStore("recurrence", () => {
         count: 12
       })
 
-      const valueFractionated = Number((recurrence.value_recurrence / 12)).toFixed(2)
-
       const movementsFixes = ruleFixed.all().map((data) => ({
         ...movements,
-        value_transaction: Number(valueFractionated),
         date_transaction: rruleDateToDateOnly(data),
         status_transaction: "pendente"
       }))
@@ -55,10 +53,9 @@ export const useRecurrenceStore = defineStore("recurrence", () => {
           recurrence: recurrenceFormated,
           movements: movementsFixes,
         },
-      }) 
-
+      })
     }
-    
+
     if (recurrence.type_recurrence === "parcelada") {
 
       const freq = mapFrequency[recurrence.frequency_recurrence ?? ""]
@@ -72,33 +69,103 @@ export const useRecurrenceStore = defineStore("recurrence", () => {
 
       const valueFractionated = Number((recurrence.value_recurrence! / recurrence.total_installments!)).toFixed(2)
 
-      const movementsInstallments = ruleInstallments.all().map((data) => {
-
-        return {
-          ...movements,
-          value_transaction: Number(valueFractionated),
-          date_transaction: rruleDateToDateOnly(data),
-          status_transaction: "pendente"
-        }
-      })
+      const movementsInstallments = ruleInstallments.all().map((data) => ({
+        ...movements,
+        value_transaction: Number(valueFractionated),
+        date_transaction: rruleDateToDateOnly(data),
+        status_transaction: "pendente"
+      }))
 
       const recurrenceFormated = {
         ...recurrence,
         day_maturity: maturity
       }
 
-      return $fetch<TRecurrencePayload>("/api/recurrence", {
+      return await $fetch<TRecurrencePayload>("/api/recurrence/movements", {
         method: "POST",
         body: {
           recurrence: recurrenceFormated,
           movements: movementsInstallments
         }
       })
-
     }
-
   }
 
-  return {movementsFormated}
+  const movementsCreditCardFormated = async (movementsCreditCard: TMovementCreditCard, recurrence: TRecurrence) => {
+
+    if (!recurrence.day_maturity) {
+      throw new Error("A data de vencimento é obrigatória.")
+    }
+    if (!recurrence.value_recurrence) {
+      throw new Error("O valor da recorrência é obrigatório.")
+    }
+
+    const datePurchase = dateToDateOnly(recurrence.day_maturity!)
+    const dtstart = dateOnlyToRRuleDate(datePurchase)
+
+    if (recurrence.type_recurrence === "fixa") {
+      const ruleFixed = new RRule({
+        freq: RRule.MONTHLY,
+        interval: 1,
+        dtstart,
+        count: 12
+      })
+
+      const movementsCreditCardFixes = ruleFixed.all().map((data) => ({
+        ...movementsCreditCard,
+        date_transaction: rruleDateToDateOnly(data),
+      }))
+
+      const recurrenceFormated = {
+        ...recurrence,
+        day_maturity: datePurchase,
+        frequency_recurrence: "null",
+        total_installments: null
+      }
+
+      return await $fetch<TRecurrencePayload>("/api/recurrence/credit-card", {
+        method: "POST",
+        body: {
+          recurrence: recurrenceFormated,
+          movements: movementsCreditCardFixes,
+        },
+      })
+    }
+
+    if (recurrence.type_recurrence === "parcelada") {
+
+      const freq = mapFrequency[recurrence.frequency_recurrence ?? ""]
+
+      const ruleInstallments = new RRule({
+        freq,
+        interval: 1,
+        dtstart,
+        count: recurrence.total_installments
+      })
+
+      const valueFractionated = Number((recurrence.value_recurrence! / recurrence.total_installments!)).toFixed(2)
+
+      const movementsCreditCardInstallments = ruleInstallments.all().map((data) => ({
+        ...movementsCreditCard,
+        value_transaction: Number(valueFractionated),
+        date_transaction: rruleDateToDateOnly(data),
+      }))
+
+      const recurrenceFormated = {
+        ...recurrence,
+        day_maturity: datePurchase
+      }
+
+      return await $fetch<TRecurrencePayload>("/api/recurrence", {
+        method: "POST",
+        body: {
+          recurrence: recurrenceFormated,
+          movements: movementsCreditCardInstallments
+        }
+      })
+    }
+  }
+
+  return { movementsFormated, movementsCreditCardFormated }
 
 })

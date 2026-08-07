@@ -113,8 +113,8 @@
                 :rules="nameRules"
                 hint="Adicione uma identificação clicando no ícone ao lado"
                 persistent-hint
-                :counter="45" 
-                maxlength="45"
+                :counter="30" 
+                maxlength="30"
                 prepend-inner-icon="mdi-rename"
               >
 

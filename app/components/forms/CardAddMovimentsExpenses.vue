@@ -230,7 +230,7 @@
 
   })
 
-  async function handleAddMovimentExpenses() {
+  async function submitMovement(options: {closeAfterSave: boolean}) {
   
     if (!movementsForm.value.date_transaction) {
       notifyError(
@@ -256,58 +256,26 @@
         }
 
         const resultSchema = validateSchemaMovements(movementsPayload)
+        if (!resultSchema.success) return
 
-        if (resultSchema.success) {  
-          if (showInputFixa.value || showInputParcelado.value) {
-            await recurrenceStore.movementsFormated(movementsForm.value, recurrencePayload)
-            invalidate(QUERY_KEYS.movements.all)
-            notifySuccess("Sucesso", "Despesa lançada com sucesso", 6000)
-            resetForm()
-            modelValue.value = false
-            emit("success")
-          } else {
-            mutate(resultSchema.data)
-            modelValue.value = false
-          }
+        if (showInputFixa.value || showInputParcelado.value) {
+          await recurrenceStore.movementsFormated(movementsForm.value, recurrencePayload)
+          invalidate(QUERY_KEYS.movements.all)
+          invalidate(QUERY_KEYS.movements.only_expenses)
+          notifySuccess("Sucesso", "Despesa lançada com sucesso", 6000)
+          emit("success")
+        } else {
+          mutate(resultSchema.data)
+        }
+
+        resetForm()
+        if (options.closeAfterSave) {
+          modelValue.value = false
         }
       }
     } catch (err) {
       notifyInfo("Erro", "Algo deu errado. Tente novamente em instantes.", 7000)
     } 
-  }
-
-  async function handleAddMovimentAndNotClean() {
-    if (!movementsForm.value.date_transaction) return
-
-    const dateFormated = dateToDateOnly(movementsForm.value.date_transaction)
-
-    try {
-      const formValid = await form.value.validate()
-
-      if (formValid) {
-        const movementsPayload = {
-        ...movementsForm.value,
-        date_transaction: dateFormated
-      }
-
-      const resultSchema = validateSchemaMovements(movementsPayload)
-
-      if (resultSchema.success) {
-          if (showInputFixa.value || showInputParcelado.value) {
-            await recurrenceStore.movementsFormated(movementsForm.value, recorrenceForm.value)
-            invalidate(QUERY_KEYS.movements.all)
-            notifySuccess("Sucesso", "Despesa lançada com sucesso", 6000)
-            emit("success")
-            resetForm()
-          } else {
-            mutate(resultSchema.data)
-            resetForm()
-          }
-        }
-      }
-  } catch (err) {
-      notifyInfo("Erro", "Algo deu errado. Tente novamente em instantes.", 7000)
-  }
   }
 
 
@@ -513,7 +481,7 @@
                     <div class="d-flex align-center">
                       <v-tooltip location="top" open-on-click>
                         <template v-slot:activator="{ props }">
-                            <v-icon v-bind="props" icon="mdi-help-circle" size="25" class="ml-1" style="cursor: pointer;"></v-icon>
+                          <v-icon v-bind="props" icon="mdi-help-circle" size="25" class="ml-1" style="cursor: pointer;"></v-icon>
                         </template>
                         Ao marcar como fixa, serão geradas as próximas 12 ocorrências, para melhor previsibilidade e controle. Após esse período, você poderá renovar a recorrência.
                       </v-tooltip>
@@ -569,7 +537,7 @@
               text="Salvar e criar nova"
               variant="outlined"
               :loading="isPending"
-              @click="handleAddMovimentAndNotClean"
+              @click="submitMovement({closeAfterSave: false})"
             ></v-btn>
             <v-btn
               class="text-none"
@@ -577,7 +545,7 @@
               text="Salvar"
               variant="flat"
               :loading="isPending"
-              @click="handleAddMovimentExpenses"
+              @click="submitMovement({closeAfterSave: true})"
             ></v-btn>
           </v-card-actions>
         </v-card>
