@@ -47,7 +47,7 @@ export const useRecurrenceStore = defineStore("recurrence", () => {
         total_installments: null
       }
 
-      return await $fetch<TRecurrencePayload>("/api/recurrence", {
+      return await $fetch<TRecurrencePayload>("/api/recurrence/movements", {
         method: "POST",
         body: {
           recurrence: recurrenceFormated,
@@ -91,7 +91,11 @@ export const useRecurrenceStore = defineStore("recurrence", () => {
     }
   }
 
+  //--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
   const movementsCreditCardFormated = async (movementsCreditCard: TMovementCreditCard, recurrence: TRecurrence) => {
+
+    console.log("Valores chegando no store " + JSON.stringify(movementsCreditCard) +  JSON.stringify(recurrence))
 
     if (!recurrence.day_maturity) {
       throw new Error("A data de vencimento é obrigatória.")
@@ -113,13 +117,13 @@ export const useRecurrenceStore = defineStore("recurrence", () => {
 
       const movementsCreditCardFixes = ruleFixed.all().map((data) => ({
         ...movementsCreditCard,
-        date_transaction: rruleDateToDateOnly(data),
+        purchase_date: rruleDateToDateOnly(data),
       }))
 
       const recurrenceFormated = {
         ...recurrence,
         day_maturity: datePurchase,
-        frequency_recurrence: "null",
+        frequency_recurrence: null,
         total_installments: null
       }
 
@@ -127,7 +131,7 @@ export const useRecurrenceStore = defineStore("recurrence", () => {
         method: "POST",
         body: {
           recurrence: recurrenceFormated,
-          movements: movementsCreditCardFixes,
+          movementsCreditCard: movementsCreditCardFixes,
         },
       })
     }
@@ -148,7 +152,7 @@ export const useRecurrenceStore = defineStore("recurrence", () => {
       const movementsCreditCardInstallments = ruleInstallments.all().map((data) => ({
         ...movementsCreditCard,
         value_transaction: Number(valueFractionated),
-        date_transaction: rruleDateToDateOnly(data),
+        purchase_date: rruleDateToDateOnly(data),
       }))
 
       const recurrenceFormated = {
@@ -156,11 +160,11 @@ export const useRecurrenceStore = defineStore("recurrence", () => {
         day_maturity: datePurchase
       }
 
-      return await $fetch<TRecurrencePayload>("/api/recurrence", {
+      return await $fetch<TRecurrencePayload>("/api/recurrence/credit-card", {
         method: "POST",
         body: {
           recurrence: recurrenceFormated,
-          movements: movementsCreditCardInstallments
+          movementsCreditCard: movementsCreditCardInstallments
         }
       })
     }

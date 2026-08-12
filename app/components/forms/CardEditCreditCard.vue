@@ -78,7 +78,7 @@
   })
 
   const filterLogos = computed(() => {
-    return flags.filter(item => item.text.toLowerCase().includes(searchLogos.value.toLowerCase()))
+    return banks.filter(item => item.text.toLowerCase().includes(searchLogos.value.toLowerCase()))
   })
 
   const  { mutate, isPending  } = useMutation({
@@ -87,6 +87,7 @@
 
     onSuccess: () => {
       invalidate(QUERY_KEYS.creditCards.all)
+      invalidate(QUERY_KEYS.creditCards.disable)
       notifySuccess("Sucesso", "Cartão de crédito editado com sucesso", 6000)
       modelValue.value = false
     },
@@ -313,8 +314,7 @@
                 item-value="url"
                 clearable
                 variant="underlined"
-                label="Bandeira*"
-                hint="Bandeira do cartão"
+                label="Banco*"
                 persistent-hint
                 :rules="selectRules"
                 prepend-inner-icon="mdi-credit-card-outline"

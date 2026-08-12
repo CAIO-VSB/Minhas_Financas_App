@@ -8,6 +8,7 @@
   import alertImg from "~/assets/img-credit-card-alert.png"
   import CardAddCartao from "~/components/forms/CardAddCreditCard.vue"
   import { useHttpCreditsCards } from "~/composables/useHttp/useHttpCreditCard"
+  import { useHttpMovementCreditCard } from "~/composables/useHttp/useHttpMovementCreditCard"
   import BaseFab from "~/components/ui/BaseFab.vue";
   import type { TCreditCard } from "~~/types/credit_card/TCredit-card"
   import CardEditCard from "~/components/forms/CardEditCreditCard.vue";
@@ -17,8 +18,10 @@
   import CardMovementsCreditCard from "~/pages/credit-card/components/CardMovementsCreditCard.vue";
   import DateInput from '~/components/ui/DateInput.vue'
   import CardAddMovimentsCreditCard from "~/components/forms/CardAddMovimentsCreditCard.vue";
+  import type { TPeriod } from "~~/types/period/TPeriod"
 
   const { getCreditCardOnlyActive, patchCreditCardById, getCreditCardOnlyDisable } = useHttpCreditsCards()
+  const { getByCreditCard, getTotalInvoice } = useHttpMovementCreditCard()
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
   const { invalidate } = useInvalidate()
 
@@ -33,7 +36,6 @@
   })
 
   const showMenu = ref(false)
-  const value = ref(87)
   const menu = ref(false)
   const modalAddCard = ref(false)
   const modalEditCard = ref(false)
@@ -42,6 +44,28 @@
   const selectedCardData = ref<TCreditCard | null>(null)
   const selectedCard = ref("")
   const selectdLogo = ref("")
+
+  const period = ref({
+    month: new Date().getMonth(),
+    year: new Date().getFullYear(),
+  })
+
+  const { data:dataByCreditCard, isPending: isPendingByCreditCard, refetch  } = useQuery({
+    queryKey: QUERY_KEYS.movementsCreditCard.byCreditCard,
+    queryFn: () => getByCreditCard(period.value.month, period.value.year, selectedCardData.value?.id ?? 0),
+    enabled: computed(() => !!selectedCardData.value?.id)
+  })
+
+  const { data:totalInvoice, isPending: isPendingTotalInvoice, refetch: refetchTotalInvoice } = useQuery({
+    queryKey: computed(() => [
+      ...QUERY_KEYS.movementsCreditCard.totalInvoice,
+      selectedCardData.value?.id,
+      period.value.month,
+      period.value.year
+    ]),
+    queryFn: () => getTotalInvoice(period.value.month, period.value.year, selectedCardData.value?.id ?? 0),
+    enabled: computed(() => !!selectedCardData.value?.id)
+  })
 
   const  { mutate } = useMutation({
 
@@ -73,6 +97,14 @@
     }
   }, {immediate: true})
 
+  const totalForInvoice = computed(() => totalInvoice.value?.total ?? 0)
+
+  const valueLimitedUsed = computed(() => {
+    return calcuteLimitedUsed(totalForInvoice.value, selectedCardData.value?.limit_card ?? 0)
+  })
+
+  const showAlertLimitedUsed = computed(() => valueLimitedUsed.value >= 85)
+
   function getOptions(creditCard: TCreditCard): TOptionAction [] {
     return [
       {title: "Editar", icon: "mdi-lead-pencil", value: "edit"},
@@ -83,7 +115,14 @@
       },
       { title: 'Adicionar novo cartão', icon: 'mdi-plus-circle', value: "new" }
     ]
-}
+  }
+
+  function handleGetPeriod(value: TPeriod) {
+    console.log("Período recebido do DateInput:", value)
+    period.value = value
+    refetch()
+    refetchTotalInvoice()
+  }
 
   function handleSelectedCard(card: TCreditCard) {
     selectedCard.value = card.name_identifier ?? ""
@@ -91,6 +130,7 @@
     selectedCardData.value = card 
     menu.value = false
     editDraft.value = structuredClone(toRaw(card))
+    handleGetPeriod(period.value)
   }
 
   function handleOpenModalEditCardCredit(creditCard: TCreditCard) {
@@ -153,7 +193,6 @@
                 v-model="menu"
                 :close-on-content-click="false"
                 location="center"
-                style=""
                 >
                   <template  v-slot:activator="{ props }">
                   <v-list-item
@@ -172,7 +211,7 @@
                   >
                     <v-divider></v-divider>
                     <v-list>
-                      <v-list-item @click="handleSelectedCard(card)" v-for="card in allCreditCard" rounded="xl" :prepend-avatar="card.url_logo" :value="card" >
+                      <v-list-item @click="handleSelectedCard(card)"  v-for="card in allCreditCard" rounded="xl" :prepend-avatar="card.url_logo" :value="card" >
                         <v-list-item-title>{{ card.name_identifier }}</v-list-item-title>
                       </v-list-item>
                     </v-list>
@@ -225,36 +264,60 @@
               </div>
 
               <div class="mt-4 mb-4">
-                <div class="d-flex ml-1 align-center ga-2 justify-space-between">
+                <template v-if="selectedCardData?.limit_card && selectedCardData.limit_card > 0">
+                  <div class="d-flex ml-1 align-center ga-2 justify-space-between">
                   <span class="text-textSecundary">Limite Utilizado</span>
-                  <small class="mr-2" style="font-weight: 600; font-size: var(--text-sm);">{{ value.toFixed() }}%</small>
+                  <small class="mr-2" style="font-weight: 600; font-size: var(--text-sm);">{{ valueLimitedUsed.toFixed() ?? 0.00 }}%</small>
                 </div>
-                <v-progress-linear height="15" rounded :color="(value < 85 ? 'primary' : 'red')" class="mt-2" :model-value="value">
-                </v-progress-linear>
-                <div class="d-flex justify-space-between mt-2">
-                  <div class="ml-1 text-textSecundary">R$ 13</div>
-                  <div class="mr-1 text-textSecundary">R$ 5.000</div>
-                </div>
+                  <v-progress-linear height="15" rounded :color="(valueLimitedUsed < 85 ? 'primary' : 'red')" class="mt-2" :model-value="valueLimitedUsed">
+                  </v-progress-linear>
+                  
+                  <div class="d-flex justify-space-between mt-2">
+                    <div class="ml-1 text-textSecundary">{{ formatCurrency(totalForInvoice ?? 0.00) }}</div>
+                    <span>de</span>
+                    <div class="mr-1 text-textSecundary">{{ formatCurrency(selectedCardData?.limit_card ?? 0.00) }}</div>
+                  </div>
+                </template>
+
+                <template v-else>
+                  <v-alert
+                  type="info"
+                  variant="tonal"
+                  text="Cadastre um limite para acompanhar melhor seus gastos e manter suas finanças sob controle."
+                ></v-alert>
+                </template >
+
               </div>
               <v-divider></v-divider>
               <div style="margin-bottom: 12px; margin-top: 12px;">
-                <DateInput ></DateInput>
+                <DateInput @apply-filter-month="handleGetPeriod" ></DateInput>
               </div>
 
           </div>
         </div>
+
+        <div class="pa-2">
+          <v-alert
+          v-model="showAlertLimitedUsed"
+          type="warning"
+          variant="tonal"
+          title="Limite do cartão"
+          text="Seus gastos já ultrapassaram 85% do limite disponível. Considere acompanhar as próximas compras para evitar atingir o limite."
+          ></v-alert>
+        </div>
+
       </v-card>
         
       </div>
 
       <div class="mt-5">
-        <CardInfoCreditCard :credit-card="editDraft" />
+        <CardInfoCreditCard :loading="isPendingByCreditCard" :credit-card="editDraft" :total-invoice="totalForInvoice" :period="period" />
       </div>
   
     </div>
 
     <div >
-      <CardMovementsCreditCard />
+      <CardMovementsCreditCard :movements-credit-card="dataByCreditCard ?? null"/>
     </div>
 
     <div class="fab-wrapper">

@@ -24,5 +24,9 @@ export const QUERY_KEYS = {
     },
     auth: {
         all: ['auth']
+    },
+    movementsCreditCard: {
+        byCreditCard: ['byCreditCard'],
+        totalInvoice: ['totalInvoice']
     }
 }

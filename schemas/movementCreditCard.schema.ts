@@ -2,7 +2,7 @@ import * as z from "zod";
 
 export const schemaMovementCreditCard = z.object({
     id: z.number("ID da conta ausente").optional(),
-    credit_cards_id: z.number("Id do cartão de crédito ausente"),
+    credit_cards_id: z.number("Id do cartão de crédito ausente").nullish(),
     categorie_id: z.number("Id da categoria ausente"),
     invoice_id: z.number("Id da fatura ausente").nullish(),
     description_credit: z.string("Descrição ausente").min(1),

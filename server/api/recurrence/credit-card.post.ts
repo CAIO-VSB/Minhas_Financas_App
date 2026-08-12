@@ -1,12 +1,13 @@
 import { auth } from "~~/auth"
 import { z } from "zod"
-import { schemaMovements } from "~~/schemas/movements.schema"
+import { schemaMovementCreditCard } from "~~/schemas/movementCreditCard.schema"
 import { schemaRecurrence } from "~~/schemas/recurrence.schema"
 import { recurrenceRepository } from "~~/server/repositories/recurrence.repository"
 
 const schemaUnified = z.object({
     recurrence: schemaRecurrence,
-    movements: z.array(schemaMovements)
+    movementsCreditCard: z.array(schemaMovementCreditCard),
+    
 })
 
 export default defineEventHandler( async (event) => {
@@ -24,6 +25,8 @@ export default defineEventHandler( async (event) => {
         
     const result = await readValidatedBody(event, body => schemaUnified.safeParse(body))
 
+    console.log("Errrrrrrrrr " + result.error)
+
     if (!result.success) {
         throw createError({
             status: 422,
@@ -32,11 +35,11 @@ export default defineEventHandler( async (event) => {
         })
     }
 
-    const { recurrence, movements } = result.data
+    const { recurrence, movementsCreditCard } = result.data
 
     try {
 
-        return await recurrenceRepository.create(session.session.userId, recurrence, movements)
+        return await recurrenceRepository.createRecorrenceCreditCard(session.session.userId, recurrence, movementsCreditCard)
 
     } catch (error) {
         console.log("Erro ao criar recorrência" + error)

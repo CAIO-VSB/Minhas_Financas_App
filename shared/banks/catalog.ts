@@ -26,7 +26,6 @@
   // Importações logos genericas
   import BancoGenericoLogo from "~~/public/logos-banks/generic-bank-logo.jpg"
   import CarteiraGenericaLogo from "~~/public/logos-banks/carteira-generic-logo.jpg"
-  import ManGenericLogo from "~~/public/logos-banks/man-generic-logo.jpg"
   import CofreGenericLogo from "~~/public/logos-banks/cofre-generic-logo.jpg"
 
   const banks = [
@@ -75,8 +74,6 @@
     {avatar: BancoGenericoLogo, text: "Banco", value: "BancoGeneric", type: "generics", url: "/logos-banks/generic-bank-logo.jpg"},
 
     {avatar: CarteiraGenericaLogo, text: "Carteira", value: "CarteiraGeneric", type: "generics", url: "/logos-banks/carteira-generic-logo.jpg"},
-
-    {avatar: ManGenericLogo, text: "Man", value: "ManGeneric", type: "generic", url: "/logos-banks/man-generic-logo.jpg"},
 
     {avatar: CofreGenericLogo, text: "Cofre", value: "CofreGeneric", type: "generics", url: "/logos-banks/cofre-generic-logo.jpg"},
   ]

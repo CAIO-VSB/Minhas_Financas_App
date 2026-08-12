@@ -7,5 +7,6 @@ export type TCreditCard = {
     closing_day: number | null,
     accounts_id?: number,
     url_logo: string,
-    active: boolean
+    active: boolean,
+    totalInvoice?: number
 }

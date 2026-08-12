@@ -2,7 +2,7 @@
     import CurrencyInput from "~/components/ui/CurrencyInput.vue"
     import { useHttpCategories } from '~/composables/useHttp/useHttpCategories'
     import { useHttpCreditsCards } from "~/composables/useHttp/useHttpCreditCard"
-    import { useHttpMovementCreditCard } from "~/composables/useHttp/useHttpMovementCrediCard"
+    import { useHttpMovementCreditCard } from "~/composables/useHttp/useHttpMovementCreditCard.js"
     import { useValidateSchemas } from "~/composables/useValidateSchema"
     import { useValidateFields } from "~/composables/useValidateFields"
     import { useInvalidate } from "~/composables/useInvalidate"
@@ -60,8 +60,7 @@
       value_transaction: null,
       purchase_date: new Date(),
       observation: "",
-      is_deleted: false,
-      closingDay: null
+      is_deleted: false
     })
 
     const recorrenceForm = ref<TRecurrence>({
@@ -70,7 +69,7 @@
       accounts_id: null,
       categorie_id: null,
       type_recurrence: "",
-      frequency_recurrence: null,
+      frequency_recurrence: "Meses",
       total_installments: 0,
       day_maturity: null,
       is_active: true
@@ -117,6 +116,10 @@
     watch(modelCategorias, (val) => {
       if (!val) searchCategorias.value = ""
       movementCreditCardForm.value.categorie_id = val
+    })
+
+    watch(modelCreditCard, (val) => {
+      movementCreditCardForm.value.credit_cards_id = val
     })
 
     const filterCategorias = computed(() => {
@@ -173,20 +176,20 @@
       mutationFn: postMovementCreditCard,
 
       onSuccess: () => {
+        invalidate(QUERY_KEYS.movementsCreditCard.byCreditCard)
+        invalidate(QUERY_KEYS.movementsCreditCard.totalInvoice)
         notifySuccess("Sucesso", "Operação realizada com sucesso", 6000)
         resetForm()
         emit("success")
       },
 
       onError: (error) => {
-          handleErrorApplication(error.statusCode)
+        handleErrorApplication(error.statusCode)
       },
 
     })
 
   async function submitMovement(options: {closeAfterSave: boolean}) {
-
-    console.log("Objeto no clique" + JSON.stringify(movementCreditCardForm.value))
 
     if (!movementCreditCardForm.value.purchase_date) {
       notifyError(
@@ -215,15 +218,13 @@
           day_maturity: movementCreditCardForm.value.purchase_date
         }
 
-        console.log("Objeto antes da boca do leao" + JSON.stringify(movementsCrediCardPayload))
-
         const resultSchema = validateSchemaMovementsCreditCard(movementsCrediCardPayload)
         if (!resultSchema.success) return
 
         if (showInputFixa.value || showInputParcelado.value) {
           await recurrenceStore.movementsCreditCardFormated(movementCreditCardForm.value, recurrencePayload)
-          invalidate(QUERY_KEYS.movements.all)
-          invalidate(QUERY_KEYS.movements.only_revenues)
+          invalidate(QUERY_KEYS.movementsCreditCard.byCreditCard)
+          invalidate(QUERY_KEYS.movementsCreditCard.totalInvoice)
           notifySuccess("Sucesso", "Operação realizada com sucesso", 6000)
           emit("success")
         } else {
@@ -437,10 +438,11 @@
                   <v-select
                   v-if="showInputParcelado"
                   v-model="recorrenceForm.frequency_recurrence"
-                  label="Selecione a periodicidade*"
+                  label="Periodicidade*"
                   density="compact"
-                  :items="['Dias', 'Semanas', 'Meses', 'Anos']"
+                  :items="['Meses']"
                   variant="underlined"
+                  readonly
                 ></v-select>
                 </v-col>
 

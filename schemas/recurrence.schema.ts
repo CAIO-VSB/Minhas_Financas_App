@@ -5,7 +5,7 @@ export const schemaRecurrence = z.object({
     value_recurrence: z.number("Valor da recorrênca vazio").min(1),
     description_recurrence: z.string("Descrição vazia").min(1),
     categorie_id: z.number("Categoria vazia").min(1),
-    accounts_id: z.number("Conta bancária vazia").min(1),
+    accounts_id: z.number("Conta bancária vazia").min(1).nullish(),
     type_recurrence: z.string("Tipo da recorrência vazia").min(1),
     frequency_recurrence: z.string().nullish().optional(),
     total_installments: z.number().nullish().optional(),

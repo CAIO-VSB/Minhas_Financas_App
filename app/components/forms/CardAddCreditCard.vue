@@ -91,7 +91,7 @@
   })
 
   const filterLogos = computed(() => {
-    return flags.filter(item => item.text.toLowerCase().includes(searchLogos.value.toLowerCase()))
+    return banks.filter(item => item.text.toLowerCase().includes(searchLogos.value.toLowerCase()))
   })
 
   function resetForm() {
@@ -114,6 +114,7 @@
       resetForm()
       invalidate(QUERY_KEYS.creditCards.all)
       notifySuccess("Sucesso", "Cartão de crédito criado com sucesso", 6000)
+      showAlertDueDayDffClosingDay.value = false
     },
 
     onError: (error) => {
@@ -123,11 +124,6 @@
   })
 
   async function handleAddCreditCard() {
-
-    if (cardCredit.value.due_day === cardCredit.value.closing_day) {
-      showAlertDueDayDffClosingDay.value = true
-      return
-    }
 
     cardCredit.value.accounts_id = toRaw(modelAccounts.value ?? -1)
     cardCredit.value.url_logo = toRaw(modelLogos.value ?? "")
@@ -141,6 +137,12 @@
         if (!cardCredit.value.four_digits || cardCredit.value.four_digits?.length < 4 ) {
           notifyInfo("Atenção", "Digite os 4 últimos dígitos do cartão.", 5000)
         }
+
+        if (cardCredit.value.due_day === cardCredit.value.closing_day) {
+          showAlertDueDayDffClosingDay.value = true
+          return
+        }
+
         if (resultSchema.success) {  
           mutate(cardCredit.value)
         }
@@ -152,13 +154,13 @@
   
 }
 
-  
 </script>
 
 <template>
     <v-form
     @submit.prevent
     ref="form"
+    validate-on="submit"
     >
     
     <v-dialog
@@ -169,16 +171,6 @@
         prepend-icon="mdi-wallet-plus"
         title="Novo cartão de crédito"
       >
-        <div class="ml-2 mr-3">
-          <v-alert
-          v-model="showAlertDueDayDffClosingDay"
-          type="warning"
-          variant="tonal"
-          title="Atenção"
-          text="O dia de vencimento deve ser diferente do dia de fechamento da fatura."
-          ></v-alert>
-        </div>
-
         <v-card-text>
           <v-row dense>
 
@@ -242,7 +234,7 @@
                 :min="1"
                 :rules="dueDayRules"
                 isent
-                v-model="cardCredit.due_day"
+                v-model="cardCredit.closing_day"
                 prepend-inner-icon="mdi-calendar-remove"
               ></v-number-input>
             </v-col>
@@ -261,8 +253,9 @@
                 :max="31"
                 :min="1"
                 :rules="closingDayRules"
-                v-model="cardCredit.closing_day"
+                v-model="cardCredit.due_day"
                 prepend-inner-icon="mdi-calendar-clock"
+                :error-messages="(cardCredit.closing_day && cardCredit.due_day === cardCredit.closing_day) ? ['O dia de vencimento deve ser diferente do fechamento'] : []"
               ></v-number-input>
             </v-col>
 
@@ -343,9 +336,9 @@
                 item-value="url"
                 clearable
                 variant="underlined"
-                label="Bandeira*"
+                label="Banco*"
                 :rules="logoCreditCardRules"
-                prepend-inner-icon="mdi-credit-card-outline"
+                prepend-inner-icon="mdi-bank"
               >
                 <template v-slot:selection="{item}">
                   <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 

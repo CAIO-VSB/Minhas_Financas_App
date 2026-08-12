@@ -15,14 +15,14 @@ export default defineEventHandler( async (event) => {
         })
     }
         
-    const { month, year, creditCard } = getQuery(event)
+    const { month, year, creditCard, invoiceId } = getQuery(event)
     
     const monthNumber = Number(month) + 1
     const yearNumber = Number(year)
     const creditCardNumber = Number(creditCard)
 
     try {
-        return await movementsCreditCardRespository.findByCreditCard(session.session.userId, monthNumber, yearNumber, creditCardNumber)
+        return await movementsCreditCardRespository.findTotalInvoice(session.session.userId, monthNumber, yearNumber, creditCardNumber)
     } catch (error) {
         console.log("Erro ao buscar movimentacao cartao de credito " + error)
         throw createError({

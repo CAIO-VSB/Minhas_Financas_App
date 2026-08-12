@@ -56,4 +56,42 @@ export const movementsCreditCardRespository = {
             conn.release()  // devolve a conexão pro pool, sempre, com ou sem erro
         }
     },
+
+    async findByCreditCard(userId: string, month: number, year: number, creditCardId: number) {
+
+        console.log("Ta chamando aqui pelo menos " + userId, month, year, creditCardId)
+
+        const invoiceResult = await client.query(
+            `SELECT id FROM credit_card_invoices WHERE credit_card_id = $1 AND invoice_month = $2 AND invoice_year = $3`,
+            [creditCardId, month, year]
+        )
+
+        const invoiceId = invoiceResult.rows?.[0]?.id ?? null
+
+        const text = 
+        `SELECT * FROM fn_credit_card_movements($1, $2, $3) ORDER BY purchase_date ASC`
+
+        const query = client.query(text, [userId, creditCardId, invoiceId])
+
+        return (await query).rows
+    },
+    
+    async findTotalInvoice(userId: string, month: number, year: number, creditCardId: number) {
+
+        const invoiceResult = await client.query(`SELECT id FROM credit_card_invoices WHERE credit_card_id = $1 AND invoice_month = $2 AND invoice_year = $3 `, [creditCardId, month, year])
+
+        if (invoiceResult.rows.length === 0) {
+            return {total: 0}
+        }
+
+        const invoiceId = invoiceResult.rows[0].id
+        
+        const text = 
+        `SELECT * FROM fn_credit_card_invoice_total($1, $2, $3, $4, $5)`
+
+        const query = await client.query(text, [userId, month, year, creditCardId, invoiceId])
+
+        return { total: Number(query.rows[0]?.fn_credit_card_invoice_total ?? 0) }
+    },
+    
 }
