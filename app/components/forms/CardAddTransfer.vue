@@ -136,16 +136,16 @@
               <v-select v-model="modelAccountOrigin" clearable prepend-inner-icon="mdi-bank-transfer-out" :rules="selectRules" item-value="id" item-title="name_identifier" color="primary" label="Conta origem*" :items="accountsFilteredOrigin" variant="underlined">      
                  <template v-slot:selection="{item}">
                     <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
-                      <v-img  :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
+                      <v-img  :src="item.url_image" :alt="item.name_identifier"></v-img>
                     </v-avatar>
-                    <span >{{ item.raw.name_identifier }}</span>
+                    <span >{{ item.name_identifier }}</span>
                   </template>
 
                   <template v-slot:item="{props, item}">
                     <v-list-item  v-bind="props">
                       <template v-slot:prepend>
                         <v-avatar>
-                          <v-img :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
+                          <v-img :src="item.url_image" :alt="item.name_identifier"></v-img>
                         </v-avatar>
                       </template>
                     </v-list-item>
@@ -155,16 +155,16 @@
               <v-select v-model="modelAccountDestination" clearable prepend-inner-icon="mdi-bank-transfer-in" :rules="selectRules" item-value="id" item-title="name_identifier"  color="primary" label="Conta destino*" :items="accountsFilteredDestination" variant="underlined">
                  <template v-slot:selection="{item}">
                     <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
-                      <v-img  :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
+                      <v-img  :src="item.url_image" :alt="item.name_identifier"></v-img>
                     </v-avatar>
-                    <span >{{ item.raw.name_identifier }}</span>
+                    <span >{{ item.name_identifier }}</span>
                   </template>
 
                   <template v-slot:item="{props, item}">
                     <v-list-item  v-bind="props">
                       <template v-slot:prepend>
                         <v-avatar>
-                          <v-img :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
+                          <v-img :src="item.url_image" :alt="item.name_identifier"></v-img>
                         </v-avatar>
                       </template>
                     </v-list-item>

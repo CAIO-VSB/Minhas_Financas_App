@@ -19,6 +19,8 @@
   import DateInput from '~/components/ui/DateInput.vue'
   import CardAddMovimentsCreditCard from "~/components/forms/CardAddMovimentsCreditCard.vue";
   import type { TPeriod } from "~~/types/period/TPeriod"
+  import { VMonthPicker } from 'vuetify/labs/VMonthPicker'
+import DialogHelpInvoice from "./components/DialogHelpInvoice.vue"
 
   const { getCreditCardOnlyActive, patchCreditCardById, getCreditCardOnlyDisable } = useHttpCreditsCards()
   const { getByCreditCard, getTotalInvoice } = useHttpMovementCreditCard()
@@ -35,7 +37,7 @@
     queryFn: getCreditCardOnlyDisable,
   })
 
-  const showMenu = ref(false)
+  const showDialogHelpInvoice = ref(false)
   const menu = ref(false)
   const modalAddCard = ref(false)
   const modalEditCard = ref(false)
@@ -168,6 +170,7 @@
 </script>
 
 <template>
+
  <v-empty-state
   v-if="!isPending && !isPendingDisable && !allCreditCard?.length && !allDeactivatedCrediCard?.length"
   title="Adicione um cartão de crédito"
@@ -321,13 +324,25 @@
     </div>
 
     <div class="fab-wrapper">
+      <v-tooltip text="Ajuda sobre a fatura" location="left">
+        <template #activator="{ props }">
+          <BaseFab 
+          v-bind="props"
+          color="blue"
+          icon="mdi-help"
+          size="50"
+          @click="showDialogHelpInvoice = true"
+          />
+        </template>
+      </v-tooltip>
+
       <v-tooltip text="Nova despesa" location="left">
         <template #activator="{ props }">
           <BaseFab 
           v-bind="props"
           color="blue"
           icon="mdi-plus"
-          size="60"
+          size="50"
           @click="modalAddMovementCreditCard = true"
           />
         </template>
@@ -344,6 +359,8 @@
       v-model="modalEditCard" />
 
       <CardAddMovimentsCreditCard v-model="modalAddMovementCreditCard" />
+
+      <DialogHelpInvoice :model-value="showDialogHelpInvoice" />
       
     </div>
     
@@ -365,6 +382,9 @@
   bottom: 25px;
   right: 24px;
   z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .text-disabled {

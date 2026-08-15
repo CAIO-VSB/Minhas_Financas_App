@@ -3,14 +3,14 @@ import '@mdi/font/css/materialdesignicons.css'
 
 import 'vuetify/styles'
 import  { createVuetify } from 'vuetify'
-import { VDateInput } from 'vuetify/labs/VDateInput'
+import { VMonthPicker } from 'vuetify/labs/VMonthPicker'
 import { pt } from "vuetify/locale"
 // import { pt } from "vuetify/locale"
 
 export default defineNuxtPlugin((app) => {
    const vuetify = createVuetify({
         components: {
-            VDateInput
+            VMonthPicker
         },
         locale: {
             locale: "pt",

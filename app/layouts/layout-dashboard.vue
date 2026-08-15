@@ -82,7 +82,7 @@
             class="mb-1"
             >
               <template #title>
-                <span class="text-body-1">Categorias</span>
+                <span class="size-item-title">Categorias</span>
               </template>
           </v-list-item>
 

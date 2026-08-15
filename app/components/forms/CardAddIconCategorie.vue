@@ -88,7 +88,7 @@
         <div class="icon-grid">
           <div
           v-for="item in icons"
-          :key="item"
+          :key="item.type"
           @click="selectdItem(item)"
           class="icon-cell"
           >

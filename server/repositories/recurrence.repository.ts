@@ -121,9 +121,9 @@ export const recurrenceRepository = {
                     }
 
                     await conn.query(
-                        `INSERT INTO credit_card_movements(user_id, credit_card_id, invoice_id, categorie_id, description_credit, value_transaction, purchase_date, installment_number, recurrence_id, is_deleted, observation) 
+                        `INSERT INTO credit_card_movements(user_id, credit_card_id, invoice_id, categorie_id, description_credit, value_transaction, purchase_date, installment_number, recurrence_id, status_movement, observation) 
                         VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-                        [userId, movement.credit_cards_id, invoiceId, movement.categorie_id, movement.description_credit, movement.value_transaction, movement.purchase_date, null, recurrenceId, movement.is_deleted, movement.observation]
+                        [userId, movement.credit_cards_id, invoiceId, movement.categorie_id, movement.description_credit, movement.value_transaction, movement.purchase_date, null, recurrenceId, movement.status_movement, movement.observation]
                     )
                 }
             }
@@ -173,9 +173,9 @@ export const recurrenceRepository = {
                     }
 
                     await conn.query(
-                        `INSERT INTO credit_card_movements(user_id, credit_card_id, invoice_id, categorie_id, description_credit, value_transaction, purchase_date, installment_number, recurrence_id, is_deleted, observation) 
-                        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-                        [userId, valor.credit_cards_id, invoiceId, valor.categorie_id, valor.description_credit, valor.value_transaction, valor.purchase_date, indice + 1, recurrenceId, valor.is_deleted, valor.observation]
+                        `INSERT INTO credit_card_movements(user_id, credit_card_id, invoice_id, categorie_id, description_credit, value_transaction, purchase_date, installment_number, recurrence_id, status_movement, observation, installment_total) 
+                        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+                        [userId, valor.credit_cards_id, invoiceId, valor.categorie_id, valor.description_credit, valor.value_transaction, valor.purchase_date, indice + 1, recurrenceId, valor.status_movement, valor.observation, indice + 1]
                     )
                 }
             }

@@ -2,7 +2,7 @@ import * as z from "zod";
 
 export const schemaMovementCreditCard = z.object({
     id: z.number("ID da conta ausente").optional(),
-    credit_cards_id: z.number("Id do cartão de crédito ausente").nullish(),
+    credit_card_id: z.number("Id do cartão de crédito ausente").nullish(),
     categorie_id: z.number("Id da categoria ausente"),
     invoice_id: z.number("Id da fatura ausente").nullish(),
     description_credit: z.string("Descrição ausente").min(1),
@@ -12,8 +12,10 @@ export const schemaMovementCreditCard = z.object({
     installment_total: z.number().nullish(),
     recurrence_id: z.number().nullish(),
     observation: z.string().nullish(),
-    is_deleted: z.boolean().nullish(),
-    closingDay: z.number().nullish()
+    status_movement: z.string().nullish(),
+    closingDay: z.number().nullish(),
+    invoice_month: z.number().nullish(),
+    invoice_year: z.number().nullish()
 });
 
 export type TMovementCreditCardPayload = z.infer<typeof schemaMovementCreditCard>

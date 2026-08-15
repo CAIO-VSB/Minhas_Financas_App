@@ -46,6 +46,7 @@
     const userProvider = computed(() => {
         return data.value?.find(item => item.userId === session?.session.userId) ?? null
     })
+    
     const provedor = computed(() => {
         if (!userProvider.value) return ""
         if (userProvider.value.providerId === 'credential') {

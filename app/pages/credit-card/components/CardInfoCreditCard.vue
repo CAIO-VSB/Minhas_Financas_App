@@ -11,6 +11,12 @@
     queryFn: getCreditCardOnlyActive,
   })
 
+  const items = [
+    { title: 'Pagamento total', icon: 'mdi-check-circle-outline' },
+    { title: 'Pagamento parcial', icon: 'mdi-circle-half-full' },
+    { title: 'Pagamento adiantado', icon: 'mdi-clock-fast' },
+  ]
+
   type TPeriod = {
     year: number,
     month: number
@@ -22,10 +28,6 @@
     loading: boolean | null,
     period: TPeriod 
   }>()
-
-  watch(props, (val) => {
-    console.log("Valor chegando " + JSON.stringify(val))
-  })
 
   const sumary = computed(() => {
     const row = props.creditCard
@@ -92,21 +94,48 @@
 
         <v-card-text>
             <div class="d-flex flex-column ga-4">
-              <div class="d-flex justify-space-between bg-backgroundPrimary">
+              <div class="d-flex justify-space-between">
                 <span style="font-size: var(--text-base);" class="text-textSecundary">Valor a pagar</span>
-                <span class="mr-2" style="font-size: var(--text-base); font-weight: 500;">{{ formatCurrency(totalInvoice) }}</span>
+                <span class="mr-2" style="font-size: var(--text-base); font-weight: 500;"> <v-chip variant="text" color="primary">{{ formatCurrency(totalInvoice) }}</v-chip></span>
               </div>
-              <div class="d-flex justify-center mt-2">
-                <v-btn elevation="3" variant="flat" class="w-100" color="blue">
-                  Fechar fatura
-                </v-btn>
+              <div class="d-flex justify-space-between">
+                <span style="font-size: var(--text-base);" class="text-textSecundary">Saldo anterior</span>
+                <span class="mr-2" style="font-size: var(--text-base); font-weight: 500;"> <v-chip variant="text" color="primary">{{ formatCurrency(totalInvoice) }}</v-chip></span>
+              </div>
+              <div class="d-flex justify-center mt-2 ga-3">
+                <v-menu
+                  transition="scale-transition"
+                >
+                  <template v-slot:activator="{ props }">
+                    <v-btn
+                      color="primary"
+                      v-bind="props"
+                      prepend-icon="mdi-dots-vertical"
+                      class="w-100"
+                      variant="tonal"
+                    >
+                      Ações da fatura
+                    </v-btn>
+                  </template>
+
+                  <v-list>
+                    <v-list-item
+                      v-for="(item, i) in items"
+                      :key="i"
+                      :value="i"
+                      :prepend-icon="item.icon"
+                    >
+                      <v-list-item-title>{{ item.title }}</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
               </div>
             </div>
           </v-card-text>
           <v-divider></v-divider>
           <v-card-text>
             <div class="d-flex flex-column ga-4">
-              <div class="d-flex justify-space-between bg-backgroundPrimary">
+              <div class="d-flex justify-space-between">
                 <span style="font-size: var(--text-base);" class="text-textSecundary">Fechamento</span>
                 <span class="mr-2" style="font-size: var(--text-base); font-weight: 500;">{{ sumary?.fechamento }}</span>
               </div>
@@ -118,7 +147,7 @@
                 <span style="font-size: var(--text-base);" class="text-textSecundary">Limite total</span>
                 <span class="mr-2" style="font-size: var(--text-base); font-weight: 500;">{{ formatCurrency(sumary?.limiteTotal ?? 0.00) }}</span>
               </div>
-              <div class="d-flex justify-space-between bg-backgroundPrimary">
+              <div class="d-flex justify-space-between">
                 <span style="font-size: var(--text-base);" class="text-textSecundary">4 últimos dígitos </span>
                 <span class="mr-2" style="font-size: var(--text-base); font-weight: 500;">{{ sumary?.ultimosDigitos }}</span>
               </div>

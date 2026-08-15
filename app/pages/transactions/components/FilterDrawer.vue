@@ -168,15 +168,15 @@
                 >                
                     <template v-slot:selection="{item}">
                     <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
-                        <v-avatar :icon="item.raw.url_icon"></v-avatar>
+                        <v-avatar :icon="item.url_icon"></v-avatar>
                     </v-avatar>
-                    <span>{{ item.raw.name_identifier }}</span>
+                    <span>{{ item.name_identifier }}</span>
                     </template>
 
                     <template v-slot:item="{props, item}">
                     <v-list-item v-bind="props">
                         <template v-slot:prepend>
-                        <v-avatar :icon="item.raw.url_icon"></v-avatar>
+                        <v-avatar :icon="item.url_icon"></v-avatar>
                         </template>
                     </v-list-item>
                     </template>
@@ -220,16 +220,16 @@
 
                     <template v-slot:selection="{item}">
                     <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
-                        <v-img  :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
+                        <v-img  :src="item.url_image" :alt="item.name_identifier"></v-img>
                     </v-avatar>
-                    <span >{{ item.raw.name_identifier }}</span>
+                    <span >{{ item.name_identifier }}</span>
                     </template>
 
                     <template v-slot:item="{props, item}">
                     <v-list-item  v-bind="props">
                         <template v-slot:prepend>
                         <v-avatar>
-                            <v-img :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
+                            <v-img :src="item.url_image" :alt="item.name_identifier"></v-img>
                         </v-avatar>
                         </template>
                     </v-list-item>

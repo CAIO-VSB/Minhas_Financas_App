@@ -150,7 +150,7 @@
                         </template>
                     </v-text-field>
                         <div class="validate-password">
-                            <span class="font-weight-bold mb-2">Sua senha deve conter no mínimo:</span>
+                            <span class="font-weight-bold" style="font-size: var(--text-base);">Sua senha deve conter no mínimo:</span>
                             <v-expand-transition>
                                 <div class="ml-1 bg-gray">          
                                     <div>
@@ -222,6 +222,10 @@
 .validate-password {
     background-color: #f2f2f2;
     padding: 5px;
+}
+
+.text-display-large {
+    font-size: 1.2rem;
 }
 
 </style>

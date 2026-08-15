@@ -17,9 +17,9 @@
 
 <template>
 
-    <v-card :loading="propsCards.loading">
+    <v-card density="comfortable" :loading="propsCards.loading">
         <div class="d-flex align-center ga-2 pl-2 mb-2">
-            <div class="pa-2 rounded-lg ">
+            <div class="pa-1 rounded-lg">
                 <v-avatar 
                 :color="propsCards.color"
                 variant="tonal" 

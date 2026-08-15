@@ -238,7 +238,7 @@
             size="45"
             >
             </v-avatar>
-             <span class="ml-2 card-label">{{ value.name_identifier }}</span>  
+             <span class="ml-3 card-label">{{ value.name_identifier }}</span>  
           </template>
 
           <template #append>
@@ -272,20 +272,20 @@
 
           <template #text>
             <div class="d-flex ga-16 mt-3">
-              <span class="font-weight-semibold card-value" style="color: #0F172A;">Saldo atual</span>
+              <span class="card-value" style="color: #0F172A;">Saldo atual</span>
               <span class="mb-10 font-weight-bold card-value">{{ formatCurrency(value.saldo_atual ?? 0.00) }}</span>
             </div>
           </template>
 
            <v-divider></v-divider>
 
-          <div class="d-flex mb-1  mt-1 align-center justify-center">
+          <div class="d-flex mb-1 mt-1 align-center justify-center">
             <v-btn
             variant="text"
             color="primary"
             @click="handleOpenAddExpense(value)"
             >
-              Adicionar despesa
+              ADICIONAR DESPESA
             </v-btn>
           </div>
       </v-card>

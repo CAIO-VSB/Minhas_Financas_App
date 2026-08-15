@@ -71,8 +71,8 @@
     accounts_id: null,
     categorie_id: null,
     type_recurrence: null,
-    frequency_recurrence: "",
-    total_installments: 0,
+    frequency_recurrence: "Dias",
+    total_installments: 2,
     day_maturity: null,
     is_active: true
   })
@@ -168,7 +168,7 @@
     showInputFixa.value = ""
     showInputParcelado.value = ""
     recorrenceForm.value.frequency_recurrence = ""
-    recorrenceForm.value.total_installments = 0
+    recorrenceForm.value.total_installments = 2
     modelAccounts.value = null
     modelCategorias.value = null
     movementsForm.value.accounts_id = null
@@ -186,7 +186,7 @@
     showInputFixa.value = ""
     showInputParcelado.value = ""
     recorrenceForm.value.frequency_recurrence = ""
-    recorrenceForm.value.total_installments = 0
+    recorrenceForm.value.total_installments = 2
     modelAccounts.value = null
     modelCategorias.value = null
     movementsForm.value.accounts_id = null
@@ -237,6 +237,19 @@
         "Data inválida",
         "Não foi possível concluir a ação porque a data informada é inválida ou está ausente.",
       )
+      return
+    }
+
+    if (!recorrenceForm.value.total_installments) {
+      notifyError(
+        "Total de parcelas inválido",
+        "Não foi possível concluir a ação porque o total de parcela é inválido ou está ausente.",
+      )
+      return
+    }
+
+    if (recorrenceForm.value.total_installments >= 100) {
+      notifyError("Atenção", "A quantidade de parcelas não pode exceder 100.", 7000)
       return
     }
     
@@ -339,16 +352,16 @@
 
                   <template v-slot:selection="{item}">
                     <v-avatar style="width: 25px; height: 24px; margin-right: 12px;"> 
-                      <v-img  :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
+                      <v-img  :src="item.url_image" :alt="item.name_identifier"></v-img>
                     </v-avatar>
-                    <span >{{ item.raw.name_identifier }}</span>
+                    <span >{{ item.name_identifier }}</span>
                   </template>
 
                   <template v-slot:item="{props, item}">
                     <v-list-item  v-bind="props">
                       <template v-slot:prepend>
                         <v-avatar>
-                          <v-img :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
+                          <v-img :src="item.url_image" :alt="item.name_identifier"></v-img>
                         </v-avatar>
                       </template>
                     </v-list-item>
@@ -401,15 +414,15 @@
                   
                   <template v-slot:selection="{item}">
                     <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
-                      <v-avatar :icon="item.raw.url_icon"></v-avatar>
+                      <v-avatar :icon="item.url_icon"></v-avatar>
                     </v-avatar>
-                    <span>{{ item.raw.name_identifier }}</span>
+                    <span>{{ item.name_identifier }}</span>
                   </template>
 
                   <template v-slot:item="{props, item}">
                     <v-list-item v-bind="props">
                       <template v-slot:prepend>
-                        <v-avatar :icon="item.raw.url_icon"></v-avatar>
+                        <v-avatar :icon="item.url_icon"></v-avatar>
                       </template>
                     </v-list-item>
                   </template>
@@ -498,6 +511,7 @@
                   variant="underlined"
                   controlVariant="default"
                   :min="2"
+                  :max="100"
                   label="Número de parcelas*"
                   :hideInput="false"
                   inset

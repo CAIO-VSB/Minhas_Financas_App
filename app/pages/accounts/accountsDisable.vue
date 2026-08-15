@@ -146,11 +146,11 @@
       </template>
       <template #text>
         <div class="d-flex align-center">
-          <span class="text-h6 font-weight-bold w-100 saldo-total-archived">{{ formatCurrency(totalArchived ?? 0.00) }}</span>
-          <span class="w-100 d-flex justify-end"><v-avatar size="45" rounded="lg" icon="mdi-scale-unbalanced" variant="tonal" color="primary"></v-avatar></span>
+          <span class="font-weight-bold w-100 saldo-total-archived" style="font-size: 1.3rem;">{{ formatCurrency(totalArchived ?? 0.00) }}</span>
+          <span class="w-100 d-flex justify-end"><v-avatar size="47" rounded="lg" icon="mdi-scale-unbalanced" variant="tonal" color="primary"></v-avatar></span>
         </div>
         <div>
-          <v-chip size="x-small" variant="tonal">
+          <v-chip color="blue" size="x-small" variant="tonal">
             Arquivado
           </v-chip>
         </div>

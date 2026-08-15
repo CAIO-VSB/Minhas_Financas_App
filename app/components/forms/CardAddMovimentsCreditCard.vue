@@ -51,16 +51,22 @@
     const showInputFixa = ref("")
     const showSwitch = ref(false)
     const creditCardData = ref<TCreditCard | null>(null)
+    const modalHelpInvoice = ref(false)
+    const date = ref(`${String(new Date().getFullYear())}-${String(new Date().getMonth() + 1)}`)
+    const menu = ref(false)
+    const updateInvoiceAutomatically = ref(false)
 
     const movementCreditCardForm = ref<TMovementCreditCard>({
-      credit_cards_id: null,
+      credit_card_id: null,
       invoice_id: null,
       categorie_id: null,
       description_credit: "",
-      value_transaction: null,
+      value_transaction: 0.00,
       purchase_date: new Date(),
       observation: "",
-      is_deleted: false
+      status_movement: "ativa",
+      invoice_month: null,
+      invoice_year: null
     })
 
     const recorrenceForm = ref<TRecurrence>({
@@ -70,7 +76,7 @@
       categorie_id: null,
       type_recurrence: "",
       frequency_recurrence: "Meses",
-      total_installments: 0,
+      total_installments: 2,
       day_maturity: null,
       is_active: true
     })
@@ -119,7 +125,16 @@
     })
 
     watch(modelCreditCard, (val) => {
-      movementCreditCardForm.value.credit_cards_id = val
+      movementCreditCardForm.value.credit_card_id = val
+
+      const selectCard = creditCardOnlyActive.value?.find(
+        card => card.id === val
+      )
+
+      if (selectCard) {
+        creditCardData.value = selectCard
+        updateSuggestedInvoice()
+      }
     })
 
     const filterCategorias = computed(() => {
@@ -131,6 +146,7 @@
       showInputParcelado.value = ""
       recorrenceForm.value.frequency_recurrence = ""
       recorrenceForm.value.total_installments = 0
+      recorrenceForm.value.frequency_recurrence = "Meses"
       modelCategorias.value = null
       modelInvoice.value = null
       modelCreditCard.value = null
@@ -146,7 +162,8 @@
       showInputFixa.value = ""
       showInputParcelado.value = ""
       recorrenceForm.value.frequency_recurrence = ""
-      recorrenceForm.value.total_installments = 0
+      recorrenceForm.value.total_installments = 2
+      recorrenceForm.value.frequency_recurrence = "Meses"
       modelCategorias.value = null
       modelInvoice.value = null
       modelCreditCard.value = null
@@ -169,6 +186,40 @@
 
     function salveCreditCardDate(data: TCreditCard) {
       creditCardData.value = data
+    }
+
+    watch(() => movementCreditCardForm.value.purchase_date, () => {
+      updateSuggestedInvoice()
+    })
+
+    function updateSuggestedInvoice() {
+      const purchaseDate = movementCreditCardForm.value.purchase_date
+      const closingDay = creditCardData.value?.closing_day
+
+      if (!purchaseDate || !closingDay){
+        return
+      }
+
+      const result = calculateInvoiceMonth(
+        new Date(purchaseDate),
+        closingDay ?? 0
+      )
+
+      updateInvoiceAutomatically.value = true
+
+      date.value = `${result.year}-${String(result.month).padStart(2, "0")}`
+
+      nextTick(() => {
+        updateInvoiceAutomatically.value = false
+      })
+    }
+
+    function handleInvoiceManualChange() {
+      if (updateInvoiceAutomatically.value) {
+        return
+      }
+
+      menu.value = false
     }
 
     const { mutate:mutateMovements, isPending:isPendingMovements  } = useMutation({
@@ -199,7 +250,22 @@
       return
     }
 
+    if (!recorrenceForm.value.total_installments) {
+      notifyError(
+        "Total de parcelas inválido",
+        "Não foi possível concluir a ação porque o total de parcela é inválido ou está ausente.",
+      )
+      return
+    }
+
+    if (recorrenceForm.value.total_installments >= 100) {
+      notifyError("Atenção", "A quantidade de parcelas não pode exceder 100.", 7000)
+      return
+    }
+
     const dateFormated = dateToDateOnly(movementCreditCardForm.value.purchase_date)
+
+    const [year, month] = date.value.split("-").map(Number)
 
     try {
       const formValid = await form.value.validate()
@@ -210,8 +276,12 @@
           ...movementCreditCardForm.value,
           purchase_date: dateFormated,
           credit_cards_id: modelCreditCard.value,
-          closingDay: creditCardData.value?.closing_day
+          closingDay: creditCardData.value?.closing_day,
+          invoice_month: month,
+          invoice_year: year
         }
+
+        console.log("Payload da movimentação:", movementsCrediCardPayload)
 
         const recurrencePayload = {
           ...recorrenceForm.value,
@@ -229,6 +299,7 @@
           emit("success")
         } else {
           mutateMovements(resultSchema.data)
+          console.log('Caiu aqui???????????????')
         } 
 
         resetForm()
@@ -243,9 +314,12 @@
 
   }
 
+
 </script>
 
 <template>
+
+
   <div class="text-center">
     <v-form
     @submit.prevent
@@ -256,7 +330,7 @@
         <v-card title="Nova despesa cartão de crédito">
           <v-divider></v-divider>
           <v-card-text>
-            <v-row dense>
+            <v-row density="comfortable">
               <v-col
               dense cols="12" md="6" sm="12"
               >
@@ -303,15 +377,15 @@
                   
                   <template v-slot:selection="{item}">
                     <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
-                      <v-avatar :icon="item.raw.url_icon"></v-avatar>
+                      <v-avatar :icon="item.url_icon"></v-avatar>
                     </v-avatar>
-                    <span>{{ item.raw.name_identifier }}</span>
+                    <span>{{ item.name_identifier }}</span>
                   </template>
 
                   <template v-slot:item="{props, item}">
                     <v-list-item v-bind="props">
                       <template v-slot:prepend>
-                        <v-avatar :icon="item.raw.url_icon"></v-avatar>
+                        <v-avatar :icon="item.url_icon"></v-avatar>
                       </template>
                     </v-list-item>
                   </template>
@@ -364,15 +438,15 @@
                   
                   <template v-slot:selection="{item}">
                     <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
-                      <v-avatar :image="item.raw.url_logo" ></v-avatar>
+                      <v-avatar :image="item.url_logo" ></v-avatar>
                     </v-avatar>
-                    <span>{{ item.raw.name_identifier }}</span>
+                    <span>{{ item.name_identifier }}</span>
                   </template>
 
                   <template v-slot:item="{props, item}">
-                    <v-list-item @click="salveCreditCardDate(item.raw)" v-bind="props">
+                    <v-list-item @click="salveCreditCardDate(item)" v-bind="props">
                       <template v-slot:prepend>
-                        <v-avatar :image="item.raw.url_logo" ></v-avatar>
+                        <v-avatar :image="item.url_logo" ></v-avatar>
                       </template>
                     </v-list-item>
                   </template>
@@ -383,6 +457,36 @@
                 cols="12" md="12" sm="12"
                 >
                   <v-text-field prepend-inner-icon="mdi-note-text" v-model="movementCreditCardForm.observation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="underlined"></v-text-field >
+                </v-col>
+
+                
+              <v-col cols="12" md="12" sm="12">
+                  <v-menu
+                      v-model="menu"
+                      :close-on-content-click="false"
+                      min-width="auto"
+                      transition="scale-transition"
+                      >
+                      <template v-slot:activator="{ props: activatorProps }">
+                          <v-text-field
+                          v-model="date"
+                          label="Fatura"
+                          prepend-inner-icon="mdi-calendar"
+                          hide-details
+                          readonly
+                          v-bind="activatorProps"
+                          variant="underlined"
+                          >
+                          <template #append-inner>
+                              <v-icon @click.stop="modalHelpInvoice = true" v-tooltip="'Recomendações'" style="cursor: pointer;" icon="mdi-help-circle"></v-icon>
+                          </template>
+                          </v-text-field>
+                      </template>
+                      <v-month-picker
+                          v-model="date"
+                          @update:model-value="handleInvoiceManualChange"
+                      ></v-month-picker>
+                  </v-menu>
                 </v-col>
 
                 <div class="d-flex ga-3 options-footer">
@@ -426,6 +530,7 @@
                   variant="underlined"
                   controlVariant="default"
                   :min="2"
+                  :max="100"
                   label="Número de parcelas*"
                   :hideInput="false"
                   inset

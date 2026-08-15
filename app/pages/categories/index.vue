@@ -215,12 +215,11 @@
   <div class="container">
     <div class="card-filter">
       <v-card
-        class="mx-auto"
         >
-        <v-list density="compact">
+        <v-list >
           <v-list-subheader style="font-size: var(--text-base);">Filtro</v-list-subheader>
 
-          <v-divider></v-divider>
+          <v-divider :thickness="2" ></v-divider>
 
           <v-list-item
             color="primary"
@@ -244,7 +243,7 @@
           
           <v-divider :thickness="2" class="mt-2"></v-divider>
 
-          <div class="d-flex justify-space-between align-center mr-3 b">
+          <div class="d-flex justify-space-between align-center mr-3">
             <span class="ml-2 text-textSecundary" style="font-size: var(--text-base);">Somente ativas</span>
             <v-switch
               size="small"
@@ -262,24 +261,24 @@
     </div>
 
     <div class="card-list elevation-2 rounded-lg">
-      <v-list class="elevation-2" style="height: 100%;" lines="two" item-props>
+      <v-list class="elevation-2" style="height: 100%;" item-props>
 
         <v-list-item
           v-for="(categorie, index) in filteredCategories ||  []"
           :key="index"
-          :prepend-icon="categorie.url_icon"
         >
 
+        <template #prepend>
+          <v-icon size="25" :icon="categorie.url_icon"></v-icon>
+        </template>
+
         <template #title>
-          <p :class="{'text-disabled': !categorie.active}" style="padding-bottom: 12px; ">{{ categorie.name_identifier }}</p>
+          <p :class="{'text-disabled': !categorie.active}">{{ categorie.name_identifier }}</p>
+           <p ><v-chip :color="(categorie.type_categorie === 'Despesa') ? 'error': 'green'">{{ categorie.type_categorie }}</v-chip></p>
         </template>
 
-        <template #subtitle>
-          <p  style="padding-bottom: 12px;"><v-chip :color="(categorie.type_categorie === 'Despesa') ? 'error': 'green'">{{ categorie.type_categorie }}</v-chip></p>
-        </template>
+          <v-divider :thickness="1" ></v-divider>
 
-        <v-divider></v-divider>
-           
           <template #append>
             <div class="text-center">
               <v-menu location="center">
@@ -357,7 +356,6 @@
   gap: 16px;
   padding: 25px 0 0 0;
   justify-content: center;
-  margin-bottom: 10px;
 }
 
 .card-filter {

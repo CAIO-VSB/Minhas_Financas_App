@@ -184,89 +184,58 @@ async function handleEditMovementRevenue() {
         <v-card prepend-icon="mdi-bank-plus" title="Editar receita">
           <v-divider></v-divider>
           <v-card-text>
+            <v-row dense>
 
-            <CurrencyInput prepend-icon="mdi-cash" input-color="#2E7D32" base-color="#2E7D32" color="#2E7D32" :rules="currencyRules"  text-color="green" autocomplete="off" label="Valor*" v-model="props.draft.value_transaction" />
+              
+            <v-col
+              dense cols="12" md="6" sm="12"
+            >
+            <CurrencyInput prepend-inner-icon="mdi-cash" input-color="#2E7D32" base-color="#2E7D32" color="#2E7D32" :rules="currencyRules"  text-color="green" autocomplete="off" label="Valor*" v-model="props.draft.value_transaction" />
+            </v-col>
 
-            <v-date-input prepend-icon="mdi-calendar" :rules="dateRules" autocomplete="off" name="date" label="Data*" variant="underlined" v-model="props.draft.date_transaction"></v-date-input>
+            
+            <v-col
+              dense cols="12" md="6" sm="12"
+            >
+            <v-date-input prepend-inner-icon="mdi-calendar" prepend-icon="" :rules="dateRules" autocomplete="off" name="date" label="Data*" variant="underlined" v-model="props.draft.date_transaction"></v-date-input>
+            </v-col>
 
-            <v-text-field prepend-icon="mdi-pencil" :rules="nameRules" :counter="30" maxlength="30"  autocomplete="name" name="name" label="Descrição*" variant="underlined" v-model="props.draft.description_transaction"></v-text-field>
+            <v-col
+            dense cols="12" md="6" sm="12"
+            >
+            <v-text-field prepend-inner-icon="mdi-pencil" :rules="nameRules" :counter="30" maxlength="30"  autocomplete="name" name="name" label="Descrição*" variant="underlined" v-model="props.draft.description_transaction"></v-text-field>
+            </v-col>
 
-            <v-select
-              autocomplete="off"
-              :loading="isPending"
-              v-model="modelCategorias"
-              v-model:menu="menuCategorias"
-              :items="filterCategorias"
-              item-title="name_identifier"
-              item-value="id"
-              variant="underlined"
-              label="Categoria*"
-              persistent-hint
-              :rules="selectRules"
-              prepend-icon="mdi-shape"
-              >
-         
-                <template v-slot:selection="{item}">
-                  <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
-                    <v-avatar :icon="item.raw.url_icon"></v-avatar>
-                  </v-avatar>
-                  <span>{{ item.raw.name_identifier }}</span>
-                </template>
-
-                <template v-slot:item="{props, item}">
-                  <v-list-item v-bind="props">
-                    <template v-slot:prepend>
-                      <v-avatar :icon="item.raw.url_icon"></v-avatar>
-                    </template>
-                  </v-list-item>
-                </template>
-
-                <template v-slot:prepend-item>
-                  <div class="pa-2 border-b">
-                    <v-text-field
-                      v-model="searchCategorias"
-                      :error="!!searchCategorias && !filterCategorias?.length"
-                      density="compact"
-                      placeholder="Buscar..."
-                      prepend-inner-icon="mdi-magnify"
-                      variant="outlined"
-                      @click.stop
-                      @keydown.stop
-                      @mousedown.stop
-                      hide-details="auto"
-                    >                 
-                  </v-text-field>
-                  </div>
-                </template>
-              </v-select>
-
+            <v-col
+            dense cols="12" md="6" sm="12"
+            >
               <v-select
-                  v-model="modelAccounts"
-                  v-model:menu="menuAccounts"
-                  :items="filterAccounts"
-                  :rules="selectRules"
-                  item-title="name_identifier"
-                  item-value="id"
-                  variant="underlined"
-                  label="Conta*"
-                  hint="O valor será creditado nesta conta"
-                  persistent-hint
-                  autocomplete="off"
-                  prepend-icon="mdi-bank"
+                v-model="modelAccounts"
+                v-model:menu="menuAccounts"
+                :items="filterAccounts"
+                :rules="selectRules"
+                item-title="name_identifier"
+                item-value="id"
+                variant="underlined"
+                label="Conta*"
+                hint="O valor será creditado nesta conta"
+                persistent-hint
+                autocomplete="off"
+                prepend-inner-icon="mdi-bank"
                 >
 
                   <template v-slot:selection="{item}">
-                    <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
-                      <v-img  :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
+                    <v-avatar style="width: 25px; height: 24px; margin-right: 12px;"> 
+                      <v-img  :src="item.url_image" :alt="item.name_identifier"></v-img>
                     </v-avatar>
-                    <span >{{ item.raw.name_identifier }}</span>
+                    <span >{{ item.name_identifier }}</span>
                   </template>
 
                   <template v-slot:item="{props, item}">
                     <v-list-item  v-bind="props">
                       <template v-slot:prepend>
                         <v-avatar>
-                          <v-img :src="item.raw.url_image" :alt="item.raw.name_identifier"></v-img>
+                          <v-img :src="item.url_image" :alt="item.name_identifier"></v-img>
                         </v-avatar>
                       </template>
                     </v-list-item>
@@ -290,9 +259,70 @@ async function handleEditMovementRevenue() {
                     </div>
                   </template>
                 </v-select>
+                </v-col>
 
-                <v-text-field prepend-icon="mdi-note-text" v-model="props.draft.observation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="underlined"></v-text-field >
+                <v-col
+                dense cols="12" md="12" sm="12"
+                >
+                <v-select
+                autocomplete="off"
+                :loading="isPending"
+                v-model="modelCategorias"
+                v-model:menu="menuCategorias"
+                :items="filterCategorias"
+                item-title="name_identifier"
+                item-value="id"
+                variant="underlined"
+                label="Categoria*"
+                persistent-hint
+                :rules="selectRules"
+                prepend-inner-icon="mdi-shape"
+                >
+         
+                <template v-slot:selection="{item}">
+                  <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
+                    <v-avatar :icon="item.url_icon"></v-avatar>
+                  </v-avatar>
+                  <span>{{ item.name_identifier }}</span>
+                </template>
 
+                <template v-slot:item="{props, item}">
+                  <v-list-item v-bind="props">
+                    <template v-slot:prepend>
+                      <v-avatar :icon="item.url_icon"></v-avatar>
+                    </template>
+                  </v-list-item>
+                </template>
+
+                <template v-slot:prepend-item>
+                  <div class="pa-2 border-b">
+                    <v-text-field
+                      v-model="searchCategorias"
+                      :error="!!searchCategorias && !filterCategorias?.length"
+                      density="compact"
+                      placeholder="Buscar..."
+                      prepend-inner-icon="mdi-magnify"
+                      variant="outlined"
+                      @click.stop
+                      @keydown.stop
+                      @mousedown.stop
+                      hide-details="auto"
+                    >                 
+                  </v-text-field>
+                  </div>
+                </template>
+              </v-select>
+              </v-col>
+
+              <v-col
+              dense cols="12" md="12" sm="12"
+              >
+              <v-text-field prepend-inner-icon="mdi-note-text" v-model="props.draft.observation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="underlined"></v-text-field >
+              </v-col>
+
+              <v-col
+              dens cols="12" md="12" sm="12"
+              >
               <v-switch
                 v-model="switchValue"
                 color="success"
@@ -303,30 +333,31 @@ async function handleEditMovementRevenue() {
                 true-icon="mdi-check"
                 false-icon="mdi-close"
               ></v-switch> 
+              </v-col>
 
             <small class="text-caption text-medium-emphasis"
               >* Indica campos obrigatórios</small
             >
+            </v-row>
           </v-card-text>
 
           <v-divider></v-divider>
 
           <v-card-actions>
-            <v-spacer></v-spacer>
-
             <v-btn
               text="Fechar"
               variant="plain"
               @click="resetForm"
             ></v-btn>
-
+            <v-spacer></v-spacer>
             <v-btn
               color="primary"
-              text="Editar"
-              variant="tonal"
+              text="Salvar"
+              variant="flat"
               :loading="isPending"
               @click="handleEditMovementRevenue"
-            ></v-btn>
+            >
+            </v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
