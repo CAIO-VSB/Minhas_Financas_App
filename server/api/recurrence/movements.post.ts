@@ -34,12 +34,14 @@ export default defineEventHandler( async (event) => {
 
     const { recurrence, movements } = result.data
 
+    console.log("")
+
     try {
 
         return await recurrenceRepository.create(session.session.userId, recurrence, movements)
 
     } catch (error) {
-        console.log("Erro ao criar recorrência" + error)
+        console.log("Erro ao criar recorrência " + error)
         throw createError({
             status: 500,
             statusMessage: "Internal Server Error"

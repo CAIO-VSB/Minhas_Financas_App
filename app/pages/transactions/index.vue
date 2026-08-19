@@ -494,9 +494,9 @@
 
                 <v-text-field
                     v-model="search"
-                    label="Pesquisar"
+                    label="Pesquisar transação"
                     prepend-inner-icon="mdi-magnify"
-                    variant="outlined"
+                    variant="solo-filled"
                     hide-details
                     single-line
                     autocomplete="off"

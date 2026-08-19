@@ -1,14 +1,12 @@
 import type { TMovements, TMovementsSummary } from "~~/types/movements/TMovements"
 import type { TMovementsOnlyRenevue } from "~~/types/movements/TMovementsOnlyRevenue"
 import type { TMovementsOnlyExpenses } from "~~/types/movements/TMovementsOnlyExpenses"
-import { schemaMovements } from "~~/schemas/movements.schema"
-import type z from "zod"
+import type { schemaMovements, TMovementsPayload } from "~~/schemas/movements.schema"
 
-type TMovementsPaylodad = z.infer<typeof schemaMovements>
 
 export function useHttpMovements() {
 
-    const postMovements = async (data: TMovementsPaylodad) => {
+    const postMovements = async (data: TMovementsPayload) => {
         return $fetch<TMovements>("/api/movements", {method: "POST", body: data})
     }
 
@@ -40,16 +38,8 @@ export function useHttpMovements() {
         return $fetch<Pick<TMovementsSummary, "saldo_atual"> []>("/api/movements/index.getOnlyCurrentBalance", {method: "GET"})
     }
 
-    const patchMovementsById = async (id:number, data: TMovementsPaylodad) => {
+    const patchMovementsById = async (id:number, data: TMovementsPayload) => {
         return $fetch<TMovements>(`/api/movements/${id}`, {method: "PATCH", body: data}) 
-    }
-
-    const patchMovementsRecurrenceById = async (id:number, data: TMovementsPaylodad, editingOption?: string, recurrenceId?: number) => {
-        return $fetch<TMovements>(`/api/movements/patchMovementsRecurrenceById/${id}`, {method: "PATCH", body: data, query: {editingOption, recurrenceId}},) 
-    }
-    
-    const deleteMovementsRecurrenceById = async (id:number, data: TMovementsPaylodad, editingOption?: string, recurrenceId?: number) => {
-        return $fetch<TMovements>(`/api/movements/patchMovementsRecurrenceById/${id}`, {method: "DELETE", body: data, query: {editingOption, recurrenceId}},) 
     }
 
     return {
@@ -58,8 +48,6 @@ export function useHttpMovements() {
         getOnlyRevenues,
         getOnlyExpenses,
         patchMovementsById,
-        patchMovementsRecurrenceById,
-        deleteMovementsRecurrenceById,
         getCurrentBalance,
         getMovimentsByFilter,
         getMovimentsOnlyExpensesByFilter,

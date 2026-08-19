@@ -3,7 +3,8 @@
     const props = defineProps<{
         size: string,
         icon: string,
-        color: string
+        color: string,
+        disabled?: boolean
 
     }>()
 
@@ -15,6 +16,7 @@
 
     <div>
         <v-fab
+            :disabled="props.disabled"
             :color="props.color"
             :icon="props.icon"
             :size="props.size"

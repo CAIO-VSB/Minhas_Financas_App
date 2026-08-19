@@ -19,8 +19,8 @@
   import DateInput from '~/components/ui/DateInput.vue'
   import CardAddMovimentsCreditCard from "~/components/forms/CardAddMovimentsCreditCard.vue";
   import type { TPeriod } from "~~/types/period/TPeriod"
-  import { VMonthPicker } from 'vuetify/labs/VMonthPicker'
-import DialogHelpInvoice from "./components/DialogHelpInvoice.vue"
+  import DialogHelpInvoice from "./components/DialogHelpInvoice.vue"
+import type { TMovementCreditCard } from "~~/types/credit_card/TMovementCreditCard.js"
 
   const { getCreditCardOnlyActive, patchCreditCardById, getCreditCardOnlyDisable } = useHttpCreditsCards()
   const { getByCreditCard, getTotalInvoice } = useHttpMovementCreditCard()
@@ -46,6 +46,7 @@ import DialogHelpInvoice from "./components/DialogHelpInvoice.vue"
   const selectedCardData = ref<TCreditCard | null>(null)
   const selectedCard = ref("")
   const selectdLogo = ref("")
+  const disabledButtonAddExpense = ref(false)
 
   const period = ref({
     month: new Date().getMonth(),
@@ -83,6 +84,20 @@ import DialogHelpInvoice from "./components/DialogHelpInvoice.vue"
   },
 
   })
+
+  watch(dataByCreditCard, (val: TMovementCreditCard[] | undefined) => {
+
+    if (val === undefined || !val || val.length) {
+      disabledButtonAddExpense.value = false
+      return
+    }
+
+    if (val[0]?.status_invoice === 'aberta') {
+      disabledButtonAddExpense.value = false
+    } else {
+      disabledButtonAddExpense.value = true
+    }
+  }, {immediate: true})
  
   /**
    * Watch responsável por escutar as mudanças nos dados vindo do banco de dados
@@ -98,6 +113,7 @@ import DialogHelpInvoice from "./components/DialogHelpInvoice.vue"
       editDraft.value = current ?? null
     }
   }, {immediate: true})
+
 
   const totalForInvoice = computed(() => totalInvoice.value?.total ?? 0)
 
@@ -142,6 +158,10 @@ import DialogHelpInvoice from "./components/DialogHelpInvoice.vue"
 
   function handleAddCarton() {
     modalAddCard.value = true
+  }
+
+  function closeModalHelpInvoice() {
+    showDialogHelpInvoice.value = false
   }
 
   function handleOptionClick(option:TOptionAction, data: TCreditCard) {
@@ -339,6 +359,7 @@ import DialogHelpInvoice from "./components/DialogHelpInvoice.vue"
       <v-tooltip text="Nova despesa" location="left">
         <template #activator="{ props }">
           <BaseFab 
+          :disabled="disabledButtonAddExpense"
           v-bind="props"
           color="blue"
           icon="mdi-plus"
@@ -360,7 +381,7 @@ import DialogHelpInvoice from "./components/DialogHelpInvoice.vue"
 
       <CardAddMovimentsCreditCard v-model="modalAddMovementCreditCard" />
 
-      <DialogHelpInvoice :model-value="showDialogHelpInvoice" />
+      <DialogHelpInvoice @close-modal="closeModalHelpInvoice" :model-value="showDialogHelpInvoice" />
       
     </div>
     

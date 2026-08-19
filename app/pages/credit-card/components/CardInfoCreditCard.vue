@@ -10,11 +10,13 @@
     queryKey: QUERY_KEYS.creditCards.all,
     queryFn: getCreditCardOnlyActive,
   })
+  
 
   const items = [
     { title: 'Pagamento total', icon: 'mdi-check-circle-outline' },
     { title: 'Pagamento parcial', icon: 'mdi-circle-half-full' },
     { title: 'Pagamento adiantado', icon: 'mdi-clock-fast' },
+    { title: 'Reabrir fatura', icon: 'mdi-lock-open-variant' },
   ]
 
   type TPeriod = {
@@ -112,7 +114,7 @@
                       v-bind="props"
                       prepend-icon="mdi-dots-vertical"
                       class="w-100"
-                      variant="tonal"
+                      variant="flat"
                     >
                       Ações da fatura
                     </v-btn>

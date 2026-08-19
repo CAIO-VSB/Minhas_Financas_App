@@ -44,7 +44,7 @@
     const menuCreditCard = ref(false)
     const modelCreditCard = ref<number | null>(null)
     const menuCategorias = ref(false)
-    const modelCategorias = ref<number | null>(null)
+    const modelCategorias = ref<number>()
     const searchCategorias = ref("")
     const modalAddCategorie = ref(false)
     const modalAddCreditCard = ref(false)
@@ -67,12 +67,13 @@
 
     watch(modelCategorias, (newVal) => {
       if (props.draft === null) return
-      props.draft.categorie_id = newVal
+      //Salvar no banco -1 indica erro
+      props.draft.categorie_id = newVal ?? -1
     })
 
     watch(modelCreditCard, (newVal) => {
       if (props.draft === null) return
-      props.draft.credit_card_id = newVal
+      props.draft.credit_card_id = newVal ?? -1
     })
 
     const filterCategorias = computed(() => {
@@ -130,7 +131,7 @@
 
     const { mutate, isPending:isPendingMovements  } = useMutation({
 
-      mutationFn: (payload: TMovementCreditCardPayload) => patchMovementCardById(payload.id!, payload),
+      mutationFn: (payload: TMovementCreditCardPayload) => patchMovementCardById(payload.id!, payload, null),
 
       onSuccess: () => {
         invalidate(QUERY_KEYS.movementsCreditCard.byCreditCard)
@@ -198,7 +199,7 @@
     validate-on="lazy blur"
     >
       <v-dialog v-model="modelValue" max-width="650">
-        <v-card title="Editar despesa">
+        <v-card title="Editar despesa do cartão de crédito">
           <v-divider></v-divider>
           <v-card-text v-if="props.draft">
             <v-row density="comfortable">
@@ -369,7 +370,7 @@
 
           </v-card-text>
 
-          <v-divider></v-divider>
+          
 
           <v-card-actions >
             <v-btn

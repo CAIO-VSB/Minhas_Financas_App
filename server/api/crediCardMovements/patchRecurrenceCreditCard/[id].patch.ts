@@ -1,6 +1,6 @@
 import { auth } from "~~/auth"
 import { schemaMovementCreditCard } from "~~/schemas/movementCreditCard.schema"
-import { movementsCreditCardRespository } from "~~/server/repositories/movimentCreditCard.repository"
+import { recurrenceRepository} from "~~/server/repositories/recurrence.repository"
 
 export default defineEventHandler( async (event) => {
 
@@ -26,8 +26,15 @@ export default defineEventHandler( async (event) => {
     }
 
     const id = Number(getRouterParam(event, "id"))
-    const { choice } = getQuery(event)
-    const choiceFormated = String(choice)
+
+    const { editingOption, recurrenceId} = getQuery(event)
+
+    const optionEditingFormated = String(editingOption)
+
+    const recurrenceIdFormated = Number(recurrenceId)
+
+    console.log("ID recurrence chegando " + recurrenceIdFormated)
+
     const userId = session.session.userId
 
     if (!id || Number.isNaN(id)) {
@@ -39,10 +46,10 @@ export default defineEventHandler( async (event) => {
 
     try {
 
-        return await movementsCreditCardRespository.update(id, userId, result.data, choiceFormated)
+        return await recurrenceRepository.updateOnlyMovementRecurrenceCreditCard(id, result.data, optionEditingFormated, userId, recurrenceIdFormated)
 
     } catch (error) {
-        console.log("Erro ao editar movimentação " + error)
+        console.log("Erro ao editar movimentação do cartão de credito " + error)
         throw createError({
             status: 500,
             statusMessage: "Internal Server Error"

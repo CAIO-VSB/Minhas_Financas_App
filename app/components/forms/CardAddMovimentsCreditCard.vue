@@ -66,7 +66,11 @@
       observation: "",
       status_movement: "ativa",
       invoice_month: null,
-      invoice_year: null
+      invoice_year: null,
+      refund_of_movement_id: null,
+      description_reversal: null,
+      status_invoice: null,
+      type_recurrence: null
     })
 
     const recorrenceForm = ref<TRecurrence>({
@@ -145,7 +149,7 @@
       showInputFixa.value = ""
       showInputParcelado.value = ""
       recorrenceForm.value.frequency_recurrence = ""
-      recorrenceForm.value.total_installments = 0
+      recorrenceForm.value.total_installments = 2
       recorrenceForm.value.frequency_recurrence = "Meses"
       modelCategorias.value = null
       modelInvoice.value = null
@@ -188,10 +192,6 @@
       creditCardData.value = data
     }
 
-    watch(() => movementCreditCardForm.value.purchase_date, () => {
-      updateSuggestedInvoice()
-    })
-
     function updateSuggestedInvoice() {
       const purchaseDate = movementCreditCardForm.value.purchase_date
       const closingDay = creditCardData.value?.closing_day
@@ -207,12 +207,20 @@
 
       updateInvoiceAutomatically.value = true
 
+      console.log("Ta caindo aqui?")
+
       date.value = `${result.year}-${String(result.month).padStart(2, "0")}`
 
       nextTick(() => {
         updateInvoiceAutomatically.value = false
       })
     }
+
+    watch(() => movementCreditCardForm.value.purchase_date, () => {
+      console.log("E aqui? Ta caindo????????????")
+      updateSuggestedInvoice()
+    })
+
 
     function handleInvoiceManualChange() {
       if (updateInvoiceAutomatically.value) {
@@ -278,10 +286,8 @@
           credit_cards_id: modelCreditCard.value,
           closingDay: creditCardData.value?.closing_day,
           invoice_month: month,
-          invoice_year: year
+          invoice_year: year,
         }
-
-        console.log("Payload da movimentação:", movementsCrediCardPayload)
 
         const recurrencePayload = {
           ...recorrenceForm.value,
@@ -334,7 +340,7 @@
               <v-col
               dense cols="12" md="6" sm="12"
               >
-              <CurrencyInput prepend-inner-icon="mdi-cash" :rules="currencyRules" text-color="primary" autocomplete="off" label="Valor*" v-model="movementCreditCardForm.value_transaction" />
+              <CurrencyInput prepend-inner-icon="mdi-cash" :rules="currencyRules" autocomplete="off" label="Valor*" v-model="movementCreditCardForm.value_transaction" />
               </v-col>
 
               <v-col
@@ -477,9 +483,6 @@
                           v-bind="activatorProps"
                           variant="underlined"
                           >
-                          <template #append-inner>
-                              <v-icon @click.stop="modalHelpInvoice = true" v-tooltip="'Recomendações'" style="cursor: pointer;" icon="mdi-help-circle"></v-icon>
-                          </template>
                           </v-text-field>
                       </template>
                       <v-month-picker

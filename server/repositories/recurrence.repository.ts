@@ -53,6 +53,8 @@ export const recurrenceRepository = {
         }
     },
 
+    //---------------------------------------------------------------------------------------------------------------------------
+
     async createRecorrenceCreditCard(userId: string, data: TRecurrencePayload | null, dataMovementsCreditCard: TMovementCreditCardPayload[] | null) {
 
         const conn = await client.connect()
@@ -77,7 +79,7 @@ export const recurrenceRepository = {
                     `SELECT closing_day
                     FROM credit_cards
                     WHERE id = $1
-                    `,[movement.credit_cards_id]
+                    `,[movement.credit_card_id]
                     )
 
                     if (creditCardResult.rows.length === 0) {
@@ -86,13 +88,13 @@ export const recurrenceRepository = {
 
                     const closingDayValue = creditCardResult.rows?.[0].closing_day
 
-                    const creditCardId = movement.credit_cards_id
+                    const creditCardId = movement.credit_card_id
                     
                     const purchaseDateFormated = new Date(movement.purchase_date ?? Date.now())
 
                     if (closingDayValue === null) {
                         throw new Error(
-                            `Dia de fechamento não informado para o cartão ${movement.credit_cards_id}`
+                            `Dia de fechamento não informado para o cartão ${movement.credit_card_id}`
                         )
                     }
 
@@ -123,10 +125,12 @@ export const recurrenceRepository = {
                     await conn.query(
                         `INSERT INTO credit_card_movements(user_id, credit_card_id, invoice_id, categorie_id, description_credit, value_transaction, purchase_date, installment_number, recurrence_id, status_movement, observation) 
                         VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-                        [userId, movement.credit_cards_id, invoiceId, movement.categorie_id, movement.description_credit, movement.value_transaction, movement.purchase_date, null, recurrenceId, movement.status_movement, movement.observation]
+                        [userId, movement.credit_card_id, invoiceId, movement.categorie_id, movement.description_credit, movement.value_transaction, movement.purchase_date, null, recurrenceId, movement.status_movement, movement.observation]
                     )
                 }
             }
+
+            //---------------------------------------------------------------------------------------------------------------------------
 
             if (data?.type_recurrence === "parcelada" && dataMovementsCreditCard) {
 
@@ -136,7 +140,7 @@ export const recurrenceRepository = {
                     `SELECT closing_day
                     FROM credit_cards
                     WHERE id = $1
-                    `,[valor.credit_cards_id]
+                    `,[valor.credit_card_id]
                     )
 
                     if (creditCardResult.rows.length === 0) {
@@ -145,7 +149,7 @@ export const recurrenceRepository = {
 
                     const closingDayValue = creditCardResult.rows?.[0].closing_day
 
-                    const creditCardId = valor.credit_cards_id
+                    const creditCardId = valor.credit_card_id
                     const purchaseDateFormated = new Date(valor.purchase_date)
 
                     const resultInvoice = calculateInvoiceMonth(purchaseDateFormated, closingDayValue ?? 0)
@@ -175,7 +179,7 @@ export const recurrenceRepository = {
                     await conn.query(
                         `INSERT INTO credit_card_movements(user_id, credit_card_id, invoice_id, categorie_id, description_credit, value_transaction, purchase_date, installment_number, recurrence_id, status_movement, observation, installment_total) 
                         VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
-                        [userId, valor.credit_cards_id, invoiceId, valor.categorie_id, valor.description_credit, valor.value_transaction, valor.purchase_date, indice + 1, recurrenceId, valor.status_movement, valor.observation, indice + 1]
+                        [userId, valor.credit_card_id, invoiceId, valor.categorie_id, valor.description_credit, valor.value_transaction, valor.purchase_date, indice + 1, recurrenceId, valor.status_movement, valor.observation, indice + 1]
                     )
                 }
             }
@@ -190,5 +194,260 @@ export const recurrenceRepository = {
         } finally {
             conn.release()
         }
+    },
+
+    //---------------------------------------------------------------------------------------------------------------------------
+    async DeleteOnlyMovementRecurrence(id:number, data: TMovementsPayload, choiceOption: string, userId: string, recurrenceId: number) {
+
+        await client.query('BEGIN')
+
+        try {
+
+            if (choiceOption === "somente_esta") {
+
+                await client.query( 
+                `DELETE FROM movements WHERE id = $1 AND user_id = $2`, [id, userId])
+
+            } else if (choiceOption === "pendentes") {
+
+                await client.query( 
+                `DELETE FROM movements WHERE user_id = $1 AND recurrence_id = $2 AND status_transaction = 'pendente'`, [userId, recurrenceId])
+            
+            } else if (choiceOption === "todas") {
+
+                const statusValues = data.type_transaction === 'despesa'
+                ? ['pendente', 'pago']
+                : ['pendente', 'recebido']
+
+                await client.query( 
+                `DELETE FROM movements WHERE user_id = $1 AND recurrence_id = $2 AND status_transaction = ANY($3)`, [userId, recurrenceId, statusValues])
+            }
+
+            await client.query('COMMIT')
+
+        } catch (error) {
+
+            await client.query('ROLLBACK')
+            throw error
+        }
+
+    },
+
+    //---------------------------------------------------------------------------------------------------------------------------
+    async updateOnlyMovementRecurrence(id:number, data: TMovementsPayload, choiceOption: string, userId: string, recurrenceId: number) {
+
+        await client.query('BEGIN')
+
+        try {
+
+            if (choiceOption === "somente_esta") {
+
+                await client.query( 
+                `UPDATE movements 
+                    SET 
+                        type_transaction = $1,
+                        value_transaction = $2,
+                        date_transaction = $3,
+                        description_transaction = $4,
+                        categorie_id = $5,
+                        accounts_id = $6,
+                        observation = $7,
+                        url_recibo = $8,
+                        status_transaction = $9,
+                        is_deleted = $10
+                    WHERE id = $11 AND user_id = $12
+                `, [data.type_transaction, data.value_transaction, data.date_transaction, data.description_transaction, data.categorie_id, data.accounts_id, data.observation, data.url_recibo, data.status_transaction, data.is_deleted, id, userId])
+
+            } else if (choiceOption === "pendentes") {
+
+                await client.query( 
+                `UPDATE movements 
+                    SET 
+                        value_transaction = $1,
+                        description_transaction = $2,
+                        categorie_id = $3,
+                        accounts_id = $4,
+                        observation = $5
+                    WHERE user_id = $6 AND recurrence_id = $7 AND status_transaction = 'pendente'
+                `, [data.value_transaction, data.description_transaction, data.categorie_id, data.accounts_id, data.observation, userId, recurrenceId])
+            
+            } else if (choiceOption === "todas") {
+
+                const statusValues = data.type_transaction === 'despesa'
+                ? ['pendente', 'pago']
+                : ['pendente', 'recebido']
+
+                await client.query( 
+                `UPDATE movements 
+                    SET 
+                        value_transaction = $1,
+                        description_transaction = $2,
+                        categorie_id = $3,
+                        accounts_id = $4,
+                        observation = $5
+                    WHERE user_id = $6 AND recurrence_id = $7 AND status_transaction = ANY($8)
+                `, [data.value_transaction, data.description_transaction, data.categorie_id, data.accounts_id, data.observation, userId, recurrenceId, statusValues])
+
+            }
+
+            await client.query('COMMIT')
+
+        } catch (error) {
+
+            await client.query('ROLLBACK')
+            throw error
+        }
+
+    },
+
+    //---------------------------------------------------------------------------------------------------------------------------
+    async updateOnlyMovementRecurrenceCreditCard(id:number, data: TMovementCreditCardPayload, choiceOption: string, userId: string, recurrenceId: number) {
+
+        console.log("Atualizando movimentao do cartoa.... " + id, JSON.stringify(data), choiceOption, recurrenceId)
+
+        const conn = await client.connect() 
+
+        try {
+
+            await conn.query('BEGIN')
+
+            const invoiceMonth = data.invoice_month
+            const invoiceYear = data.invoice_year
+
+            const existingInvoice = await conn.query(
+                `SELECT id FROM credit_card_invoices WHERE credit_card_id = $1 AND invoice_month = $2 AND invoice_year = $3`,
+                [data.credit_card_id, invoiceMonth, invoiceYear]
+            )
+
+            let invoiceId: number
+
+            if (existingInvoice.rows.length > 0) {
+
+                invoiceId = existingInvoice.rows[0].id
+
+            } else {
+
+                if (!invoiceMonth || !invoiceYear) {
+                    throw new Error("Mês ou ano da fatura ausentes")
+                }
+    
+                const closingDate = new Date(invoiceYear, invoiceMonth - 1, data.closingDay ?? undefined)
+
+                const newInvoice = await conn.query(
+                    `INSERT INTO credit_card_invoices(credit_card_id, invoice_month, invoice_year, status_invoice, closing_date, total_value)
+                    VALUES($1, $2, $3, $4, $5, $6)
+                    RETURNING id`,
+                    [data.credit_card_id, invoiceMonth, invoiceYear, 'aberta', closingDate, null]
+                )
+                
+                invoiceId = newInvoice.rows[0].id
+            }
+
+            if (choiceOption === "somente_esta") {
+                
+                await conn.query(
+                `UPDATE credit_card_movements
+                    SET 
+                        value_transaction = $1,
+                        description_credit = $2,
+                        categorie_id = $3,
+                        credit_card_id = $4,
+                        invoice_id = $5,
+                        observation = $6,
+                        status_movement = $7
+                    WHERE id = $8 AND user_id = $9
+                `, [data.value_transaction, data.description_credit, data.categorie_id, data.credit_card_id, invoiceId, data.observation, data.status_movement, id, userId])
+
+            } else if (choiceOption === "esta_futuras") {
+
+                await conn.query(
+                    `UPDATE credit_card_movements
+                        SET 
+                            value_transaction = $1,
+                            description_credit = $2,
+                            categorie_id = $3,
+                            credit_card_id = $4,
+                            invoice_id = $5,
+                            observation = $6,
+                            status_movement = $7
+                        WHERE id = $8 AND user_id = $9
+                    `, [data.value_transaction, data.description_credit, data.categorie_id, data.credit_card_id, invoiceId, data.observation, data.status_movement, id, userId])
+
+                const futureMovements = await conn.query(
+                    `SELECT id, purchase_date FROM credit_card_movements
+                    WHERE user_id = $1 AND recurrence_id = $2 AND status_movement = 'ativa' AND id != $3 AND purchase_date > $4`,
+                    [userId, recurrenceId, id, data.purchase_date]
+                )
+            
+                for (const row of futureMovements.rows) {
+
+                    const rowDate = new Date(row.purchase_date) 
+                    const rowMonth = rowDate.getMonth() + 1
+                    const rowYear = rowDate.getFullYear()
+                            
+                    const existingRowInvoice = await conn.query(
+                        `SELECT id FROM credit_card_invoices WHERE credit_card_id = $1 AND invoice_month = $2 AND invoice_year = $3`,
+                        [data.credit_card_id, rowMonth, rowYear]
+                    )
+
+                    let rowInvoiceId: number
+
+                    if (existingRowInvoice.rows.length) {
+                        rowInvoiceId = existingRowInvoice.rows[0].id
+                    } else {
+                        const rowClosingDate = new Date(rowYear, rowMonth - 1, data.closingDay ?? 1)
+                        const newRowInvoice = await conn.query(
+                            `INSERT INTO credit_card_invoices(credit_card_id, invoice_month, invoice_year, status_invoice, closing_date, total_value)
+                            VALUES($1, $2, $3, $4, $5, $6)
+                            RETURNING id`,
+                            [data.credit_card_id, rowMonth, rowYear, 'aberta', rowClosingDate, null]
+                        )
+
+                        rowInvoiceId = newRowInvoice.rows[0].id
+                    }
+
+                    await conn.query(
+                    `UPDATE credit_card_movements
+                        SET 
+                            value_transaction = $1,
+                            description_credit = $2,
+                            categorie_id = $3,
+                            credit_card_id = $4,
+                            invoice_id = $5,
+                            observation = $6,
+                            status_movement = $7
+                        WHERE id = $8 AND user_id = $9
+                    `, [data.value_transaction, data.description_credit, data.categorie_id, data.credit_card_id, rowInvoiceId, data.observation, data.status_movement, row.id, userId])
+
+                }
+
+            } else if (choiceOption === "todas") {
+
+                const statusValues = ['ativa', 'estorno', 'estornada']
+
+                await conn.query( 
+                `UPDATE credit_card_movements
+                    SET 
+                        description_credit = $1,
+                        categorie_id = $2,
+                        observation = $3,
+                        status_movement = $4
+                    WHERE user_id = $5 AND recurrence_id = $6 AND status_movement = ANY($7)
+                `, [data.description_credit, data.categorie_id, data.observation, data.status_movement, userId, recurrenceId, statusValues])
+            }
+
+            await conn.query('COMMIT')
+
+        } catch (error) {
+
+            await client.query('ROLLBACK')
+            throw error
+
+        } finally {
+
+            conn.release()  
+        }
+
+
     },
 }

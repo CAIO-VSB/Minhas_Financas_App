@@ -1,7 +1,7 @@
 <script setup lang="ts">
 
     const props = defineProps<{
-        draft: TMovementsPayload | null
+        draft: TMovementCreditCardPayload | null
     }>()
 
     const  emit = defineEmits<{
@@ -10,32 +10,31 @@
 
     import { useInvalidate } from "~/composables/useInvalidate"
     import { useHttpRecurrence } from '~/composables/useHttp/useHttpRecurrence'
-    import type { TMovementsPayload } from "~~/schemas/movements.schema";
+    import type { TMovementCreditCardPayload } from "~~/schemas/movementCreditCard.schema";
 
     const { invalidate } = useInvalidate()
-    const { deleteMovementsRecurrenceById } = useHttpRecurrence()
+    const { patchMovementsCreditCardRecurrenceById } = useHttpRecurrence()
     const { notifyError, notifyInfo, notifySuccess } = useNotify()
 
     const modelValue = defineModel<boolean>()
     const editScope = ref("somente_esta")
+    const dateFormated = ref("")
+
+    watch(() => props.draft, (val) => {
+        dateFormated.value = val?.purchase_date.split("-").reverse().join("/") ?? "Data inválida"
+    })
 
     const  { mutate } = useMutation({
 
-    mutationFn: (payload: TMovementsPayload) => deleteMovementsRecurrenceById(payload.id!, payload, editScope.value, payload.recurrence_id!),
+    mutationFn: (payload: TMovementCreditCardPayload) => patchMovementsCreditCardRecurrenceById(payload.id!, payload, editScope.value, payload.recurrence_id!),
 
     onSuccess: () => {
-        invalidate(QUERY_KEYS.movements.all)
-        invalidate(QUERY_KEYS.movements.only_expenses)
-        invalidate(QUERY_KEYS.movements.only_revenues)
-        invalidate(QUERY_KEYS.movements.current_balance)
-        invalidate(QUERY_KEYS.accounts.getBalanceForAccount)
-        notifySuccess(
-        "Sucesso",
-        "Operação realizada com sucesso.",
-        5000
-        )
-        resetStates()
+        invalidate(QUERY_KEYS.movementsCreditCard.byCreditCard)
+        invalidate(QUERY_KEYS.movementsCreditCard.totalInvoice)
+        notifySuccess("Sucesso", "Operação realizada com sucesso", 6000)
         emit("success")
+        modelValue.value = false
+        resetStates()
     },
 
     onError: (error) => {
@@ -59,7 +58,8 @@
         const raw = structuredClone(toRaw(props.draft))
 
         const payload = {
-            ...raw
+            ...raw,
+            status_movement: "deletada"
         }
 
         mutate(payload)
@@ -74,18 +74,18 @@
   <div>
       <v-dialog
         transition="dialog-bottom-transition"
-        width="610"
+        width="700"
         v-model="modelValue"
       >
         <template v-slot:default="{ isActive }">
           <v-card>
             
               <template #title>
-              <span>Deseja deletar esta {{ props.draft?.type_transaction === 'despesa' ? 'despesa' : 'receita' }}?</span>
-              </template>
+              <span>Deseja deletar esta despesa {{ props.draft?.type_recurrence}}?</span>
+              </template> 
 
               <template #subtitle>
-              <span>Atenção! Essa ação não poderá ser desfeita</span>
+              <span >Atenção! Essa ação não poderá ser desfeita</span>
               </template>
 
               <v-divider></v-divider>
@@ -94,23 +94,28 @@
               <div class="info-transaction">
                   <div>
                       <p style="color: rgba(0, 0, 0, 0.70);;">Descrição</p>
-                      <p style="color: rgba(0, 0, 0, 0.5);">{{ props.draft?.description_transaction }}</p>
+                      <p style="color: rgba(0, 0, 0, 0.5);">{{ props.draft?.description_credit }}</p>
                   </div>
 
                   <div>
                       <p style="color: rgba(0, 0, 0, 0.70);">Valor</p>
                       <p style="color: rgba(0, 0, 0, 0.5);  text-align: center;">{{ formatCurrency(props.draft?.value_transaction ?? 0.00) }}</p>
                   </div>
+
+                  <div>
+                      <p style="color: rgba(0, 0, 0, 0.70);">Data da compra</p>
+                      <p style="color: rgba(0, 0, 0, 0.5);  text-align: center;">{{ dateFormated }}</p>
+                  </div>
               </div> 
 
               <div class="info-alert">
                 <div>
-                    <p style="color: rgba(0, 0, 0, 0.70); margin-top: 30px;" class="font-weight-bold">Atenção! Esta é uma {{  props.draft?.type_transaction === 'despesa' ? 'despesa' : 'receita'  }} {{ props.draft?.type_recurrence === 'fixa' ? 'fixa' : 'parcelada'  }}. O que você deseja excluir?</p>
+                    <p style="color: rgba(0, 0, 0, 0.70); margin-top: 30px;" class="font-weight-bold">Atenção! Esta é uma {{  props.draft?.type_recurrence }}. O que você deseja excluir?</p>
                 </div>
                 <v-radio-group v-model="editScope" hide-details class="mt-2">
-                    <v-radio :color="props.draft?.type_transaction === 'despesa' ? 'red' : 'green'" label="Somente esta" value="somente_esta"></v-radio>
-                    <v-radio :color="props.draft?.type_transaction === 'despesa' ? 'red' : 'green'" label="Todas as pendentes" value="pendentes"></v-radio>
-                    <v-radio :color="props.draft?.type_transaction === 'despesa' ? 'red' : 'green'" label="Todas (incluindo efetivadas)" value="todas"></v-radio>
+                    <v-radio color="primary" label="Somente esta" value="somente_esta"></v-radio>
+                    <v-radio color="primary" label="Esta, e as futuras" value="esta_futuras"></v-radio>
+                    <v-radio color="primary" label="Todas as despesas, incluindo as passadas" value="todas"></v-radio>
                 </v-radio-group>
               </div> 
             </v-card-text>
@@ -121,16 +126,16 @@
               <v-btn
                   text="Cancelar"
                   variant="text"
-                  :color="props.draft?.type_transaction === 'despesa' ? 'red' : 'green'"
                   class="text-none "
                   @click="resetStates"
+                  color="primary"
               ></v-btn>
               
               <v-btn
                   text="Deletar"
-                  variant="elevated"
-                  :color="props.draft?.type_transaction === 'despesa' ? 'red' : 'green'"
+                  variant="flat"
                   class="text-none"
+                  color="primary"
                   @click="submitForm"
               ></v-btn>
               </v-card-actions>
@@ -154,6 +159,10 @@
     display: flex;
     flex-direction: column;
     max-width: 240px;
+    font-size: 1.1rem;
+}
+
+.info-alert {
     font-size: 1rem;
 }
 
@@ -161,7 +170,14 @@
     display: flex;
     flex-direction: column;
     max-width: 350px;
-    font-size: 1rem;
+    font-size: 1.1rem;
+}
+
+.info-transaction > div:nth-child(3) {
+    display: flex;
+    flex-direction: column;
+    max-width: 350px;
+    font-size: 1.1rem;
 }
 
 </style>

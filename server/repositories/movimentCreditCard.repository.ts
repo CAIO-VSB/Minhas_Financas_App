@@ -101,9 +101,9 @@ export const movementsCreditCardRespository = {
         return { total: Number(query.rows[0]?.fn_credit_card_invoice_total ?? 0) }
     },
 
-    async update(id: number, userId: string, data: TMovementCreditCardPayload) {
+    async update(id: number, userId: string, data: TMovementCreditCardPayload, choice: string) {
 
-        console.log("Bateu aqui " + id, userId, JSON.stringify(data))
+        console.log("Bateu aqui " + id, userId, choice, JSON.stringify(data))
 
         const conn = await client.connect()  // fixa uma conexão dedicada
 
@@ -133,7 +133,7 @@ export const movementsCreditCardRespository = {
                     throw new Error("Mês ou ano da fatura ausentes")
                 }
     
-                const closingDate = new Date(invoiceYear, invoiceMonth - 1, data.closingDay ?? 1)
+                const closingDate = new Date(invoiceYear, invoiceMonth - 1, data.closingDay ?? undefined)
 
                 const newInvoice = await conn.query(
                     `INSERT INTO credit_card_invoices(credit_card_id, invoice_month, invoice_year, status_invoice, closing_date, total_value)
@@ -145,22 +145,61 @@ export const movementsCreditCardRespository = {
                 invoiceId = newInvoice.rows[0].id
             }
 
-            await conn.query(
-            `UPDATE credit_card_movements
-                SET 
-                    credit_card_id = $1,
-                    categorie_id = $2,
-                    description_credit = $3,
-                    value_transaction = $4,
-                    purchase_date = $5,
-                    observation = $6,
-                    invoice_id = $7
-                WHERE id = $8 AND user_id = $9
-                `, [data.credit_card_id, data.categorie_id, data.description_credit, data.value_transaction, data.purchase_date, data.observation, invoiceId, id, userId])
+            if (choice === "estorno") {
+
+                await conn.query(
+                `UPDATE credit_card_movements
+                 SET status_movement = 'estornada'
+                 WHERE id = $1
+                 AND user_id = $2`,
+                [
+                    id,
+                    userId
+                ]
+                )
+
+                await conn.query( 
+                `INSERT INTO credit_card_movements(user_id, credit_card_id, invoice_id, categorie_id, description_credit, value_transaction, purchase_date, installment_number, installment_total, recurrence_id, status_movement, observation, refund_of_movement_id, description_reversal) 
+                VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) 
+                RETURNING *
+                `, [userId, 
+                    data.credit_card_id, 
+                    invoiceId, 
+                    data.categorie_id,
+                    data.description_credit, 
+                    data.value_transaction, 
+                    data.purchase_date, 
+                    null, 
+                    null, 
+                    null, 
+                    "estorno", 
+                    data.observation,
+                    data.id,
+                    data.description_reversal
+                    ]
+                )
+
+            } else {
+
+                await conn.query(
+                `UPDATE credit_card_movements
+                    SET 
+                        credit_card_id = $1,
+                        categorie_id = $2,
+                        description_credit = $3,
+                        value_transaction = $4,
+                        purchase_date = $5,
+                        observation = $6,
+                        invoice_id = $7,
+                        status_movement = $8
+                    WHERE id = $9 AND user_id = $10
+                    `, [data.credit_card_id, data.categorie_id, data.description_credit, data.value_transaction, data.purchase_date, data.observation, invoiceId, data.status_movement, id, userId])
+            }
 
             await conn.query('COMMIT')
 
             return { message: "Movimentação editada com sucesso"}
+
         } catch (error) {
             await conn.query('ROLLBACK')
             throw error
