@@ -20,7 +20,7 @@
   import CardAddMovimentsCreditCard from "~/components/forms/CardAddMovimentsCreditCard.vue";
   import type { TPeriod } from "~~/types/period/TPeriod"
   import DialogHelpInvoice from "./components/DialogHelpInvoice.vue"
-import type { TMovementCreditCard } from "~~/types/credit_card/TMovementCreditCard.js"
+  import type { TMovementCreditCard } from "~~/types/credit_card/TMovementCreditCard.js"
 
   const { getCreditCardOnlyActive, patchCreditCardById, getCreditCardOnlyDisable } = useHttpCreditsCards()
   const { getByCreditCard, getTotalInvoice } = useHttpMovementCreditCard()
@@ -37,6 +37,12 @@ import type { TMovementCreditCard } from "~~/types/credit_card/TMovementCreditCa
     queryFn: getCreditCardOnlyDisable,
   })
 
+  export type TOptionActionGetOptions = {
+    title: string,
+    icon: string,
+    value: string | boolean
+  }
+
   const showDialogHelpInvoice = ref(false)
   const menu = ref(false)
   const modalAddCard = ref(false)
@@ -46,7 +52,9 @@ import type { TMovementCreditCard } from "~~/types/credit_card/TMovementCreditCa
   const selectedCardData = ref<TCreditCard | null>(null)
   const selectedCard = ref("")
   const selectdLogo = ref("")
-  const disabledButtonAddExpense = ref(false)
+  const disabeldButtonAddExpense = ref(false)
+  const invoiceId = ref<number | null>(null)
+  const statusInvoice = ref<string | null>(null)
 
   const period = ref({
     month: new Date().getMonth(),
@@ -85,20 +93,28 @@ import type { TMovementCreditCard } from "~~/types/credit_card/TMovementCreditCa
 
   })
 
-  watch(dataByCreditCard, (val: TMovementCreditCard[] | undefined) => {
-
-    if (val === undefined || !val || val.length) {
-      disabledButtonAddExpense.value = false
+  watch(dataByCreditCard, (newVal: TMovementCreditCard[] | undefined) => {
+    
+    if (!newVal || newVal?.length === 0) {
+      disabeldButtonAddExpense.value = false
+      invoiceId.value = null
+      statusInvoice.value = null
       return
     }
 
-    if (val[0]?.status_invoice === 'aberta') {
-      disabledButtonAddExpense.value = false
+    if (newVal[0]?.status_invoice === "fechada") {
+      disabeldButtonAddExpense.value = true
+      statusInvoice.value = "Fatura fechada"
     } else {
-      disabledButtonAddExpense.value = true
+      disabeldButtonAddExpense.value = false
+      statusInvoice.value = "Fatura aberta"
     }
+
+    invoiceId.value = newVal[0]?.invoice_id ?? null
+    statusInvoice.value = newVal[0]?.status_invoice ?? null
+
   }, {immediate: true})
- 
+
   /**
    * Watch responsável por escutar as mudanças nos dados vindo do banco de dados
    * Sempre que mudar algum dado e existir valor, buscamos pelo id e setamos o novos valores
@@ -123,7 +139,7 @@ import type { TMovementCreditCard } from "~~/types/credit_card/TMovementCreditCa
 
   const showAlertLimitedUsed = computed(() => valueLimitedUsed.value >= 85)
 
-  function getOptions(creditCard: TCreditCard): TOptionAction [] {
+  function getOptions(creditCard: TCreditCard): TOptionActionGetOptions [] {
     return [
       {title: "Editar", icon: "mdi-lead-pencil", value: "edit"},
       {
@@ -136,7 +152,6 @@ import type { TMovementCreditCard } from "~~/types/credit_card/TMovementCreditCa
   }
 
   function handleGetPeriod(value: TPeriod) {
-    console.log("Período recebido do DateInput:", value)
     period.value = value
     refetch()
     refetchTotalInvoice()
@@ -164,7 +179,7 @@ import type { TMovementCreditCard } from "~~/types/credit_card/TMovementCreditCa
     showDialogHelpInvoice.value = false
   }
 
-  function handleOptionClick(option:TOptionAction, data: TCreditCard) {
+  function handleOptionClick(option:TOptionActionGetOptions, data: TCreditCard) {
 
     if (option.value === "edit") {
       handleOpenModalEditCardCredit(data)
@@ -334,13 +349,13 @@ import type { TMovementCreditCard } from "~~/types/credit_card/TMovementCreditCa
       </div>
 
       <div class="mt-5">
-        <CardInfoCreditCard :loading="isPendingByCreditCard" :credit-card="editDraft" :total-invoice="totalForInvoice" :period="period" />
+        <CardInfoCreditCard :status-invoices="statusInvoice" :invoice-id="invoiceId" :loading="isPendingByCreditCard" :credit-card="editDraft" :total-invoice="totalForInvoice" :period="period" />
       </div>
   
     </div>
 
     <div >
-      <CardMovementsCreditCard :movements-credit-card="dataByCreditCard ?? null"/>
+      <CardMovementsCreditCard :credit-card="selectedCardData" :movements-credit-card="dataByCreditCard ?? null"/>
     </div>
 
     <div class="fab-wrapper">
@@ -359,7 +374,7 @@ import type { TMovementCreditCard } from "~~/types/credit_card/TMovementCreditCa
       <v-tooltip text="Nova despesa" location="left">
         <template #activator="{ props }">
           <BaseFab 
-          :disabled="disabledButtonAddExpense"
+          :disabled="disabeldButtonAddExpense"
           v-bind="props"
           color="blue"
           icon="mdi-plus"

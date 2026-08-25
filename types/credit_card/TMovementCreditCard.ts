@@ -1,9 +1,10 @@
 
 export type TMovementCreditCard = {
-    id?: number,
+    id?: number | null,
     credit_card_id: number | null,
     invoice_id: number | null,
     categorie_id: number | null,
+    accounts_id: number | null,
     description_credit: string,
     value_transaction: number | null,
     purchase_date: Date | null,
@@ -16,6 +17,7 @@ export type TMovementCreditCard = {
     observation: string | null,
     status_movement: "estornada" | "estorno" | "deletada" | "ativa",
     closingDay?: number | null,
+    dueDay?: number | null,
     invoice_month: number | null,
 	invoice_year: number | null,
     refund_of_movement_id: number | null,

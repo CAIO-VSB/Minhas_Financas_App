@@ -51,7 +51,6 @@
     const showInputFixa = ref("")
     const showSwitch = ref(false)
     const creditCardData = ref<TCreditCard | null>(null)
-    const modalHelpInvoice = ref(false)
     const date = ref(`${String(new Date().getFullYear())}-${String(new Date().getMonth() + 1)}`)
     const menu = ref(false)
     const updateInvoiceAutomatically = ref(false)
@@ -59,11 +58,12 @@
     const movementCreditCardForm = ref<TMovementCreditCard>({
       credit_card_id: null,
       invoice_id: null,
+      accounts_id: null,
       categorie_id: null,
-      description_credit: "",
-      value_transaction: 0.00,
+      description_credit: "teste infinito",
+      value_transaction: 67,
       purchase_date: new Date(),
-      observation: "",
+      observation: "teste infinito",
       status_movement: "ativa",
       invoice_month: null,
       invoice_year: null,
@@ -128,6 +128,10 @@
       movementCreditCardForm.value.categorie_id = val
     })
 
+    watch(creditCardData, (val) => {
+      movementCreditCardForm.value.accounts_id = val?.accounts_id ?? null
+    })
+
     watch(modelCreditCard, (val) => {
       movementCreditCardForm.value.credit_card_id = val
 
@@ -144,6 +148,7 @@
     const filterCategorias = computed(() => {
       return categories.value?.filter(item => item.name_identifier.toLowerCase().includes(searchCategorias.value.toLowerCase()))
     })
+    
 
     function resetForm() {
       showInputFixa.value = ""
@@ -207,8 +212,6 @@
 
       updateInvoiceAutomatically.value = true
 
-      console.log("Ta caindo aqui?")
-
       date.value = `${result.year}-${String(result.month).padStart(2, "0")}`
 
       nextTick(() => {
@@ -217,10 +220,8 @@
     }
 
     watch(() => movementCreditCardForm.value.purchase_date, () => {
-      console.log("E aqui? Ta caindo????????????")
       updateSuggestedInvoice()
     })
-
 
     function handleInvoiceManualChange() {
       if (updateInvoiceAutomatically.value) {
@@ -285,6 +286,7 @@
           purchase_date: dateFormated,
           credit_cards_id: modelCreditCard.value,
           closingDay: creditCardData.value?.closing_day,
+          dueDay: creditCardData.value?.due_day,
           invoice_month: month,
           invoice_year: year,
         }
@@ -294,11 +296,18 @@
           day_maturity: movementCreditCardForm.value.purchase_date
         }
 
+        const movementCreditCardFormated = {
+          ...movementCreditCardForm.value,
+          invoice_month: month ?? null,
+          invoice_year: year ?? null,
+          dueDay: creditCardData.value?.due_day
+        }
+
         const resultSchema = validateSchemaMovementsCreditCard(movementsCrediCardPayload)
         if (!resultSchema.success) return
 
         if (showInputFixa.value || showInputParcelado.value) {
-          await recurrenceStore.movementsCreditCardFormated(movementCreditCardForm.value, recurrencePayload)
+          await recurrenceStore.movementsCreditCardFormated(movementCreditCardFormated, recurrencePayload)
           invalidate(QUERY_KEYS.movementsCreditCard.byCreditCard)
           invalidate(QUERY_KEYS.movementsCreditCard.totalInvoice)
           notifySuccess("Sucesso", "Operação realizada com sucesso", 6000)

@@ -27,6 +27,7 @@ export const QUERY_KEYS = {
     },
     movementsCreditCard: {
         byCreditCard: ['byCreditCard'],
-        totalInvoice: ['totalInvoice']
+        totalInvoice: ['totalInvoice'],
+        allMovements: ['allMovements']
     }
 }

@@ -122,11 +122,19 @@ export const recurrenceRepository = {
                         invoiceId = newInvoice.rows[0].id
                     }
 
-                    await conn.query(
+                    const movementId = await conn.query(
                         `INSERT INTO credit_card_movements(user_id, credit_card_id, invoice_id, categorie_id, description_credit, value_transaction, purchase_date, installment_number, recurrence_id, status_movement, observation) 
-                        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+                        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                        RETURNING id `,
                         [userId, movement.credit_card_id, invoiceId, movement.categorie_id, movement.description_credit, movement.value_transaction, movement.purchase_date, null, recurrenceId, movement.status_movement, movement.observation]
                     )
+
+                    const dateMovementsDueDayDate = `${resultInvoice.year}-${resultInvoice.month}-${movement.dueDay ?? closingDayValue}`
+
+                    await conn.query(`
+                        INSERT INTO movements(user_id, type_transaction, value_transaction, date_transaction, description_transaction, categorie_id, accounts_id, observation, url_recibo, status_transaction, is_deleted, movement_credit_card_id, recurrence_id)
+                        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+                    `, [userId, 'despesa_cartao', movement.value_transaction, dateMovementsDueDayDate, movement.description_credit, movement.categorie_id, movement.accounts_id, null, null, 'pendente', false, movementId.rows[0].id, recurrenceId])
                 }
             }
 
@@ -176,11 +184,19 @@ export const recurrenceRepository = {
                         invoiceId = newInvoice.rows[0].id
                     }
 
-                    await conn.query(
+                    const movementId = await conn.query(
                         `INSERT INTO credit_card_movements(user_id, credit_card_id, invoice_id, categorie_id, description_credit, value_transaction, purchase_date, installment_number, recurrence_id, status_movement, observation, installment_total) 
-                        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+                        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+                        RETURNING id `,
                         [userId, valor.credit_card_id, invoiceId, valor.categorie_id, valor.description_credit, valor.value_transaction, valor.purchase_date, indice + 1, recurrenceId, valor.status_movement, valor.observation, indice + 1]
                     )
+
+                    const dateMovementsDueDayDate = `${resultInvoice.year}-${resultInvoice.month}-${valor.dueDay ?? closingDayValue}`
+
+                    await conn.query(`
+                        INSERT INTO movements(user_id, type_transaction, value_transaction, date_transaction, description_transaction, categorie_id, accounts_id, observation, url_recibo, status_transaction, is_deleted, movement_credit_card_id, recurrence_id, installment_current)
+                        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+                    `, [userId, 'despesa_cartao', valor.value_transaction, dateMovementsDueDayDate, valor.description_credit, valor.categorie_id, valor.accounts_id, null, null, 'pendente', false, movementId.rows[0].id, recurrenceId, indice + 1])
                 }
             }
 
@@ -354,9 +370,26 @@ export const recurrenceRepository = {
                         credit_card_id = $4,
                         invoice_id = $5,
                         observation = $6,
-                        status_movement = $7
-                    WHERE id = $8 AND user_id = $9
-                `, [data.value_transaction, data.description_credit, data.categorie_id, data.credit_card_id, invoiceId, data.observation, data.status_movement, id, userId])
+                        status_movement = $7,
+                        purchase_date = $8
+                    WHERE id = $9 AND user_id = $10
+                `, [data.value_transaction, data.description_credit, data.categorie_id, data.credit_card_id, invoiceId, data.observation, data.status_movement, data.purchase_date, id, userId])
+
+                const dateMovementsDueDate = `${invoiceYear}-${invoiceMonth}-${data.dueDay}`
+
+                await conn.query(`
+                    UPDATE movements
+                        SET
+                            categorie_id = $1,
+                            description_transaction = $2,
+                            value_transaction = $3,
+                            date_transaction = $4
+                    WHERE movement_credit_card_id = $5 AND user_id = $6
+                `, [data.categorie_id, data.description_credit, data.value_transaction, dateMovementsDueDate, id, userId])
+
+                if (data.status_movement === 'deletada') {
+                    await conn.query(`DELETE FROM movements WHERE user_id = $1 AND movement_credit_card_id = $2`, [userId, id])
+                }
 
             } else if (choiceOption === "esta_futuras") {
 
@@ -372,6 +405,11 @@ export const recurrenceRepository = {
                             status_movement = $7
                         WHERE id = $8 AND user_id = $9
                     `, [data.value_transaction, data.description_credit, data.categorie_id, data.credit_card_id, invoiceId, data.observation, data.status_movement, id, userId])
+
+                    
+                if (data.status_movement === 'deletada') {
+                    await conn.query(`DELETE FROM movements WHERE user_id = $1 AND movement_credit_card_id = $2`, [userId, id])
+                }
 
                 const futureMovements = await conn.query(
                     `SELECT id, purchase_date FROM credit_card_movements
@@ -419,6 +457,20 @@ export const recurrenceRepository = {
                         WHERE id = $8 AND user_id = $9
                     `, [data.value_transaction, data.description_credit, data.categorie_id, data.credit_card_id, rowInvoiceId, data.observation, data.status_movement, row.id, userId])
 
+                    await conn.query(`
+                        UPDATE movements
+                            SET
+                                categorie_id = $1,
+                                description_transaction = $2,
+                                value_transaction = $3
+                        WHERE movement_credit_card_id = $4 AND user_id = $5
+                    `, [data.categorie_id, data.description_credit, data.value_transaction, row.id, userId])
+
+
+                    if (data.status_movement === 'deletada') {
+                        await conn.query(`DELETE FROM movements WHERE user_id = $1 AND movement_credit_card_id = $2`, [userId, row.id])
+                    }
+
                 }
 
             } else if (choiceOption === "todas") {
@@ -434,6 +486,27 @@ export const recurrenceRepository = {
                         status_movement = $4
                     WHERE user_id = $5 AND recurrence_id = $6 AND status_movement = ANY($7)
                 `, [data.description_credit, data.categorie_id, data.observation, data.status_movement, userId, recurrenceId, statusValues])
+
+                await conn.query(`
+                    UPDATE movements
+                        SET
+                            categorie_id = $1,
+                            description_transaction = $2,
+                            value_transaction = $3
+                    WHERE movement_credit_card_id IN (
+                        SELECT id from credit_card_movements WHERE user_id = $4 AND recurrence_id = $5)
+                `, [data.categorie_id, data.description_credit, data.value_transaction, userId, recurrenceId])
+
+                if (data.status_movement === 'deletada') {
+                    await conn.query(`
+                    DELETE FROM movements 
+                    WHERE user_id = $1 
+                    AND movement_credit_card_id IN (
+                        SELECT id FROM credit_card_movements WHERE user_id = $1 AND recurrence_id = $2
+                    )
+                `, [userId, recurrenceId])
+                }
+
             }
 
             await conn.query('COMMIT')

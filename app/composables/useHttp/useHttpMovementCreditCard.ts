@@ -6,8 +6,12 @@ export function useHttpMovementCreditCard() {
         return $fetch<TMovementCreditCardPayload>("/api/crediCardMovements", {method: "POST", body: data})
     }
 
-    const getByCreditCard = async (month: number, year: number, creditCard: number) => {
+    const getByCreditCard = async (month: number, year: number, creditCard: number | null) => {
         return $fetch<[]>("/api/crediCardMovements", {method: "GET", query: { month, year, creditCard}})
+    }
+
+    const allMovementsCreditCard = async () => {
+        return $fetch<[]>("/api/crediCardMovements/getAllMovementsCreditCard", {method: "GET"})
     }
 
     const getTotalInvoice = async (month: number, year: number, creditCard: number) => {
@@ -15,7 +19,6 @@ export function useHttpMovementCreditCard() {
     }
 
     const patchMovementCardById = async (id: number, data: TMovementCreditCardPayload, choice: string | null) => {
-        console.log("Chamou na boca da leao " + id, JSON.stringify(data))
         return $fetch(`/api/crediCardMovements/patchMovementCardById/${id}`, {method: "PATCH", body: data, query: {choice}})
     }
 
@@ -23,6 +26,7 @@ export function useHttpMovementCreditCard() {
        postMovementCreditCard,
        getByCreditCard,
        getTotalInvoice,
-       patchMovementCardById
+       patchMovementCardById,
+       allMovementsCreditCard
     }
 }

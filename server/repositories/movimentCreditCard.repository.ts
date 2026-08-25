@@ -5,13 +5,11 @@ export const movementsCreditCardRespository = {
 
     async create(userId: string, data: TMovementCreditCardPayload) {
 
+
         const conn = await client.connect()  // fixa uma conexão dedicada
 
         try {
             await conn.query('BEGIN')
-
-            //const purchaseDate = new Date(data.purchase_date)
-            //const resultInvoice = calculateInvoiceMonth(purchaseDate, data.closingDay ?? 0)
 
             const invoiceMonth = data.invoice_month
             const invoiceYear = data.invoice_year
@@ -46,11 +44,18 @@ export const movementsCreditCardRespository = {
             const text = 
             `INSERT INTO credit_card_movements(user_id, credit_card_id, invoice_id, categorie_id, description_credit, value_transaction, purchase_date, installment_number, installment_total, recurrence_id, status_movement, observation) 
             VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
-            RETURNING *`
+            RETURNING id`
 
             const values = [userId, data.credit_card_id, invoiceId, data.categorie_id, data.description_credit, data.value_transaction, data.purchase_date, null, null, null, data.status_movement, data.observation]
 
             const movementsCreditCard = await conn.query(text, values)
+
+            const dateMovementsDueDay = `${invoiceYear}-${invoiceMonth}-${data.dueDay}`
+
+            await conn.query(`
+                INSERT INTO movements(user_id, type_transaction, value_transaction, date_transaction, description_transaction, categorie_id, accounts_id, observation, url_recibo, status_transaction, is_deleted, movement_credit_card_id)
+                VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+            `, [userId, 'despesa_cartao', data.value_transaction, dateMovementsDueDay, data.description_credit, data.categorie_id, data.accounts_id, null, null, 'pendente', false, movementsCreditCard.rows[0].id])
 
             await conn.query('COMMIT')
 
@@ -66,8 +71,6 @@ export const movementsCreditCardRespository = {
 
     async findByCreditCard(userId: string, month: number, year: number, creditCardId: number) {
 
-        console.log("Ta chamando aqui pelo menos " + userId, month, year, creditCardId)
-
         const invoiceResult = await client.query(
             `SELECT id FROM credit_card_invoices WHERE credit_card_id = $1 AND invoice_month = $2 AND invoice_year = $3`,
             [creditCardId, month, year]
@@ -81,6 +84,20 @@ export const movementsCreditCardRespository = {
         const query = client.query(text, [userId, creditCardId, invoiceId])
 
         return (await query).rows
+    },
+
+    async findAllMovementsCreditCard(userId: string) {
+
+        const result = await client.query(
+            `SELECT ccm.*, cci.invoice_month, cci.invoice_year, r.type_recurrence
+                FROM credit_card_movements ccm 
+                LEFT JOIN recurrence r ON r.id = ccm.recurrence_id
+                LEFT JOIN credit_card_invoices cci ON cci.id = ccm.invoice_id
+                WHERE ccm.user_id = $1
+                `,[userId]
+        )
+
+         return result.rows
     },
     
     async findTotalInvoice(userId: string, month: number, year: number, creditCardId: number) {
@@ -103,15 +120,13 @@ export const movementsCreditCardRespository = {
 
     async update(id: number, userId: string, data: TMovementCreditCardPayload, choice: string) {
 
-        console.log("Bateu aqui " + id, userId, choice, JSON.stringify(data))
+        console.log("Valores aqui no delete ", id, userId, JSON.stringify(data))
 
         const conn = await client.connect()  // fixa uma conexão dedicada
 
         try {
             
             await conn.query('BEGIN')
-            //const purchaseDate = new Date(data.purchase_date)
-            //const resultInvoice = calculateInvoiceMonth(purchaseDate, data.closingDay ?? 0)
 
             const invoiceMonth = data.invoice_month
             const invoiceYear = data.invoice_year
@@ -181,6 +196,10 @@ export const movementsCreditCardRespository = {
 
             } else {
 
+                if (data.status_movement === 'deletada') {
+                    await conn.query(`DELETE FROM movements WHERE user_id = $1 AND movement_credit_card_id = $2`, [userId, id])
+                }
+
                 await conn.query(
                 `UPDATE credit_card_movements
                     SET 
@@ -194,7 +213,19 @@ export const movementsCreditCardRespository = {
                         status_movement = $8
                     WHERE id = $9 AND user_id = $10
                     `, [data.credit_card_id, data.categorie_id, data.description_credit, data.value_transaction, data.purchase_date, data.observation, invoiceId, data.status_movement, id, userId])
-            }
+
+                const dateMovementsDueDate = `${invoiceYear}-${invoiceMonth}-${data.dueDay}`
+
+                await conn.query(`
+                    UPDATE movements
+                        SET  
+                        categorie_id = $1,
+                        description_transaction = $2,
+                        value_transaction= $3,
+                        date_transaction = $4
+                    WHERE movement_credit_card_id = $5
+                    `,[data.categorie_id, data.description_credit, data.value_transaction, dateMovementsDueDate, data.id])
+                }
 
             await conn.query('COMMIT')
 

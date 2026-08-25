@@ -2,6 +2,13 @@
   import { useHttpCreditsCards } from "~/composables/useHttp/useHttpCreditCard"
   import type { TCreditCard } from "~~/types/credit_card/TCredit-card";
   import { addMonths } from "date-fns"
+  import CardPaymentTotalInvoice from "~/components/forms/CardPaymentTotalInvoice.vue";
+  import NoticePaymentTotalInvoice from "~/components/ui/NoticePaymentTotalInvoice.vue"
+  import NoticePaymentePartialInvoice from "~/components/ui/NoticePaymentePartialInvoice.vue";
+  import CardPaymentPartial from "~/components/forms/CardPaymentPartialInvoice.vue";
+  import { boolean } from "zod";
+  import type { TOptionAction } from "~~/types/option_action/TOptionAction";
+
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
 
   const { getCreditCardOnlyActive } = useHttpCreditsCards()
@@ -10,14 +17,12 @@
     queryKey: QUERY_KEYS.creditCards.all,
     queryFn: getCreditCardOnlyActive,
   })
-  
 
-  const items = [
-    { title: 'Pagamento total', icon: 'mdi-check-circle-outline' },
-    { title: 'Pagamento parcial', icon: 'mdi-circle-half-full' },
-    { title: 'Pagamento adiantado', icon: 'mdi-clock-fast' },
-    { title: 'Reabrir fatura', icon: 'mdi-lock-open-variant' },
-  ]
+  const modelNoticePaymentTotalInvoice = ref(false)
+  const modelNoticePaymentPartial = ref(false)
+  const modelCardPaymentTotal = ref(false)
+  const modelCardPaymentPartial = ref(false)
+
 
   type TPeriod = {
     year: number,
@@ -28,8 +33,23 @@
     creditCard: TCreditCard | null,
     totalInvoice: number | null,
     loading: boolean | null,
-    period: TPeriod 
+    period: TPeriod,
+    invoiceId : number | null,
+    statusInvoices: string | null
   }>()
+
+  function getOptions(): TOptionAction [] {
+
+    const options = [
+      props.statusInvoices === 'aberta' ? { title: 'Pagamento total', icon: 'mdi-check-circle-outline', value: 'pag_total' } : null,
+      props.statusInvoices === 'aberta' ? { title: 'Pagamento parcial', icon: 'mdi-circle-half-full', value: 'pag_parcial' } : null,
+      props.statusInvoices === 'aberta' ? { title: 'Pagamento adiantado', icon: 'mdi-clock-fast', value: 'pag_adiantado' } : null,
+      { title: 'Reabrir fatura', icon: 'mdi-lock-open-variant', value: 'reabrir_fatu' },
+    ]
+
+    return options.filter(Boolean) as TOptionAction[]
+
+  } 
 
   const sumary = computed(() => {
     const row = props.creditCard
@@ -81,6 +101,28 @@
 
   })
 
+  function showModalPaymentTotal() {
+    modelCardPaymentTotal.value = true
+  }
+
+  function showModalPaymentPartial() {
+    modelCardPaymentPartial.value = true
+  }
+
+  function handleOptionClick(option: string | null) {
+
+    if (option === 'pag_total') {
+      modelNoticePaymentTotalInvoice.value = true
+      return
+    }
+
+    if (option === 'pag_parcial') {
+      modelNoticePaymentPartial.value = true
+      return
+    }
+
+  }
+
 
 </script>
 
@@ -101,8 +143,8 @@
                 <span class="mr-2" style="font-size: var(--text-base); font-weight: 500;"> <v-chip variant="text" color="primary">{{ formatCurrency(totalInvoice) }}</v-chip></span>
               </div>
               <div class="d-flex justify-space-between">
-                <span style="font-size: var(--text-base);" class="text-textSecundary">Saldo anterior</span>
-                <span class="mr-2" style="font-size: var(--text-base); font-weight: 500;"> <v-chip variant="text" color="primary">{{ formatCurrency(totalInvoice) }}</v-chip></span>
+                <span style="font-size: var(--text-base);" class="text-textSecundary">Status da fatura</span>
+                <span class="mr-2" style="font-size: var(--text-base); font-weight: 500;"> <v-chip variant="text" color="primary">{{ `Fatura ${statusInvoices ?? 'zerada'}`}}</v-chip></span>
               </div>
               <div class="d-flex justify-center mt-2 ga-3">
                 <v-menu
@@ -122,10 +164,11 @@
 
                   <v-list>
                     <v-list-item
-                      v-for="(item, i) in items"
+                      v-for="(item, i) in getOptions()"
                       :key="i"
                       :value="i"
                       :prepend-icon="item.icon"
+                      @click="handleOptionClick(item.value || null)"
                     >
                       <v-list-item-title>{{ item.title }}</v-list-item-title>
                     </v-list-item>
@@ -156,6 +199,13 @@
             </div>
           </v-card-text>
         </v-card>
+
+        <div>
+          <CardPaymentTotalInvoice :period="props.period" :invoice-id="props.invoiceId"  :total-invoice="props.totalInvoice" :draft="props.creditCard" v-model="modelCardPaymentTotal"/>
+          <CardPaymentPartial :period="props.period" :invoice-id="props.invoiceId"  :total-invoice="props.totalInvoice" :draft="props.creditCard" v-model="modelCardPaymentPartial"/>
+          <NoticePaymentTotalInvoice @show-modal-payment="showModalPaymentTotal" :invoice-value="props.totalInvoice ?? 0.00" v-model="modelNoticePaymentTotalInvoice"/>
+          <NoticePaymentePartialInvoice @show-modal-payment="showModalPaymentPartial" :invoice-value="props.totalInvoice ?? 0.00" v-model="modelNoticePaymentPartial" />
+        </div>
     </div>
 </template>
 

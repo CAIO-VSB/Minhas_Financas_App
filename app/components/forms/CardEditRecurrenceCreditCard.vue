@@ -140,6 +140,8 @@
       onSuccess: () => {
         invalidate(QUERY_KEYS.movementsCreditCard.byCreditCard)
         invalidate(QUERY_KEYS.movementsCreditCard.totalInvoice)
+        invalidate(QUERY_KEYS.movements.only_expenses)
+        invalidate(QUERY_KEYS.movements.all)
         notifySuccess("Sucesso", "Operação realizada com sucesso", 6000)
         emit("success")
         modelValue.value = false
@@ -179,6 +181,7 @@
           ...props.draft,
           purchase_date: dateFormated,
           closingDay: creditCardData.value?.closing_day,
+          dueDay: creditCardData.value?.due_day,
           invoice_month: month,
           invoice_year: year
         }

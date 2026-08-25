@@ -7,9 +7,11 @@
   import type { TMovementCreditCardPayload } from '~~/schemas/movementCreditCard.schema';
   import CardEditRecurrenceCreditCard from '~/components/forms/CardEditRecurrenceCreditCard.vue';
   import CardDeleteRecurrenceCreditCard from '~/components/forms/CardDeleteRecurrenceCreditCard.vue';
+import type { TCreditCard } from '~~/types/credit_card/TCredit-card';
 
   const props = defineProps<{
-    movementsCreditCard: TMovementCreditCard[] | null
+    movementsCreditCard: TMovementCreditCard[] | null,
+    creditCard: TCreditCard | null
   }>()
 
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
@@ -78,7 +80,9 @@
     const payloadDeleteDraft = {
       ...raw,
       purchase_date: dateFormated,
-      value_transaction: Number(raw.value_transaction ?? 0)
+      value_transaction: Number(raw.value_transaction ?? 0),
+      categorie_id: Number(raw.categorie_id),
+      dueDay: props.creditCard?.due_day
     }
 
     if (option.value === 'delete' && (data.type_recurrence === 'fixa' || data.type_recurrence === 'parcelada')) {

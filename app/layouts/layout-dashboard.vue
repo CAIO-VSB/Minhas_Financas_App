@@ -130,7 +130,7 @@
                 prepend-icon="mdi-tag-outline"
                 >
                 <template #title>
-                  <p class="text-caption text-medium-emphasis">Versão 1.0</p>
+                  <p class="text-caption text-medium-emphasis">Versão 1.0.0</p>
                 </template>
             </v-list-item>
             </v-list>

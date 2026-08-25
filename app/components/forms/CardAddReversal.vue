@@ -186,7 +186,7 @@
                                 ></v-month-picker>
                             </v-menu>
 
-                            <v-text-field class="mt-4" prepend-inner-icon="mdi-note-text" v-model="movementObservation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="underlined"></v-text-field >
+                            <v-text-field class="mt-6" prepend-inner-icon="mdi-note-text" v-model="movementObservation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="underlined"></v-text-field >
 
                         </v-card-text>
 

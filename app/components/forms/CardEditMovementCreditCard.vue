@@ -49,7 +49,6 @@
     const modalAddCategorie = ref(false)
     const modalAddCreditCard = ref(false)
     const modalHelpInvoice = ref(false)
-    const creditCardData = ref<TCreditCard | null>(null)
     const date = ref('')
     const menu = ref(false)
     const updateInvoiceAutomatically = ref(false)
@@ -80,6 +79,10 @@
       return categories.value?.filter(item => item.name_identifier.toLowerCase().includes(searchCategorias.value.toLowerCase()))
     })
 
+    const creditCardData = computed(() => {
+      return creditCardOnlyActive.value?.find(card => card.id === props.draft?.credit_card_id) ?? null
+    })
+
     function handleOpenModalAddCategorie() {
       modalAddCategorie.value = true
     }
@@ -91,13 +94,6 @@
     function closeModalHelpInvoice() {
       modalHelpInvoice.value = false
     }
-
-    function salveCreditCardDate(data: TCreditCard) {
-      creditCardData.value = data
-    }
-      watch(() => props.draft?.purchase_date, () => {
-      updateSuggestedInvoice()
-    })
 
     function updateSuggestedInvoice() {
       const purchaseDate = props.draft?.purchase_date
@@ -136,6 +132,8 @@
       onSuccess: () => {
         invalidate(QUERY_KEYS.movementsCreditCard.byCreditCard)
         invalidate(QUERY_KEYS.movementsCreditCard.totalInvoice)
+        invalidate(QUERY_KEYS.movements.only_expenses)
+        invalidate(QUERY_KEYS.movements.all)
         notifySuccess("Sucesso", "Operação realizada com sucesso", 6000)
         emit("success")
         modelValue.value = false
@@ -169,6 +167,7 @@
           ...props.draft,
           purchase_date: dateFormated,
           closingDay: creditCardData.value?.closing_day,
+          dueDay: creditCardData.value?.due_day,
           invoice_month: month,
           invoice_year: year
         }
@@ -212,7 +211,7 @@
               <v-col
               cols="12" md="6" sm="12"
               >
-              <v-date-input prepend-inner-icon="mdi-calendar" prepend-icon="" :rules="dateRules" autocomplete="off" name="date" label="Data*" variant="underlined" v-model="props.draft.purchase_date"></v-date-input>
+              <v-date-input prepend-inner-icon="mdi-calendar" @update:model-value="updateSuggestedInvoice" prepend-icon="" :rules="dateRules" autocomplete="off" name="date" label="Data*" variant="underlined" v-model="props.draft.purchase_date"></v-date-input>
               </v-col>
               
               <v-col
@@ -316,7 +315,7 @@
                   </template>
 
                   <template v-slot:item="{props, item}">
-                    <v-list-item @click="salveCreditCardDate(item)" v-bind="props">
+                    <v-list-item  v-bind="props">
                       <template v-slot:prepend>
                         <v-avatar :image="item.url_logo" ></v-avatar>
                       </template>
@@ -370,7 +369,7 @@
 
           </v-card-text>
 
-          
+          <v-divider></v-divider>
 
           <v-card-actions >
             <v-btn

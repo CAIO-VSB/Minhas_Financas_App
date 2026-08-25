@@ -8,6 +8,7 @@
     import { useHttpAccounts } from "~/composables/useHttp/useHttpAccounts"
     import { useHttpMovements } from '~/composables/useHttp/useHttpMovements'
     import { useHttpTransfer } from '~/composables/useHttp/useHttpTransfer'
+    import { useHttpMovementCreditCard } from "~/composables/useHttp/useHttpMovementCreditCard"
     import type { TMovementsSummary, TMovementsWithTransfer } from '~~/types/movements/TMovements'
     import type { TOptionAction } from '~~/types/option_action/TOptionAction'
     import type { TMovementsByFilter } from "~~/types/movements/TMovementsByFilter"
@@ -29,8 +30,12 @@
     import CardEditRecurrenceRevenue from '~/components/forms/CardEditRecurrenceRevenue.vue'
     import CardDeleteMovementRecurrence from '~/components/forms/CardDeleteMovementRecurrence.vue'
     import useOptions from '~/pages/transactions/composable/useOptions'
+    import type { TMovementCreditCard } from '~~/types/credit_card/TMovementCreditCard.js'
+    import CardEditRecurrenceCreditCard from '~/components/forms/CardEditRecurrenceCreditCard.vue'
+    import CardEditMovementCreditCard from '~/components/forms/CardEditMovementCreditCard.vue'
 
     const { getMoviments, patchMovementsById, getCurrentBalance, getMovimentsByFilter } = useHttpMovements()
+    const { allMovementsCreditCard } = useHttpMovementCreditCard()
     const { getCategoriesOnlyActive } = useHttpCategories()
     const { getAccountsOnlyActive } = useHttpAccounts()
     const { getTransferById } = useHttpTransfer()
@@ -45,12 +50,16 @@
     const modalEditMovementesExpenses = ref(false)
     const modelEditRecurrenceExpense = ref(false)
     const modelEditRecurrenceRevenue = ref(false)
+    const modelEditRecurrenceCreditCard = ref(false)
+    const modelEditMovementCreditCard = ref(false)
     const modalEditTransfer = ref(false)
     const cardDeletTransaction = ref(false)
     const cardDeleteTransfer = ref(false)
     const isFiltered = ref(false)
     const lastFilter = ref<TMovementsByFilter | null>(null)
     const filteredData = ref<TMovementsSummary[] | null>(null)
+    const dataMovementsCreditCard = ref<TMovementCreditCard | null>(null)
+    const idMovementsCreditCard = ref<number | null>(null)
     const labelOptions = ref({
         colorButton: "",
         textButton: "",
@@ -84,6 +93,16 @@
         queryKey: QUERY_KEYS.movements.current_balance,
         queryFn: getCurrentBalance
     })
+
+    const { data:allMovementsCard, isPending: isPendingByCreditCard} = useQuery({
+        queryKey: QUERY_KEYS.movementsCreditCard.allMovements,
+        queryFn: allMovementsCreditCard,
+    })
+    
+    watch([allMovementsCard, idMovementsCreditCard], ([newVal]) => {
+        const found = dataMovementsCreditCard.value = newVal?.find(item => item.id === idMovementsCreditCard.value) ?? null
+        dataMovementsCreditCard.value = found ? structuredClone(toRaw(found)) : null
+    }, {immediate: true})
 
     function showDrawer(value: boolean) {
         drawer.value = value
@@ -160,7 +179,7 @@
     function getOptions(movements: TMovementsSummary): TOptionAction [] {
 
         const options = [
-            movements.status_transaction === "pendente" ? {
+            (movements.status_transaction === "pendente" && movements.type_transaction !== 'despesa_cartao') ? {
                 title: "Efetivar",
                 icon: "mdi-check-all",
                 value: "efetivar"
@@ -179,8 +198,8 @@
         mutationFn: (payload: TMovementsPayload) => patchMovementsById(payload.id!, payload),
 
         onSuccess: () => {
-            invalidate(QUERY_KEYS.movements.all)
             invalidate(QUERY_KEYS.movements.only_expenses)
+            invalidate(QUERY_KEYS.movements.all)
             invalidate(QUERY_KEYS.movements.only_revenues)
             invalidate(QUERY_KEYS.movements.current_balance)
             invalidate(QUERY_KEYS.accounts.getBalanceForAccount)
@@ -197,6 +216,13 @@
             handleApplyFilter(lastFilter.value)
             invalidate(QUERY_KEYS.movements.only_revenues)
         }
+    }
+
+    function handleCreditCardEditSuccess() {
+        invalidate(QUERY_KEYS.movementsCreditCard.allMovements)
+        invalidate(QUERY_KEYS.movements.all)
+        invalidate(QUERY_KEYS.movements.current_balance)
+        handleMutationSuccess()
     }
 
     function handleClearFilter(value: string, filter?: TMovementsByFilter | null, idCategorie?: number, idAccount?: number) {
@@ -285,6 +311,14 @@
         editDraft.value = parseMovementToEdit(rawMovements)
         modelEditRecurrenceRevenue.value = true
     }
+    
+    function handleOpenModalEditRecurrenceCreditCard() {
+        modelEditRecurrenceCreditCard.value = true
+    }
+
+    function handleOpenModalEditMovementCreditCard() {
+        modelEditMovementCreditCard.value = true
+    }
 
     async function handleOpenModalEditTransfer(transfer: TMovementsWithTransfer) {
 
@@ -303,6 +337,18 @@
 
 
     function handleOptionClick(option: TOptionAction, data: TMovementsSummary) {  
+
+        idMovementsCreditCard.value = data.movement_credit_card_id ?? null
+
+        if (option.value === "edit" && data.type_transaction === "despesa_cartao" && (data.type_recurrence === "fixa" || data.type_recurrence === "parcelada")) {
+            handleOpenModalEditRecurrenceCreditCard()
+            return
+        }
+
+        if (option.value === "edit" && data.type_transaction === "despesa_cartao") {
+            handleOpenModalEditMovementCreditCard()
+            return
+        }
 
         if (option.value === "edit" && (data.type_transaction === "receita") && (data.type_recurrence === "fixa" || data.type_recurrence === "parcelada")) {
             handleOpenModalEditRecurrenceRevenue(data)
@@ -402,6 +448,8 @@
         <CardEditRecurrenceExpense @success="handleMutationSuccess" v-model="modelEditRecurrenceExpense" :draft="editDraft" />
         <CardEditRecurrenceRevenue :draft="editDraft" @success="handleMutationSuccess" v-model="modelEditRecurrenceRevenue" />
         <CardDeleteMovementRecurrence :draft="confirmDraft" v-model="cardDeletTransactionRecurrence" />
+        <CardEditRecurrenceCreditCard @success="handleCreditCardEditSuccess" :draft="dataMovementsCreditCard" v-model="modelEditRecurrenceCreditCard"/>
+        <CardEditMovementCreditCard  @success="handleCreditCardEditSuccess" :draft="dataMovementsCreditCard"  v-model="modelEditMovementCreditCard"/>
         
         <FilterDrawer :items="[ 'Recebidas', 'Pagas', 'Pendentes']" :field-type-active="false" color-button="primary" @apply-filter="handleApplyFilter" @reset-filter="handleClearFilter" v-model="drawer"/>
           
