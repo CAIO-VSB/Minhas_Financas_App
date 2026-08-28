@@ -324,6 +324,7 @@
                 variant="solo-filled"
                 autocomplete="off"
                 label="Valor *"
+                density="comfortable"
               />
             </v-col>
 
@@ -339,7 +340,6 @@
                 variant="solo-filled"
                 density="comfortable"
                 color="primary"
-                hide-details="auto"
               />
             </v-col>
 
@@ -356,7 +356,6 @@
                 variant="solo-filled"
                 density="comfortable"
                 color="primary"
-                hide-details="auto"
               />
             </v-col>
 
@@ -439,7 +438,7 @@
               </v-select>
             </v-col>
 
-            <v-col cols="12">
+            <v-col cols="12" >
               <v-select
                 v-model="modelCategorias"
                 v-model:menu="menuCategorias"
@@ -454,7 +453,6 @@
                 variant="solo-filled"
                 density="comfortable"
                 color="primary"
-                hide-details="auto"
                 clearable
               >
                 <template #append-inner>
@@ -523,7 +521,6 @@
                 variant="solo-filled"
                 density="comfortable"
                 color="primary"
-                hide-details="auto"
               />
             </v-col>
 
@@ -536,7 +533,6 @@
                 variant="solo-filled"
                 density="comfortable"
                 color="primary"
-                hide-details="auto"
               />
             </v-col>
 
@@ -624,7 +620,7 @@
                 :items="['Dias', 'Semanas', 'Meses', 'Anos']"
                 label="Periodicidade *"
                 density="comfortable"
-                variant="solo-inverted"
+                variant="solo-filled"
                 color="primary"
                 hide-details="auto"
               />
