@@ -205,235 +205,313 @@
 </script>
 
 <template>
+    <v-empty-state
+        v-if="!isPending && !isPendingDisable && !allCreditCard?.length && !allDeactivatedCrediCard?.length"
+        title="Adicione um cartão de crédito"
+        text="Cadastre um cartão de crédito para começar a visualizar suas faturas e acompanhar seus lançamentos."
+        :image="alertImg"
+    >
+        <v-btn
+            color="primary"
+            prepend-icon="mdi-plus"
+            rounded="lg"
+            class="text-none font-weight-bold"
+            @click="modalAddCard = true"
+        >
+            Adicionar cartão
+        </v-btn>
+    </v-empty-state>
 
- <v-empty-state
-  v-if="!isPending && !isPendingDisable && !allCreditCard?.length && !allDeactivatedCrediCard?.length"
-  title="Adicione um cartão de crédito"
-  text="Cadastre um cartão de crédito para começar a visualizar suas faturas e acompanhar seus lançamentos."
-  :image="alertImg"
-  >
-  <v-btn @click="modalAddCard = true" color="primary" prepend-icon="mdi-plus">
-    Adicionar cartão
-  </v-btn>
+    <v-container
+        v-else-if="!isPending && !isPendingDisable && (allCreditCard?.length || allDeactivatedCrediCard?.length)"
+        fluid
+        class="mt-6 pa-4 pa-md-6"
+    >
+        <CardAddCartao v-model="modalAddCard" />
 
-  </v-empty-state>
+        <CardEditCard
+            v-model="modalEditCard"
+            :draft="editDraft"
+        />
 
-  <div v-if=" !isPending && !isPendingDisable && (allCreditCard?.length || allDeactivatedCrediCard?.length)" class="main-container">
-    <div class="container-side-left">
-      <div>
-        <v-card :loading="isPending">
-          <div class="flex align-baseline pa-4">
-            
-            <div class="flex flex-col gap-4 text-center w-full mt-5 mb-3">
+        <CardAddMovimentsCreditCard v-model="modalAddMovementCreditCard" />
 
-              <div class="d-flex align-center ga-2">
-                <v-menu
-                v-model="menu"
-                :close-on-content-click="false"
-                location="center"
+        <DialogHelpInvoice
+            :model-value="showDialogHelpInvoice"
+            @close-modal="closeModalHelpInvoice"
+        />
+
+        <v-row>
+            <v-col
+                cols="12"
+                xl="4"
+            >
+                <v-card
+                    rounded="xl"
+                    elevation="2"
+                    :loading="isPending"
                 >
-                  <template  v-slot:activator="{ props }">
-                  <v-list-item
-                  style="border-bottom: 2px ridge #1867c0; padding: 3px; flex: 1;"
-                  color="black"
-                  v-bind="props"
-                  :prepend-avatar="selectdLogo"
-                  >
-                    {{ selectedCard }}
-                  </v-list-item>
-                  </template>
-                  
-                  <v-card min-width="380"
-                    title="Cartões ativos"
-                    subtitle="Lista de cartões ativos"
-                  >
-                    <v-divider></v-divider>
-                    <v-list>
-                      <v-list-item @click="handleSelectedCard(card)"  v-for="card in allCreditCard" rounded="xl" :prepend-avatar="card.url_logo" :value="card" >
-                        <v-list-item-title>{{ card.name_identifier }}</v-list-item-title>
-                      </v-list-item>
-                    </v-list>
-                    <v-divider></v-divider>
-                    <v-list>
-                      <v-list-item
-                        prepend-icon="mdi-plus"
-                        title="Adicionar novo cartão"
-                        value="new"
-                        @click="handleAddCarton"
-                      >
-                      </v-list-item>
-                    </v-list>
-                    <v-divider></v-divider>
-                    <v-card v-if="allDeactivatedCrediCard?.length !== 0" subtitle="Lista de cartões desativados">
-                       <v-divider></v-divider>
-                      <v-list>
-                      <v-list-item @click="handleSelectedCard(card)" v-for="card in allDeactivatedCrediCard" rounded="xl" :prepend-avatar="card.url_logo" :value="card" >
-                        <v-list-item-title :class="{'text-disabled': !card.active}">{{ card.name_identifier }}</v-list-item-title>
-                      </v-list-item>
-                    </v-list>
-                    </v-card>
-                  </v-card>
-                </v-menu>
+                    <v-card-text class="pa-5">
+                        <div class="d-flex align-center ga-2">
+                            <v-menu
+                                v-model="menu"
+                                :close-on-content-click="false"
+                                location="bottom start"
+                                offset="8"
+                            >
+                                <template #activator="{ props }">
+                                    <v-btn
+                                        v-bind="props"
+                                        variant="text"
+                                        rounded="lg"
+                                        class="flex-grow-1 justify-start text-none px-2"
+                                    >
+                                        <template #prepend>
+                                            <v-avatar size="34">
+                                                <v-img :src="selectdLogo" />
+                                            </v-avatar>
+                                        </template>
 
-                <v-menu v-if="selectedCardData">
-                  <template v-slot:activator="{ props }">
-                    <v-btn
-                      icon="mdi-dots-vertical"
-                      size="10"
-                      variant="text"
-                      v-bind="props"
-                      v-tooltip="'Opções'"
-                    >
-                    </v-btn>
-                  </template>
+                                        <span class="font-weight-bold text-blue-grey-darken-4 text-truncate">
+                                            {{ selectedCard }}
+                                        </span>
 
-                  <v-list >
-                    <v-list-item
-                      v-for="item in getOptions(selectedCardData)"
-                      :key="item.title!"
-                      :value="item.title"
-                      :prepend-icon="item.icon!"
-                      @click="handleOptionClick(item, selectedCardData)"
-                    >
-                      <v-list-item-title >{{ item.title }}</v-list-item-title>
-                    </v-list-item>
-                  </v-list>
-                </v-menu>
-              </div>
+                                        <template #append>
+                                            <v-icon icon="mdi-chevron-down" />
+                                        </template>
+                                    </v-btn>
+                                </template>
 
-              <div class="mt-4 mb-4">
-                <template v-if="selectedCardData?.limit_card && selectedCardData.limit_card > 0">
-                  <div class="d-flex ml-1 align-center ga-2 justify-space-between">
-                  <span class="text-textSecundary">Limite Utilizado</span>
-                  <small class="mr-2" style="font-weight: 600; font-size: var(--text-sm);">{{ valueLimitedUsed.toFixed() ?? 0.00 }}%</small>
+                                <v-card
+                                    min-width="320"
+                                    rounded="xl"
+                                    elevation="4"
+                                    class="overflow-hidden"
+                                >
+                                    <div class="pa-4">
+                                        <div class="text-subtitle-1 font-weight-bold text-blue-grey-darken-4">
+                                            Cartões de crédito
+                                        </div>
+
+                                        <div class="text-caption text-medium-emphasis mt-1">
+                                            Selecione o cartão que deseja consultar.
+                                        </div>
+                                    </div>
+
+                                    <v-divider />
+
+                                    <v-list
+                                        density="comfortable"
+                                        class="pa-2"
+                                    >
+                                        <v-list-item
+                                            v-for="card in allCreditCard"
+                                            :key="card.id"
+                                            :value="card"
+                                            :prepend-avatar="card.url_logo"
+                                            rounded="lg"
+                                            @click="handleSelectedCard(card)"
+                                        >
+                                            <v-list-item-title class="font-weight-medium">
+                                                {{ card.name_identifier }}
+                                            </v-list-item-title>
+                                        </v-list-item>
+
+                                        <v-list-item
+                                            prepend-icon="mdi-plus"
+                                            title="Adicionar novo cartão"
+                                            value="new"
+                                            rounded="lg"
+                                            @click="handleAddCarton"
+                                        />
+                                    </v-list>
+
+                                    <template v-if="allDeactivatedCrediCard?.length">
+                                        <v-divider />
+
+                                        <div class="px-4 pt-4 text-caption text-medium-emphasis">
+                                            CARTÕES DESATIVADOS
+                                        </div>
+
+                                        <v-list
+                                            density="comfortable"
+                                            class="pa-2"
+                                        >
+                                            <v-list-item
+                                                v-for="card in allDeactivatedCrediCard"
+                                                :key="card.id"
+                                                :value="card"
+                                                :prepend-avatar="card.url_logo"
+                                                rounded="lg"
+                                                @click="handleSelectedCard(card)"
+                                            >
+                                                <v-list-item-title class="text-disabled">
+                                                    {{ card.name_identifier }}
+                                                </v-list-item-title>
+                                            </v-list-item>
+                                        </v-list>
+                                    </template>
+                                </v-card>
+                            </v-menu>
+
+                            <v-menu v-if="selectedCardData">
+                                <template #activator="{ props }">
+                                    <v-btn
+                                        v-bind="props"
+                                        icon="mdi-dots-vertical"
+                                        variant="text"
+                                    >
+                                        <v-tooltip
+                                            activator="parent"
+                                            text="Opções"
+                                        />
+                                    </v-btn>
+                                </template>
+
+                                <v-list
+                                    density="comfortable"
+                                    class="pa-2"
+                                >
+                                    <v-list-item
+                                        v-for="item in getOptions(selectedCardData)"
+                                        :key="item.title"
+                                        :value="item.title"
+                                        :prepend-icon="item.icon"
+                                        rounded="lg"
+                                        @click="handleOptionClick(item, selectedCardData)"
+                                    >
+                                        <v-list-item-title>
+                                            {{ item.title }}
+                                        </v-list-item-title>
+                                    </v-list-item>
+                                </v-list>
+                            </v-menu>
+                        </div>
+
+                        <div class="mt-6">
+                            <template v-if="selectedCardData?.limit_card && selectedCardData.limit_card > 0">
+                                <div class="d-flex align-center justify-space-between mb-2">
+                                    <span class="text-body-2 text-medium-emphasis">
+                                        Limite utilizado
+                                    </span>
+
+                                    <span class="text-body-2 font-weight-bold text-blue-grey-darken-4">
+                                        {{ valueLimitedUsed.toFixed() ?? 0.00 }}%
+                                    </span>
+                                </div>
+
+                                <v-progress-linear
+                                    :model-value="valueLimitedUsed"
+                                    :color="valueLimitedUsed < 85 ? 'primary' : 'error'"
+                                    height="12"
+                                    rounded
+                                />
+
+                                <div class="d-flex justify-space-between mt-3 text-body-2 text-medium-emphasis">
+                                    <span>{{ formatCurrency(totalForInvoice ?? 0.00) }}</span>
+                                    <span>de</span>
+                                    <span>{{ formatCurrency(selectedCardData?.limit_card ?? 0.00) }}</span>
+                                </div>
+                            </template>
+
+                            <v-alert
+                                v-else
+                                type="info"
+                                variant="tonal"
+                                text="Cadastre um limite para acompanhar melhor seus gastos e manter suas finanças sob controle."
+                            />
+                        </div>
+
+                        <v-divider class="my-5" />
+
+                        <DateInput @apply-filter-month="handleGetPeriod" />
+                    </v-card-text>
+
+                    <v-expand-transition>
+                        <div
+                            v-if="showAlertLimitedUsed"
+                            class="px-5 pb-5"
+                        >
+                            <v-alert
+                                type="warning"
+                                variant="tonal"
+                                title="Limite do cartão"
+                                text="Seus gastos já ultrapassaram 85% do limite disponível. Considere acompanhar as próximas compras para evitar atingir o limite."
+                            />
+                        </div>
+                    </v-expand-transition>
+                </v-card>
+
+                <div class="mt-5">
+                    <CardInfoCreditCard
+                        :status-invoices="statusInvoice"
+                        :invoice-id="invoiceId"
+                        :loading="isPendingByCreditCard"
+                        :credit-card="editDraft"
+                        :total-invoice="totalForInvoice"
+                        :period="period"
+                    />
                 </div>
-                  <v-progress-linear height="15" rounded :color="(valueLimitedUsed < 85 ? 'primary' : 'red')" class="mt-2" :model-value="valueLimitedUsed">
-                  </v-progress-linear>
-                  
-                  <div class="d-flex justify-space-between mt-2">
-                    <div class="ml-1 text-textSecundary">{{ formatCurrency(totalForInvoice ?? 0.00) }}</div>
-                    <span>de</span>
-                    <div class="mr-1 text-textSecundary">{{ formatCurrency(selectedCardData?.limit_card ?? 0.00) }}</div>
-                  </div>
+            </v-col>
+
+            <v-col
+                cols="12"
+                xl="8"
+            >
+                <CardMovementsCreditCard
+                    :credit-card="selectedCardData"
+                    :movements-credit-card="dataByCreditCard ?? null"
+                />
+            </v-col>
+        </v-row>
+
+        <div class="fab-wrapper">
+            <v-tooltip
+                text="Ajuda sobre a fatura"
+                location="left"
+            >
+                <template #activator="{ props }">
+                    <BaseFab
+                        v-bind="props"
+                        color="primary"
+                        icon="mdi-help"
+                        size="50"
+                        @click="showDialogHelpInvoice = true"
+                    />
                 </template>
+            </v-tooltip>
 
-                <template v-else>
-                  <v-alert
-                  type="info"
-                  variant="tonal"
-                  text="Cadastre um limite para acompanhar melhor seus gastos e manter suas finanças sob controle."
-                ></v-alert>
-                </template >
-
-              </div>
-              <v-divider></v-divider>
-              <div style="margin-bottom: 12px; margin-top: 12px;">
-                <DateInput @apply-filter-month="handleGetPeriod" ></DateInput>
-              </div>
-
-          </div>
+            <v-tooltip
+                text="Nova despesa"
+                location="left"
+            >
+                <template #activator="{ props }">
+                    <BaseFab
+                        v-bind="props"
+                        :disabled="disabeldButtonAddExpense"
+                        color="primary"
+                        icon="mdi-plus"
+                        size="50"
+                        @click="modalAddMovementCreditCard = true"
+                    />
+                </template>
+            </v-tooltip>
         </div>
-
-        <div class="pa-2">
-          <v-alert
-          v-model="showAlertLimitedUsed"
-          type="warning"
-          variant="tonal"
-          title="Limite do cartão"
-          text="Seus gastos já ultrapassaram 85% do limite disponível. Considere acompanhar as próximas compras para evitar atingir o limite."
-          ></v-alert>
-        </div>
-
-      </v-card>
-        
-      </div>
-
-      <div class="mt-5">
-        <CardInfoCreditCard :status-invoices="statusInvoice" :invoice-id="invoiceId" :loading="isPendingByCreditCard" :credit-card="editDraft" :total-invoice="totalForInvoice" :period="period" />
-      </div>
-  
-    </div>
-
-    <div >
-      <CardMovementsCreditCard :credit-card="selectedCardData" :movements-credit-card="dataByCreditCard ?? null"/>
-    </div>
-
-    <div class="fab-wrapper">
-      <v-tooltip text="Ajuda sobre a fatura" location="left">
-        <template #activator="{ props }">
-          <BaseFab 
-          v-bind="props"
-          color="blue"
-          icon="mdi-help"
-          size="50"
-          @click="showDialogHelpInvoice = true"
-          />
-        </template>
-      </v-tooltip>
-
-      <v-tooltip text="Nova despesa" location="left">
-        <template #activator="{ props }">
-          <BaseFab 
-          :disabled="disabeldButtonAddExpense"
-          v-bind="props"
-          color="blue"
-          icon="mdi-plus"
-          size="50"
-          @click="modalAddMovementCreditCard = true"
-          />
-        </template>
-      </v-tooltip>
-    </div>
-    </div>
-
-    <div>
-      
-      <CardAddCartao v-model="modalAddCard"/>
-
-      <CardEditCard
-      :draft="editDraft"
-      v-model="modalEditCard" />
-
-      <CardAddMovimentsCreditCard v-model="modalAddMovementCreditCard" />
-
-      <DialogHelpInvoice @close-modal="closeModalHelpInvoice" :model-value="showDialogHelpInvoice" />
-      
-    </div>
-    
+    </v-container>
 </template>
 
-<style scoped lang="scss">
-
-.main-container {
-  margin: 5px;
-  margin-right: 7px;
-  margin-top: 20px;
-  display: grid;
-  grid-template-columns: minmax(350px, 0.65fr) minmax(0, 1.5fr);
-  gap: 10px;
-}
-
+<style scoped>
 .fab-wrapper {
   position: fixed;
-  bottom: 25px;
   right: 24px;
-  z-index: 9999;
+  bottom: 24px;
+  z-index: 10;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
 .text-disabled {
-  text-decoration: line-through;
+    text-decoration: line-through;
 }
-
-@media (max-width: 1650px) {
-  .main-container {
-    display: grid;
-    grid-template-columns: 1fr;
-    padding: 0 6px 0 6px;
-  }
-}
-
-
 </style>

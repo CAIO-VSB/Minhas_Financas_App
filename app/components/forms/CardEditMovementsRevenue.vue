@@ -184,30 +184,30 @@ async function handleEditMovementRevenue() {
         <v-card prepend-icon="mdi-bank-plus" title="Editar receita">
           <v-divider></v-divider>
           <v-card-text>
-            <v-row dense>
+            <v-row>
 
               
             <v-col
-              dense cols="12" md="6" sm="12"
+             cols="12" md="6" sm="12"
             >
             <CurrencyInput prepend-inner-icon="mdi-cash" input-color="#2E7D32" base-color="#2E7D32" color="#2E7D32" :rules="currencyRules"  text-color="green" autocomplete="off" label="Valor*" v-model="props.draft.value_transaction" />
             </v-col>
 
             
             <v-col
-              dense cols="12" md="6" sm="12"
+              cols="12" md="6" sm="12"
             >
             <v-date-input prepend-inner-icon="mdi-calendar" prepend-icon="" :rules="dateRules" autocomplete="off" name="date" label="Data*" variant="underlined" v-model="props.draft.date_transaction"></v-date-input>
             </v-col>
 
             <v-col
-            dense cols="12" md="6" sm="12"
+            cols="12" md="6" sm="12"
             >
             <v-text-field prepend-inner-icon="mdi-pencil" :rules="nameRules" :counter="30" maxlength="30"  autocomplete="name" name="name" label="Descrição*" variant="underlined" v-model="props.draft.description_transaction"></v-text-field>
             </v-col>
 
             <v-col
-            dense cols="12" md="6" sm="12"
+            cols="12" md="6" sm="12"
             >
               <v-select
                 v-model="modelAccounts"
@@ -262,7 +262,7 @@ async function handleEditMovementRevenue() {
                 </v-col>
 
                 <v-col
-                dense cols="12" md="12" sm="12"
+                 cols="12" md="12" sm="12"
                 >
                 <v-select
                 autocomplete="off"
@@ -315,7 +315,7 @@ async function handleEditMovementRevenue() {
               </v-col>
 
               <v-col
-              dense cols="12" md="12" sm="12"
+              cols="12" md="12" sm="12"
               >
               <v-text-field prepend-inner-icon="mdi-note-text" v-model="props.draft.observation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="underlined"></v-text-field >
               </v-col>

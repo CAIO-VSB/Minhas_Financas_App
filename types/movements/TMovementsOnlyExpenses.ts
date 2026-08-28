@@ -3,6 +3,7 @@ export type TTypeTransaction =
     | "despesa"
     | "transferencia_entrada"
     | "transferencia_saida"
+    | "pagamento_fatura"
 
 export type TStatusTransaction =
     | "pendente"
@@ -28,5 +29,7 @@ export type TMovementsOnlyExpenses = {
     total_geral_despesas?: null | null,
     total_installments?: number | null,
     type_recurrence?: string | null,
-    installment_current?: number | null
+    installment_current?: number | null,
+    credit_card_name?: string | null,
+    status_fatura: string | null
 }

@@ -15,6 +15,7 @@
     import CardEditTransfer from '~/components/forms/CardEditTransfer.vue'
     import CardDeleteTransfer from '~/components/forms/CardDeleteTransfer.vue'
     import type { TTransferPayload } from '~~/schemas/transfer.schema'
+    import AppCard from '~/components/ui/AppCard.vue'
 
     type option = {
         title: string,
@@ -187,352 +188,299 @@
  
 </script>
 
-
 <template>
-    
-    <CardAddTransfer v-model="modalAddTransfer"/>
-    <CardEditTransfer :draft="editDraft" v-model="modalEditTransfer" />
-    <CardDeleteTransfer :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="confirmDraft" v-model="cardDeleteTransfer" />
+    <v-container
+        fluid
+        class="mt-6 pa-4 pa-md-6"
+    >
+        <CardAddTransfer v-model="modalAddTransfer" />
 
-    <div class="mt-7 container-main">
+        <CardEditTransfer
+            v-model="modalEditTransfer"
+            :draft="editDraft"
+        />
 
-        <div class="text-center d-flex ga-4 ml-4 mb-5 btn-options">
-            
-            <v-menu
-                transition="scale-transition"
-                >
-                <template v-slot:activator="{ props }">
-                    <v-btn
-                    :color="ColorButtonOption"
-                    v-bind="props"
-                    class="text-none elevation-1"
-                    variant="tonal"
-                    append-icon="mdi-arrow-down-drop-circle"
-                    >
-                    {{ titleButtonOption }}
-                    </v-btn>
-                </template>
+        <CardDeleteTransfer
+            v-model="cardDeleteTransfer"
+            :draft="confirmDraft"
+            :title-botton="labelOptions.textButton"
+            :title="labelOptions.title"
+            :text="labelOptions.text"
+            :color-botton="labelOptions.colorButton"
+        />
 
-                <v-list>
-                    <v-list-item
-                    v-for="(item, i) in itemsRouter"
-                    :key="i"
-                    :value="i"
-                    @click="getTitleRouter(item)"
-                    >
-                    <template v-slot:prepend>
-                        <v-icon :color="item.color">mdi-circle-medium</v-icon>
-                    </template>
-                    <v-list-item-title>{{ item.title }}</v-list-item-title>
-                    </v-list-item>
-                </v-list>
-            </v-menu>
-
-            <div class="w-100 d-flex justify-sm-end ga-3 pr-4 ">
-                <v-btn
-                :color="ColorButtonOption"
-                prepend-icon="mdi-plus"
-                class="text-none btn-add-transfer elevation-1"
-                variant="flat"
-                @click="modalAddTransfer = true"
-                >
-                NOVA TRANSFERÊNCIA
-                </v-btn>
-                
-            </div>
-
-        </div>
-
-        <div class="main-cards">
-            <v-card subtitle="Saldo Atual">
-                <v-skeleton-loader v-if="isPendingCurrentBalance" type="list-item-avatar"></v-skeleton-loader>
-                <div v-else class="d-flex align-center ga-2 pl-2 mb-2">
-                    <div class="pa-2 rounded-lg ">
-                        <v-avatar 
-                        color="primary"
-                        variant="tonal" 
-                        icon="mdi-bank-outline"
-                        size="40"
-                        rounded="lg"
-                        ></v-avatar>
-                    </div>
-                    <span class="font-weight-semibold card-value">{{ formatCurrency(balanceCurrent.saldo_atual) }}</span>
-                </div>                
-                <template #subtitle>
-                    <p class="card-label">Saldo atual</p>
-                </template>
-                <template #append>
-                    <v-tooltip  text="O cálculo do saldo atual é independente do período selecionado, considerando o saldo inicial das contas ativas juntamente com todas as movimentações efetivadas de entrada e saída">
-                        <template v-slot:activator="{ props }">
-                            <v-icon class="icon-help" v-bind="props" size="20px" icon="mdi-information-outline"></v-icon>
-                        </template>
-                    </v-tooltip>
-                </template>
-            </v-card>
-            <v-card :loading="isPending" subtitle="Receitas">
-                 <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
-                 <div v-else class="d-flex align-center ga-2 pl-2 mb-2">
-                    <div class="pa-2 rounded-lg ">
-                        <v-avatar 
-                        color="success"
-                        variant="tonal" 
-                        icon="mdi-arrow-down-thin-circle-outline"
-                        size="40"
-                        rounded="lg"
-                        ></v-avatar>
-                    </div>
-                    <span class="font-weight-semibold card-value">{{ formatCurrency(sumary.receitas)}}</span>
-                </div>
-                 <template #subtitle>
-                    <p class="card-label">Receitas</p>
-                </template>
-                <template #append>
-                    <v-tooltip text="O cálculo do total de receitas considera todas as movimentações de entrada efetivadas vinculadas às contas ativas.">
-                        <template v-slot:activator="{ props }">
-                            <v-icon class="icon-help" v-bind="props" size="20px" icon="mdi-information-outline"></v-icon>
-                        </template>
-                    </v-tooltip>
-                </template>
-            </v-card>
-            <v-card :loading="isPending" subtitle="Despesas">
-                <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
-                 <div v-else  class="d-flex align-center ga-2 pl-2 mb-2">
-                    <div class="pa-2 rounded-lg ">
-                        <v-avatar 
-                        color="error"
-                        variant="tonal" 
-                        icon="mdi-arrow-up-thin-circle-outline"
-                        size="40"
-                        rounded="lg"
-                        ></v-avatar>
-                    </div>
-                    <span class="font-weight-semibold card-value"> {{ formatCurrency(sumary.despesas) }}</span>
-                </div>
-                 <template #subtitle>
-                    <p class="card-label">Despesas</p>
-                </template>
-                <template #append>
-                    <v-tooltip text="O cálculo do total de despesas considera todas as movimentações de saída efetivadas vinculadas às contas ativas.">
-                        <template v-slot:activator="{ props }">
-                            <v-icon class="icon-help" v-bind="props" size="20px" icon="mdi-information-outline"></v-icon>
-                        </template>
-                    </v-tooltip>
-                </template>
-            </v-card>
-            <v-card :loading="isPending" subtitle="Balanco Mensal">
-                <v-skeleton-loader v-if="isPending" type="list-item-avatar"></v-skeleton-loader>
-                 <div v-else  class="d-flex align-center ga-2 pl-2 mb-2">
-                    <div class="pa-2 rounded-lg ">
-                        <v-avatar 
-                        color="primary"
-                        variant="tonal" 
-                        icon="mdi-scale-balance"
-                        size="40"
-                        rounded="lg"
-                        ></v-avatar>
-                    </div>
-                    <span class="font-weight-semibold card-value">{{ formatCurrency(sumary.balanco_mensal) }}</span>
-                </div>
-                 <template #subtitle>
-                    <p class="card-label">Balanço mensal</p>
-                </template>
-                <template #append>
-                    <v-tooltip text="O balanço mensal é calculado com base na soma de todas as receitas efetivadas menos todas as despesas efetivadas do período selecionado.">
-                        <template v-slot:activator="{ props }">
-                            <v-icon class="icon-help" v-bind="props" size="20px" icon="mdi-information-outline"></v-icon>
-                        </template>
-                    </v-tooltip>
-                </template>
-            </v-card>
-        </div>
-        
-        <div class="w-100 pa-2 container-table">
-
-            <template v-if="isPending">
-                <v-skeleton-loader 
-                    v-for="n in 12" 
-                    :key="n" 
-                    type="list-item-avatar"
-                    class="mb-2"
-                />
-            </template>
-            
-            <v-card
-                flat
-                class="table  elevation-2"
-                :loading="isPending"
-                v-else
+        <v-row
+            align="center"
+            class="mb-6"
+        >
+            <v-col
+                cols="12"
+                md="auto"
             >
-            <template v-slot:text>
+                <v-menu
+                    transition="scale-transition"
+                    offset="8"
+                >
+                    <template #activator="{ props }">
+                        <v-btn
+                            v-bind="props"
+                            :color="ColorButtonOption"
+                            variant="tonal"
+                            append-icon="mdi-chevron-down"
+                            rounded="lg"
+                            class="text-none font-weight-medium"
+                        >
+                            {{ titleButtonOption }}
+                        </v-btn>
+                    </template>
 
-            <div style="margin-bottom: 12px;">
-                <DateInput  @apply-filter-month="handleGetPeriod"></DateInput>
+                    <v-card
+                        min-width="240"
+                        rounded="xl"
+                        elevation="2"
+                        class="overflow-hidden"
+                    >
+                        <v-list
+                            density="comfortable"
+                            class="pa-2"
+                        >
+                            <v-list-item
+                                v-for="(item, index) in itemsRouter"
+                                :key="index"
+                                :value="index"
+                                rounded="lg"
+                                @click="getTitleRouter(item)"
+                            >
+                                <template #prepend>
+                                    <v-icon
+                                        icon="mdi-circle-medium"
+                                        :color="item.color"
+                                        class="mr-2"
+                                    />
+                                </template>
+
+                                <v-list-item-title class="font-weight-medium">
+                                    {{ item.title }}
+                                </v-list-item-title>
+                            </v-list-item>
+                        </v-list>
+                    </v-card>
+                </v-menu>
+            </v-col>
+
+            <v-col
+                cols="12"
+                md
+                class="d-flex justify-md-end"
+            >
+                <v-btn
+                    :color="ColorButtonOption"
+                    prepend-icon="mdi-plus"
+                    variant="flat"
+                    rounded="lg"
+                    class="text-none font-weight-bold"
+                    @click="modalAddTransfer = true"
+                >
+                    Nova transferência
+                </v-btn>
+            </v-col>
+        </v-row>
+
+        <v-row class="mb-6">  
+            <div class="main-cards">
+            <v-col
+                cols="12"
+                sm="6"
+                lg="3"
+                md="6"
+            >
+                <AppCard
+                    subtitle="Saldo atual"
+                    :loading="isPendingCurrentBalance"
+                    size="40"
+                    :value="balanceCurrent.saldo_atual"
+                    color="primary"
+                    icon="mdi-bank"
+                    text-tool-tip="O cálculo do saldo atual é independente do período selecionado, considerando o saldo inicial das contas ativas juntamente com todas as movimentações efetivadas de entrada e saída"
+                    icon-tool-tip="mdi-information-outline"
+                    size-icon-tool-tip="20px"
+                />
+            </v-col>
+
+            <v-col
+                cols="12"
+                sm="6"
+                lg="3"
+            >
+                <AppCard
+                    subtitle="Receitas"
+                    :loading="isPending"
+                    size="40"
+                    :value="sumary.receitas"
+                    color="success"
+                    icon="mdi-arrow-down-thin-circle-outline"
+                    text-tool-tip="O valor apresentado corresponde à soma de todas as receitas efetivadas registradas nas contas ativas"
+                    icon-tool-tip="mdi-information-outline"
+                    size-icon-tool-tip="20px"
+                />
+            </v-col>
+
+            <v-col
+                cols="12"
+                sm="6"
+                lg="3"
+            >
+                <AppCard
+                    subtitle="Despesas"
+                    :loading="isPending"
+                    size="40"
+                    :value="sumary.despesas"
+                    color="error"
+                    icon="mdi-arrow-up-thin-circle-outline"
+                    text-tool-tip="O valor apresentado corresponde à soma de todas as despesas efetivadas registradas nas contas ativas"
+                    icon-tool-tip="mdi-information-outline"
+                    size-icon-tool-tip="20px"
+                />
+            </v-col>
+
+            <v-col
+                cols="12"
+                sm="6"
+                lg="3"
+            >
+                <AppCard
+                    subtitle="Balanço mensal"
+                    :loading="isPending"
+                    size="40"
+                    :value="sumary.balanco_mensal"
+                    color="primary"
+                    icon="mdi-scale-balance"
+                    text-tool-tip="O balanço mensal é calculado com base na soma de todas as receitas efetivadas menos todas as despesas efetivadas do período selecionado"
+                    icon-tool-tip="mdi-information-outline"
+                    size-icon-tool-tip="20px"
+                />
+            </v-col>
             </div>
+        </v-row>
 
-            <v-text-field
-                v-model="search"
-                label="Pesquisar"
-                prepend-inner-icon="mdi-magnify"
-                variant="outlined"
-                hide-details
-                single-line
-            ></v-text-field>
-            </template>
-                <v-data-table
+        <v-card
+            v-if="!isPending"
+            rounded="xl"
+            elevation="2"
+            class="overflow-hidden"
+        >
+            <v-card-text class="pa-5">
+                <div class="mb-4">
+                    <DateInput @apply-filter-month="handleGetPeriod" />
+                </div>
+
+                <v-text-field
+                    v-model="search"
+                    label="Pesquisar"
+                    prepend-inner-icon="mdi-magnify"
+                    variant="solo-filled"
+                    density="comfortable"
+                    hide-details
+                    single-line
+                />
+            </v-card-text>
+
+            <v-divider />
+
+            <v-data-table
                 :headers="headers"
                 :items="data"
                 :search="search"
                 mobile-breakpoint="md"
-                >
-
-                <template v-slot:item.account_origin_name="{ item }">
-                    <div style="display: flex; align-items: center; gap: 8px;">
+            >
+                <template #item.account_origin_name="{ item }">
+                    <div class="d-flex align-center ga-2">
                         <v-avatar size="30">
-                            <v-img :src="item.logo_origem"></v-img>
+                            <v-img :src="item.logo_origem" />
                         </v-avatar>
+
                         <span>{{ item.account_origin_name }}</span>
                     </div>
                 </template>
 
-                <template v-slot:item.account_destination_name="{ item }">
-                    <div style="display: flex; align-items: center; gap: 8px;">
+                <template #item.account_destination_name="{ item }">
+                    <div class="d-flex align-center ga-2">
                         <v-avatar size="30">
-                            <v-img :src="item.logo_destino"></v-img>
+                            <v-img :src="item.logo_destino" />
                         </v-avatar>
+
                         <span>{{ item.account_destination_name }}</span>
                     </div>
                 </template>
 
-                <template v-slot:item.value_transfer="{item}">
-                    <v-chip color="#2196F3">
+                <template #item.value_transfer="{ item }">
+                    <v-chip color="primary">
                         {{ formatCurrency(item.value_transfer ?? 0.00) }}
                     </v-chip>
                 </template>
 
-                <template v-slot:item.date_transfer="{item}">
+                <template #item.date_transfer="{ item }">
                     {{ formatDate(item.date_transfer) }}
                 </template>
 
-                <template v-slot:item.actions="{ item }">
-                    
-                        <v-menu
-                            transition="slide-y-transition"
-                            >
-                            <template v-slot:activator="{ props }">
-                                <v-icon  class="hover-icon rounded-xl"  v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
-                            </template>
-                            <v-list>
-                                <v-list-item
+                <template #item.actions="{ item }">
+                    <v-menu transition="slide-y-transition">
+                        <template #activator="{ props }">
+                            <v-btn
+                                icon="mdi-dots-vertical"
+                                variant="text"
+                                v-bind="props"
+                            />
+                        </template>
+
+                        <v-list
+                            density="comfortable"
+                            class="pa-2"
+                        >
+                            <v-list-item
                                 v-for="action in getOptions()"
                                 :key="action.title"
                                 :value="action.value"
                                 :prepend-icon="action.icon"
+                                rounded="lg"
                                 @click="handleOptionClick(action, item)"
-                                >
-                                <v-list-item-title>{{ action.title }}</v-list-item-title>
-                                </v-list-item>
-                            </v-list>
-                        </v-menu>
+                            >
+                                <v-list-item-title>
+                                    {{ action.title }}
+                                </v-list-item-title>
+                            </v-list-item>
+                        </v-list>
+                    </v-menu>
                 </template>
-                </v-data-table>
-            </v-card>
-        </div>
-    </div>
+            </v-data-table>
+        </v-card>
+
+        <template v-else>
+            <v-skeleton-loader
+                v-for="n in 12"
+                :key="n"
+                type="list-item-avatar"
+                class="mb-2"
+            />
+        </template>
+    </v-container>
 </template>
 
 <style scoped>
-
-
 .main-cards {
+    width: 100%;
     margin: 10px;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 16px;
 }
 
-.container-table {
-    width: 100%;
-    padding: 10px;
-}
-
-.icon-help:hover {
-    transform: scale(1.3);
-    cursor: pointer;
-}
-
-.card-label {
-    font-size: var(--text-base);
-}
-
-.card-value {
-    font-size: var(--text-md);
-    font-weight: 500;
-}
-
-.hover-icon:hover {
-    background-color: rgba(128, 128, 128, 0.256);
-}
-
-
-:deep(.v-data-table-header__content) {
-    font-weight: 800;
-}
-
-@media (max-width: 1200px) {
+@media (max-width: 1400px) {
     .main-cards {
         display: grid;
         grid-template-columns: 1fr;
         padding: 0 6px 0 6px;
     }
 
-    .container-table {
-        width: 100%;
-        padding: 10px;
-        flex: 1;
-        min-height: 0;
-    }
-
-    .container-main {
-        margin-top: 30px;
-    }
-
-    .table {
-        height: fit-content;
-    }
-
-    .btn-add-transfer {
-        font-size: clamp(0.75rem, 2.5vw, 0.75rem);
-    }
-
 }
-
-@media (max-width: 680px) {
-
-    .btn-options {
-        display: flex;
-        flex-direction: column;
-        padding-right: 10px;
-    }
-
-    .btn-add-transfer {
-        width: 100%;
-    }
-
-    .container-main {
-        margin-top: 30px;
-    }
-
-    .container-table {
-        width: 100%;
-        padding: 10px;
-    }
-
-    .table {
-        height: fit-content;
-        padding: 10px;
-    }
-
-}
-
-
 </style>

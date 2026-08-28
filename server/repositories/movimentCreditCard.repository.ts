@@ -50,13 +50,6 @@ export const movementsCreditCardRespository = {
 
             const movementsCreditCard = await conn.query(text, values)
 
-            const dateMovementsDueDay = `${invoiceYear}-${invoiceMonth}-${data.dueDay}`
-
-            await conn.query(`
-                INSERT INTO movements(user_id, type_transaction, value_transaction, date_transaction, description_transaction, categorie_id, accounts_id, observation, url_recibo, status_transaction, is_deleted, movement_credit_card_id)
-                VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-            `, [userId, 'despesa_cartao', data.value_transaction, dateMovementsDueDay, data.description_credit, data.categorie_id, data.accounts_id, null, null, 'pendente', false, movementsCreditCard.rows[0].id])
-
             await conn.query('COMMIT')
 
             return { message: "Movimentação cartão de crédito criada com sucesso", status: 200, data: movementsCreditCard.rows[0] }
@@ -119,8 +112,6 @@ export const movementsCreditCardRespository = {
     },
 
     async update(id: number, userId: string, data: TMovementCreditCardPayload, choice: string) {
-
-        console.log("Valores aqui no delete ", id, userId, JSON.stringify(data))
 
         const conn = await client.connect()  // fixa uma conexão dedicada
 
@@ -196,10 +187,6 @@ export const movementsCreditCardRespository = {
 
             } else {
 
-                if (data.status_movement === 'deletada') {
-                    await conn.query(`DELETE FROM movements WHERE user_id = $1 AND movement_credit_card_id = $2`, [userId, id])
-                }
-
                 await conn.query(
                 `UPDATE credit_card_movements
                     SET 
@@ -213,18 +200,6 @@ export const movementsCreditCardRespository = {
                         status_movement = $8
                     WHERE id = $9 AND user_id = $10
                     `, [data.credit_card_id, data.categorie_id, data.description_credit, data.value_transaction, data.purchase_date, data.observation, invoiceId, data.status_movement, id, userId])
-
-                const dateMovementsDueDate = `${invoiceYear}-${invoiceMonth}-${data.dueDay}`
-
-                await conn.query(`
-                    UPDATE movements
-                        SET  
-                        categorie_id = $1,
-                        description_transaction = $2,
-                        value_transaction= $3,
-                        date_transaction = $4
-                    WHERE movement_credit_card_id = $5
-                    `,[data.categorie_id, data.description_credit, data.value_transaction, dateMovementsDueDate, data.id])
                 }
 
             await conn.query('COMMIT')

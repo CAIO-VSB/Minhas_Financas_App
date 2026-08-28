@@ -4,12 +4,13 @@
   import { addMonths } from "date-fns"
   import CardPaymentTotalInvoice from "~/components/forms/CardPaymentTotalInvoice.vue";
   import NoticePaymentTotalInvoice from "~/components/ui/NoticePaymentTotalInvoice.vue"
-  import NoticePaymentePartialInvoice from "~/components/ui/NoticePaymentePartialInvoice.vue";
+  import NoticePaymentPartialInvoice from "~/components/ui/NoticePaymentPartialInvoice.vue";
+  import NoticePaymentAdvanceInvoice from "~/components/ui/NoticePaymentAdvanceInvoice.vue";
   import CardPaymentPartial from "~/components/forms/CardPaymentPartialInvoice.vue";
-  import { boolean } from "zod";
+  import CardPaymentAdvance from "~/components/forms/CardPaymentAdvanceInvoice.vue";
   import type { TOptionAction } from "~~/types/option_action/TOptionAction";
 
-  const { notifyError, notifyInfo, notifySuccess } = useNotify()
+  const { notifyError } = useNotify()
 
   const { getCreditCardOnlyActive } = useHttpCreditsCards()
 
@@ -20,9 +21,10 @@
 
   const modelNoticePaymentTotalInvoice = ref(false)
   const modelNoticePaymentPartial = ref(false)
+  const modelNoticePaymentAdvance = ref(false)
   const modelCardPaymentTotal = ref(false)
   const modelCardPaymentPartial = ref(false)
-
+  const modelCardPaymentAdvance = ref(false)
 
   type TPeriod = {
     year: number,
@@ -41,10 +43,10 @@
   function getOptions(): TOptionAction [] {
 
     const options = [
-      props.statusInvoices === 'aberta' ? { title: 'Pagamento total', icon: 'mdi-check-circle-outline', value: 'pag_total' } : null,
-      props.statusInvoices === 'aberta' ? { title: 'Pagamento parcial', icon: 'mdi-circle-half-full', value: 'pag_parcial' } : null,
-      props.statusInvoices === 'aberta' ? { title: 'Pagamento adiantado', icon: 'mdi-clock-fast', value: 'pag_adiantado' } : null,
-      { title: 'Reabrir fatura', icon: 'mdi-lock-open-variant', value: 'reabrir_fatu' },
+      props.statusInvoices !== 'fechada' ? { title: 'Pagamento total', icon: 'mdi-check-circle-outline', value: 'pag_total' } : null,
+      props.statusInvoices !== 'fechada' ? { title: 'Pagamento parcial', icon: 'mdi-circle-half-full', value: 'pag_parcial' } : null,
+      props.statusInvoices !== 'fechada' ? { title: 'Pagamento adiantado', icon: 'mdi-clock-fast', value: 'pag_adiantado' } : null,
+      props.statusInvoices === 'fechada' ? { title: 'Reabrir fatura', icon: 'mdi-lock-open-variant', value: 'reabrir_fatu' } : null,
     ]
 
     return options.filter(Boolean) as TOptionAction[]
@@ -109,7 +111,16 @@
     modelCardPaymentPartial.value = true
   }
 
+  function showModalPaymentAdvance() {
+    modelCardPaymentAdvance.value = true
+  }
+
   function handleOptionClick(option: string | null) {
+
+    if (option === 'pag_adiantado') {
+      modelNoticePaymentAdvance.value = true
+      return
+    }
 
     if (option === 'pag_total') {
       modelNoticePaymentTotalInvoice.value = true
@@ -120,110 +131,189 @@
       modelNoticePaymentPartial.value = true
       return
     }
-
   }
-
 
 </script>
 
 <template>
-    <div class="">
-        <v-card
-          class="mx-auto"
-          :loading="props.loading ?? false"
-        >
-        <template #title>
-          <span style="font-size: var(--text-base);" class="title-card text-textSecundary">Detalhamento</span>
-        </template>
+    <v-card
+        rounded="xl"
+        elevation="2"
+        :loading="props.loading ?? false"
+    >
+        <v-card-item class="pa-5 pb-0">
+            <v-card-title class="text-h6 font-weight-bold text-blue-grey-darken-4">
+                Detalhamento
+            </v-card-title>
 
-        <v-card-text>
+            <v-card-subtitle class="mt-1">
+                Informações e ações da fatura selecionada.
+            </v-card-subtitle>
+        </v-card-item>
+
+        <v-card-text class="pa-5">
             <div class="d-flex flex-column ga-4">
-              <div class="d-flex justify-space-between">
-                <span style="font-size: var(--text-base);" class="text-textSecundary">Valor a pagar</span>
-                <span class="mr-2" style="font-size: var(--text-base); font-weight: 500;"> <v-chip variant="text" color="primary">{{ formatCurrency(totalInvoice) }}</v-chip></span>
-              </div>
-              <div class="d-flex justify-space-between">
-                <span style="font-size: var(--text-base);" class="text-textSecundary">Status da fatura</span>
-                <span class="mr-2" style="font-size: var(--text-base); font-weight: 500;"> <v-chip variant="text" color="primary">{{ `Fatura ${statusInvoices ?? 'zerada'}`}}</v-chip></span>
-              </div>
-              <div class="d-flex justify-center mt-2 ga-3">
+                <div class="d-flex align-center justify-space-between ga-3">
+                    <span class="text-body-2 text-medium-emphasis">
+                        Valor a pagar
+                    </span>
+
+                    <v-chip
+                        color="primary"
+                        variant="tonal"
+                    >
+                        {{ formatCurrency(totalInvoice) }}
+                    </v-chip>
+                </div>
+
+                <div class="d-flex align-center justify-space-between ga-3">
+                    <span class="text-body-2 text-medium-emphasis">
+                        Status da fatura
+                    </span>
+
+                    <v-chip
+                        color="primary"
+                        variant="tonal"
+                    >
+                        {{ `Fatura ${statusInvoices ?? 'zerada'}` }}
+                    </v-chip>
+                </div>
+
                 <v-menu
-                  transition="scale-transition"
+                    transition="scale-transition"
+                    offset="8"
                 >
-                  <template v-slot:activator="{ props }">
-                    <v-btn
-                      color="primary"
-                      v-bind="props"
-                      prepend-icon="mdi-dots-vertical"
-                      class="w-100"
-                      variant="flat"
-                    >
-                      Ações da fatura
-                    </v-btn>
-                  </template>
+                    <template #activator="{ props: menuProps }">
+                        <v-btn
+                            v-bind="menuProps"
+                            color="primary"
+                            prepend-icon="mdi-dots-horizontal"
+                            variant="flat"
+                            rounded="lg"
+                            block
+                            class="text-none font-weight-bold"
+                        >
+                            Ações da fatura
+                        </v-btn>
+                    </template>
 
-                  <v-list>
-                    <v-list-item
-                      v-for="(item, i) in getOptions()"
-                      :key="i"
-                      :value="i"
-                      :prepend-icon="item.icon"
-                      @click="handleOptionClick(item.value || null)"
+                    <v-card
+                        min-width="260"
+                        rounded="xl"
+                        elevation="4"
+                        class="overflow-hidden"
                     >
-                      <v-list-item-title>{{ item.title }}</v-list-item-title>
-                    </v-list-item>
-                  </v-list>
+                        <v-list
+                            density="comfortable"
+                            class="pa-2"
+                        >
+                            <v-list-item
+                                v-for="(item, index) in getOptions()"
+                                :key="index"
+                                :value="index"
+                                :prepend-icon="item.icon"
+                                rounded="lg"
+                                @click="handleOptionClick(item.value || null)"
+                            >
+                                <v-list-item-title>
+                                    {{ item.title }}
+                                </v-list-item-title>
+                            </v-list-item>
+                        </v-list>
+                    </v-card>
                 </v-menu>
-              </div>
             </div>
-          </v-card-text>
-          <v-divider></v-divider>
-          <v-card-text>
-            <div class="d-flex flex-column ga-4">
-              <div class="d-flex justify-space-between">
-                <span style="font-size: var(--text-base);" class="text-textSecundary">Fechamento</span>
-                <span class="mr-2" style="font-size: var(--text-base); font-weight: 500;">{{ sumary?.fechamento }}</span>
-              </div>
-              <div class="d-flex justify-space-between ">
-                <span style="font-size: var(--text-base)" class="text-textSecundary">Vencimento</span>
-                <span class="mr-2" style="font-size: var(--text-base); font-weight: 500;">{{ sumary?.vencimento }}</span>
-              </div>
-              <div class="d-flex justify-space-between">
-                <span style="font-size: var(--text-base);" class="text-textSecundary">Limite total</span>
-                <span class="mr-2" style="font-size: var(--text-base); font-weight: 500;">{{ formatCurrency(sumary?.limiteTotal ?? 0.00) }}</span>
-              </div>
-              <div class="d-flex justify-space-between">
-                <span style="font-size: var(--text-base);" class="text-textSecundary">4 últimos dígitos </span>
-                <span class="mr-2" style="font-size: var(--text-base); font-weight: 500;">{{ sumary?.ultimosDigitos }}</span>
-              </div>
-            </div>
-          </v-card-text>
-        </v-card>
+        </v-card-text>
 
-        <div>
-          <CardPaymentTotalInvoice :period="props.period" :invoice-id="props.invoiceId"  :total-invoice="props.totalInvoice" :draft="props.creditCard" v-model="modelCardPaymentTotal"/>
-          <CardPaymentPartial :period="props.period" :invoice-id="props.invoiceId"  :total-invoice="props.totalInvoice" :draft="props.creditCard" v-model="modelCardPaymentPartial"/>
-          <NoticePaymentTotalInvoice @show-modal-payment="showModalPaymentTotal" :invoice-value="props.totalInvoice ?? 0.00" v-model="modelNoticePaymentTotalInvoice"/>
-          <NoticePaymentePartialInvoice @show-modal-payment="showModalPaymentPartial" :invoice-value="props.totalInvoice ?? 0.00" v-model="modelNoticePaymentPartial" />
-        </div>
-    </div>
+        <v-divider />
+
+        <v-card-text class="pa-5">
+            <div class="d-flex flex-column ga-4">
+                <div class="d-flex align-center justify-space-between ga-3">
+                    <span class="text-body-2 text-medium-emphasis">
+                        Fechamento
+                    </span>
+
+                    <span class="text-body-2 font-weight-bold text-blue-grey-darken-4">
+                        {{ sumary?.fechamento }}
+                    </span>
+                </div>
+
+                <div class="d-flex align-center justify-space-between ga-3">
+                    <span class="text-body-2 text-medium-emphasis">
+                        Vencimento
+                    </span>
+
+                    <span class="text-body-2 font-weight-bold text-blue-grey-darken-4">
+                        {{ sumary?.vencimento }}
+                    </span>
+                </div>
+
+                <div class="d-flex align-center justify-space-between ga-3">
+                    <span class="text-body-2 text-medium-emphasis">
+                        Limite total
+                    </span>
+
+                    <span class="text-body-2 font-weight-bold text-blue-grey-darken-4">
+                        {{ formatCurrency(sumary?.limiteTotal ?? 0.00) }}
+                    </span>
+                </div>
+
+                <div class="d-flex align-center justify-space-between ga-3">
+                    <span class="text-body-2 text-medium-emphasis">
+                        4 últimos dígitos
+                    </span>
+
+                    <span class="text-body-2 font-weight-bold text-blue-grey-darken-4">
+                        {{ sumary?.ultimosDigitos }}
+                    </span>
+                </div>
+            </div>
+        </v-card-text>
+    </v-card>
+
+    <CardPaymentTotalInvoice
+        v-model="modelCardPaymentTotal"
+        :period="props.period"
+        :invoice-id="props.invoiceId"
+        :total-invoice="props.totalInvoice"
+        :draft="props.creditCard"
+    />
+
+    <CardPaymentPartial
+        v-model="modelCardPaymentPartial"
+        :period="props.period"
+        :invoice-id="props.invoiceId"
+        :total-invoice="props.totalInvoice"
+        :draft="props.creditCard"
+    />
+
+    <CardPaymentAdvance
+        v-model="modelCardPaymentAdvance"
+        :period="props.period"
+        :invoice-id="props.invoiceId"
+        :total-invoice="props.totalInvoice"
+        :draft="props.creditCard"
+    />
+
+    <NoticePaymentTotalInvoice
+        v-model="modelNoticePaymentTotalInvoice"
+        :invoice-value="props.totalInvoice ?? 0.00"
+        @show-modal-payment="showModalPaymentTotal"
+    />
+
+    <NoticePaymentPartialInvoice
+        v-model="modelNoticePaymentPartial"
+        :invoice-value="props.totalInvoice ?? 0.00"
+        @show-modal-payment="showModalPaymentPartial"
+    />
+
+    <NoticePaymentAdvanceInvoice
+        v-model="modelNoticePaymentAdvance"
+        :invoice-value="props.totalInvoice ?? 0.00"
+        @show-modal-payment="showModalPaymentAdvance"
+    />
 </template>
 
-<style scoped> 
-
-.title-card {
-  display: flex;
-  align-items: center;
-  text-align: center;
-}
-
-.title-card::before,
-.title-card::after {
-  content: "";
-  flex: 1;
-  border-bottom: 1px solid rgba(128, 128, 128, 0.25); /* Espessura e cor da linha */
-  margin: 0 10px; /* Espaço entre a linha e o texto */
-}
-
-
+<style scoped>
 </style>

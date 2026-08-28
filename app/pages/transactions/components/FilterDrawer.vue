@@ -109,100 +109,117 @@
 </script>
 
 <template>
-
     <v-navigation-drawer
         v-model="modelValue"
         location="right"
         temporary
         width="470"
-        >
+    >
+        <v-list class="pa-2">
+            <v-list-item class="px-3 py-2">
+                <v-list-item-title class="text-h6 font-weight-bold text-blue-grey-darken-4">
+                    Filtro de transações
+                </v-list-item-title>
 
-        <v-list >
-            <v-list-item
-            >
-            <template #title>
-            <span style="font-weight: 600; font-size: 1.2rem;">Filtro de transações</span>
-            </template>
+                <v-list-item-subtitle class="mt-1">
+                    Refine os lançamentos exibidos na tabela.
+                </v-list-item-subtitle>
             </v-list-item>
-            </v-list>
+        </v-list>
 
-            <v-divider ></v-divider>
+        <v-divider />
 
-            <div class="filter-main">
+        <div class="pa-5">
 
-            <div class="d-flex justify-center filter-data">
-                <v-date-input
-                v-model="startDate"
-                label="De"
-                autocomplete="off"
-                prepend-icon=""
-                variant="underlined"
-                clearable
-                ></v-date-input>
+            <v-row class="mb-7">
+                <v-col
+                    cols="12"
+                    sm="6"
+                >
+                    <v-date-input
+                        v-model="startDate"
+                        label="De"
+                        autocomplete="off"
+                        prepend-icon=""
+                        variant="solo-filled"
+                        rounded="lg"
+                        clearable
+                        hide-details="auto"
+                    />
+                </v-col>
 
-                <v-date-input
-                v-model="endDate"
-                label="Até"
-                autocomplete="off"
-                prepend-icon=""
-                variant="underlined"
-                clearable
-                ></v-date-input>
-            </div>
+                <v-col
+                    cols="12"
+                    sm="6"
+                >
+                    <v-date-input
+                        v-model="endDate"
+                        label="Até"
+                        autocomplete="off"
+                        prepend-icon=""
+                        variant="solo-filled"
+                        rounded="lg"
+                        clearable
+                        hide-details="auto"
+                    />
+                </v-col>
+            </v-row>
 
-            <div>
-                <v-select
-                autocomplete="off"
-                :loading="categorieIsPending"
+            <v-select
                 v-model="modelCategorias"
                 v-model:menu="menuCategorias"
                 :items="filterCategorias"
+                :loading="categorieIsPending"
+                :rules="selectRules"
                 item-title="name_identifier"
                 item-value="id"
-                variant="underlined"
                 label="Categorias"
-                persistent-hint
-                :rules="selectRules"
+                variant="solo-filled"
+                autocomplete="off"
                 clearable
                 multiple
-                >                
-                    <template v-slot:selection="{item}">
-                    <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
-                        <v-avatar :icon="item.url_icon"></v-avatar>
-                    </v-avatar>
-                    <span>{{ item.name_identifier }}</span>
-                    </template>
+                class="mb-4"
+            >
+                <template #selection="{ item }">
+                    <div class="d-flex align-center ga-2">
+                        <v-avatar
+                            :icon="item.url_icon"
+                            size="30"
+                        />
 
-                    <template v-slot:item="{props, item}">
-                    <v-list-item v-bind="props">
-                        <template v-slot:prepend>
-                        <v-avatar :icon="item.url_icon"></v-avatar>
+                        <span>{{ item.name_identifier }}</span>
+                    </div>
+                </template>
+
+                <template #item="{ props: itemProps, item }">
+                    <v-list-item v-bind="itemProps">
+                        <template #prepend>
+                            <v-avatar :icon="item.url_icon" />
                         </template>
                     </v-list-item>
-                    </template>
+                </template>
 
-                    <template v-slot:prepend-item>
-                    <div class="pa-2 border-b">
+                <template #prepend-item>
+                    <div class="pa-2">
                         <v-text-field
-                        v-model="searchCategorias"
-                        :error="!!searchCategorias && !filterCategorias?.length"
-                        density="compact"
-                        placeholder="Buscar..."
-                        prepend-inner-icon="mdi-magnify"
-                        variant="outlined"
-                        @click.stop
-                        @keydown.stop
-                        @mousedown.stop
-                        hide-details="auto"
-                        >                 
-                    </v-text-field>
+                            v-model="searchCategorias"
+                            :error="!!searchCategorias && !filterCategorias?.length"
+                            density="compact"
+                            placeholder="Buscar..."
+                            prepend-inner-icon="mdi-magnify"
+                            variant="outlined"
+                            hide-details="auto"
+                            @click.stop
+                            @keydown.stop
+                            @mousedown.stop
+                        />
                     </div>
-                    </template>
-                </v-select>
-            </div>
 
-            <div>
-                <v-select
+                    <v-divider />
+                </template>
+            </v-select>
+
+            <v-select
                 v-model="modelAccounts"
                 v-model:menu="menuAccounts"
                 :items="filterAccounts"
@@ -210,108 +227,107 @@
                 :loading="accountsIsPending"
                 item-title="name_identifier"
                 item-value="id"
-                variant="underlined"
                 label="Contas"
-                persistent-hint
+                variant="solo-filled"
                 autocomplete="off"
                 clearable
                 multiple
-                >
-
-                    <template v-slot:selection="{item}">
-                    <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
-                        <v-img  :src="item.url_image" :alt="item.name_identifier"></v-img>
-                    </v-avatar>
-                    <span >{{ item.name_identifier }}</span>
-                    </template>
-
-                    <template v-slot:item="{props, item}">
-                    <v-list-item  v-bind="props">
-                        <template v-slot:prepend>
-                        <v-avatar>
-                            <v-img :src="item.url_image" :alt="item.name_identifier"></v-img>
+                class="mb-4"
+            >
+                <template #selection="{ item }">
+                    <div class="d-flex align-center ga-2">
+                        <v-avatar size="30">
+                            <v-img
+                                :src="item.url_image"
+                                :alt="item.name_identifier"
+                            />
                         </v-avatar>
+
+                        <span>{{ item.name_identifier }}</span>
+                    </div>
+                </template>
+
+                <template #item="{ props: itemProps, item }">
+                    <v-list-item v-bind="itemProps">
+                        <template #prepend>
+                            <v-avatar>
+                                <v-img
+                                    :src="item.url_image"
+                                    :alt="item.name_identifier"
+                                />
+                            </v-avatar>
                         </template>
                     </v-list-item>
-                    </template>
+                </template>
 
-                    <template v-slot:prepend-item>
-                    <div class="pa-2 border-b">
+                <template #prepend-item>
+                    <div class="pa-2">
                         <v-text-field
-                        v-model="searchAccounts"
-                        :error="!!searchAccounts && !filterAccounts?.length"
-                        density="compact"
-                        placeholder="Buscar..."
-                        prepend-inner-icon="mdi-magnify"
-                        variant="outlined"
-                        @click.stop
-                        @keydown.stop
-                        @mousedown.stop
-                        hide-details="auto"
-                        >                 
-                    </v-text-field>
+                            v-model="searchAccounts"
+                            :error="!!searchAccounts && !filterAccounts?.length"
+                            density="compact"
+                            placeholder="Buscar..."
+                            prepend-inner-icon="mdi-magnify"
+                            variant="outlined"
+                            hide-details="auto"
+                            @click.stop
+                            @keydown.stop
+                            @mousedown.stop
+                        />
                     </div>
-                    </template>
-                </v-select>
-            </div>
 
-            <div>
-                <v-select
-                variant="underlined"
-                clearable
-                label="Situações"
-                :items="props.items"
+                    <v-divider />
+                </template>
+            </v-select>
+
+            <v-select
                 v-model="filterFrom.situation"
-                ></v-select>
-            </div>
-
-            <div>
-                <v-select
-                :disabled="props.fieldTypeActive"
+                :items="props.items"
+                label="Situações"
+                variant="solo-filled"
                 clearable
-                variant="underlined"
-                label="Tipos"
-                :items="['Despesas', 'Receitas', 'Tranferências de entrada', 'Transferências de saída', 'Cartão de crédito']"
-                multiple
+                class="mb-4"
+            />
+
+            <v-select
                 v-model="filterFrom.for_type"
-                ></v-select>
-            </div>
+                :disabled="props.fieldTypeActive"
+                :items="['Despesas', 'Receitas', 'Tranferências de entrada', 'Transferências de saída', 'Cartão de crédito']"
+                label="Tipos"
+                variant="solo-filled"
+                clearable
+                multiple
+            />
+        </div>
 
-            <v-divider style="margin-top: 5px;"></v-divider>
-            
-            <v-card-actions style="display: flex; justify-content: space-between; margin-top: 13px;">
-            
-                <v-btn
-                class="text-none"
-                text="Cancelar"
+        <v-divider />
+
+        <v-card-actions class="pa-5 justify-space-between">
+            <v-btn
                 variant="text"
+                class="text-none font-weight-medium"
                 @click="resetForm"
-                v-tooltip="'Remove todos os filtros e restaura a pesquisa'"
-                ></v-btn>
+            >
+                Cancelar
 
-                <v-btn
-                class="text-none"
+                <v-tooltip
+                    activator="parent"
+                    text="Remove todos os filtros e restaura a pesquisa"
+                />
+            </v-btn>
+
+            <v-btn
                 :color="props.colorButton"
-                text="Aplicar filtros"
                 variant="flat"
+                rounded="lg"
+                class="text-none font-weight-bold"
                 @click="submitForm"
-                ></v-btn>
-            </v-card-actions>
-
-            </div>
+            >
+                Aplicar filtros
+            </v-btn>
+        </v-card-actions>
     </v-navigation-drawer>
-
 </template>
 
 <style scoped>
-
-.filter-main {
-  padding: 10px;
-}
-
-.filter-data {
-    display: flex;
-    gap: 45px;
-}
-
 </style>

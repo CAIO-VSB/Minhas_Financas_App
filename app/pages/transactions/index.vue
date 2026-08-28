@@ -30,12 +30,12 @@
     import CardEditRecurrenceRevenue from '~/components/forms/CardEditRecurrenceRevenue.vue'
     import CardDeleteMovementRecurrence from '~/components/forms/CardDeleteMovementRecurrence.vue'
     import useOptions from '~/pages/transactions/composable/useOptions'
-    import type { TMovementCreditCard } from '~~/types/credit_card/TMovementCreditCard.js'
-    import CardEditRecurrenceCreditCard from '~/components/forms/CardEditRecurrenceCreditCard.vue'
-    import CardEditMovementCreditCard from '~/components/forms/CardEditMovementCreditCard.vue'
+    import { useHttpCreditsCards } from "~/composables/useHttp/useHttpCreditCard"
+    import BaseModal from "~/components/ui/BaseModal.vue"
 
     const { getMoviments, patchMovementsById, getCurrentBalance, getMovimentsByFilter } = useHttpMovements()
     const { allMovementsCreditCard } = useHttpMovementCreditCard()
+    const { getCreditCardOnlyActive } = useHttpCreditsCards()
     const { getCategoriesOnlyActive } = useHttpCategories()
     const { getAccountsOnlyActive } = useHttpAccounts()
     const { getTransferById } = useHttpTransfer()
@@ -50,16 +50,13 @@
     const modalEditMovementesExpenses = ref(false)
     const modelEditRecurrenceExpense = ref(false)
     const modelEditRecurrenceRevenue = ref(false)
-    const modelEditRecurrenceCreditCard = ref(false)
-    const modelEditMovementCreditCard = ref(false)
+    const modalHelp = ref(false)
     const modalEditTransfer = ref(false)
     const cardDeletTransaction = ref(false)
     const cardDeleteTransfer = ref(false)
     const isFiltered = ref(false)
     const lastFilter = ref<TMovementsByFilter | null>(null)
     const filteredData = ref<TMovementsSummary[] | null>(null)
-    const dataMovementsCreditCard = ref<TMovementCreditCard | null>(null)
-    const idMovementsCreditCard = ref<number | null>(null)
     const labelOptions = ref({
         colorButton: "",
         textButton: "",
@@ -93,16 +90,6 @@
         queryKey: QUERY_KEYS.movements.current_balance,
         queryFn: getCurrentBalance
     })
-
-    const { data:allMovementsCard, isPending: isPendingByCreditCard} = useQuery({
-        queryKey: QUERY_KEYS.movementsCreditCard.allMovements,
-        queryFn: allMovementsCreditCard,
-    })
-    
-    watch([allMovementsCard, idMovementsCreditCard], ([newVal]) => {
-        const found = dataMovementsCreditCard.value = newVal?.find(item => item.id === idMovementsCreditCard.value) ?? null
-        dataMovementsCreditCard.value = found ? structuredClone(toRaw(found)) : null
-    }, {immediate: true})
 
     function showDrawer(value: boolean) {
         drawer.value = value
@@ -179,7 +166,7 @@
     function getOptions(movements: TMovementsSummary): TOptionAction [] {
 
         const options = [
-            (movements.status_transaction === "pendente" && movements.type_transaction !== 'despesa_cartao') ? {
+            (movements.status_transaction === "pendente") ? {
                 title: "Efetivar",
                 icon: "mdi-check-all",
                 value: "efetivar"
@@ -218,11 +205,8 @@
         }
     }
 
-    function handleCreditCardEditSuccess() {
-        invalidate(QUERY_KEYS.movementsCreditCard.allMovements)
-        invalidate(QUERY_KEYS.movements.all)
-        invalidate(QUERY_KEYS.movements.current_balance)
-        handleMutationSuccess()
+    function closeModalHelpInvoice() {
+      modalHelp.value = false
     }
 
     function handleClearFilter(value: string, filter?: TMovementsByFilter | null, idCategorie?: number, idAccount?: number) {
@@ -312,14 +296,6 @@
         modelEditRecurrenceRevenue.value = true
     }
     
-    function handleOpenModalEditRecurrenceCreditCard() {
-        modelEditRecurrenceCreditCard.value = true
-    }
-
-    function handleOpenModalEditMovementCreditCard() {
-        modelEditMovementCreditCard.value = true
-    }
-
     async function handleOpenModalEditTransfer(transfer: TMovementsWithTransfer) {
 
         if (!transfer.transfer_id) {
@@ -338,17 +314,6 @@
 
     function handleOptionClick(option: TOptionAction, data: TMovementsSummary) {  
 
-        idMovementsCreditCard.value = data.movement_credit_card_id ?? null
-
-        if (option.value === "edit" && data.type_transaction === "despesa_cartao" && (data.type_recurrence === "fixa" || data.type_recurrence === "parcelada")) {
-            handleOpenModalEditRecurrenceCreditCard()
-            return
-        }
-
-        if (option.value === "edit" && data.type_transaction === "despesa_cartao") {
-            handleOpenModalEditMovementCreditCard()
-            return
-        }
 
         if (option.value === "edit" && (data.type_transaction === "receita") && (data.type_recurrence === "fixa" || data.type_recurrence === "parcelada")) {
             handleOpenModalEditRecurrenceRevenue(data)
@@ -387,6 +352,7 @@
         }
 
         const dateFormated = dateToDateOnly(raw.date_transaction)
+        
 
         const payload = {
             ...raw,
@@ -437,107 +403,235 @@
 
 
 <template>
-    <div class="mt-6 container-main">
+    <v-container
+        fluid
+        class="mt-6 pa-4 pa-md-6 container"
+    >
+        <CardDeleteMovementTransfer
+            v-model="cardDeleteTransfer"
+            :draft="confirmDraft"
+            :title-botton="labelOptions.textButton"
+            :title="labelOptions.title"
+            :text="labelOptions.text"
+            :color-botton="labelOptions.colorButton"
+            @success="handleMutationSuccess"
+        />
 
-        <CardDeleteMovementTransfer @success="handleMutationSuccess" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="confirmDraft" v-model="cardDeleteTransfer" />
-        <CardDeletTransaction @success="handleMutationSuccess" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="confirmDraft" v-model="cardDeletTransaction" />
-        <CardSettleTransactionModal @success="handleMutationSuccess" v-model="cardPostValueTransaction" :draft="confirmDraft" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" />
-        <CardEdtiMovementsExpenses @success="handleMutationSuccess" :draft="editDraft"  v-model="modalEditMovementesExpenses"/>
-        <CardEditMovementsRevenue @success="handleMutationSuccess" :draft="editDraft" v-model="modalEditMovementsRevenue"/>
-        <CardEditTransfer :draft="editDraftTransfer" v-model="modalEditTransfer"/>
-        <CardEditRecurrenceExpense @success="handleMutationSuccess" v-model="modelEditRecurrenceExpense" :draft="editDraft" />
-        <CardEditRecurrenceRevenue :draft="editDraft" @success="handleMutationSuccess" v-model="modelEditRecurrenceRevenue" />
-        <CardDeleteMovementRecurrence :draft="confirmDraft" v-model="cardDeletTransactionRecurrence" />
-        <CardEditRecurrenceCreditCard @success="handleCreditCardEditSuccess" :draft="dataMovementsCreditCard" v-model="modelEditRecurrenceCreditCard"/>
-        <CardEditMovementCreditCard  @success="handleCreditCardEditSuccess" :draft="dataMovementsCreditCard"  v-model="modelEditMovementCreditCard"/>
-        
-        <FilterDrawer :items="[ 'Recebidas', 'Pagas', 'Pendentes']" :field-type-active="false" color-button="primary" @apply-filter="handleApplyFilter" @reset-filter="handleClearFilter" v-model="drawer"/>
-          
-        <div class="text-center d-flex ga-4 ml-4 mb-5 btn-options"> 
+        <CardDeletTransaction
+            v-model="cardDeletTransaction"
+            :draft="confirmDraft"
+            :title-botton="labelOptions.textButton"
+            :title="labelOptions.title"
+            :text="labelOptions.text"
+            :color-botton="labelOptions.colorButton"
+            @success="handleMutationSuccess"
+        />
+
+        <CardSettleTransactionModal
+            v-model="cardPostValueTransaction"
+            :draft="confirmDraft"
+            :title-botton="labelOptions.textButton"
+            :title="labelOptions.title"
+            :text="labelOptions.text"
+            :color-botton="labelOptions.colorButton"
+            @success="handleMutationSuccess"
+        />
+
+        <CardEdtiMovementsExpenses
+            v-model="modalEditMovementesExpenses"
+            :draft="editDraft"
+            @success="handleMutationSuccess"
+        />
+
+        <CardEditMovementsRevenue
+            v-model="modalEditMovementsRevenue"
+            :draft="editDraft"
+            @success="handleMutationSuccess"
+        />
+
+        <CardEditTransfer
+            v-model="modalEditTransfer"
+            :draft="editDraftTransfer"
+        />
+
+        <CardEditRecurrenceExpense
+            v-model="modelEditRecurrenceExpense"
+            :draft="editDraft"
+            @success="handleMutationSuccess"
+        />
+
+        <CardEditRecurrenceRevenue
+            v-model="modelEditRecurrenceRevenue"
+            :draft="editDraft"
+            @success="handleMutationSuccess"
+        />
+
+        <CardDeleteMovementRecurrence
+            v-model="cardDeletTransactionRecurrence"
+            :draft="confirmDraft"
+        />
+
+        <FilterDrawer
+            v-model="drawer"
+            :items="['Recebidas', 'Pagas', 'Pendentes']"
+            :field-type-active="false"
+            color-button="primary"
+            @apply-filter="handleApplyFilter"
+            @reset-filter="handleClearFilter"
+        />
+
+        <div class="d-flex align-center mb-6">
             <ListToolBar @show-drawer="showDrawer" />
         </div>
 
-        <div class="main-cards">
-           <AppCard subtitle="Saldo atual" :loading="isPendingCurrentBalance" size="40" :value="balanceCurrent.saldo_atual" color="primary" icon="mdi-bank" text-tool-tip="O cálculo do saldo atual é independente do período selecionado, considerando o saldo inicial das contas ativas juntamente com todas as movimentações efetivadas de entrada e saída" icon-tool-tip="mdi-information-outline" size-icon-tool-tip="20px"></AppCard>
-
-           <AppCard subtitle="Receitas" :loading="isPending" size="40" :value="summary.receitas" color="success" icon="mdi-arrow-down-thin-circle-outline" text-tool-tip="O valor apresentado corresponde à soma de todas as receitas efetivadas registradas nas contas ativas" icon-tool-tip="mdi-information-outline" size-icon-tool-tip="20px"></AppCard>
-
-           <AppCard subtitle="Despesas" :loading="isPending" size="40" :value="summary.despesas" color="error" icon="mdi-arrow-up-thin-circle-outline" text-tool-tip="O valor apresentado corresponde à soma de todas as despesas efetivadas registradas nas contas ativas" icon-tool-tip="mdi-information-outline" size-icon-tool-tip="20px"></AppCard>
-
-           <AppCard subtitle="Balanço mensal" :loading="isPending" size="40" :value="summary.balancoMensal" color="primary" icon="mdi-scale-balance" text-tool-tip="O balanço mensal é calculado com base na soma de todas as receitas efetivadas menos todas as despesas efetivadas do período selecionado" icon-tool-tip="mdi-information-outline" size-icon-tool-tip="20px"></AppCard>
-
-        </div>
-         
-        <div class="w-100 pa-2 container-table">
-
-            <v-card
-            flat
-            class="table elevation-2"
-            :loading="isPending"
+        <v-row class="mb-6">  
+            <div class="main-cards">
+            <v-col
+                cols="12"
+                sm="6"
+                lg="3"
+                md="6"
             >
-            <template v-slot:text>
-                
+                <AppCard
+                    subtitle="Saldo atual"
+                    :loading="isPendingCurrentBalance"
+                    size="40"
+                    :value="balanceCurrent.saldo_atual"
+                    color="primary"
+                    icon="mdi-bank"
+                    text-tool-tip="O cálculo do saldo atual é independente do período selecionado, considerando o saldo inicial das contas ativas juntamente com todas as movimentações efetivadas de entrada e saída"
+                    icon-tool-tip="mdi-information-outline"
+                    size-icon-tool-tip="20px"
+                />
+            </v-col>
+
+            <v-col
+                cols="12"
+                sm="6"
+                lg="3"
+            >
+                <AppCard
+                    subtitle="Receitas"
+                    :loading="isPending"
+                    size="40"
+                    :value="summary.receitas"
+                    color="success"
+                    icon="mdi-arrow-down-thin-circle-outline"
+                    text-tool-tip="O valor apresentado corresponde à soma de todas as receitas efetivadas registradas nas contas ativas"
+                    icon-tool-tip="mdi-information-outline"
+                    size-icon-tool-tip="20px"
+                />
+            </v-col>
+
+            <v-col
+                cols="12"
+                sm="6"
+                lg="3"
+            >
+                <AppCard
+                    subtitle="Despesas"
+                    :loading="isPending"
+                    size="40"
+                    :value="summary.despesas"
+                    color="error"
+                    icon="mdi-arrow-up-thin-circle-outline"
+                    text-tool-tip="O valor apresentado corresponde à soma de todas as despesas efetivadas registradas nas contas ativas"
+                    icon-tool-tip="mdi-information-outline"
+                    size-icon-tool-tip="20px"
+                />
+            </v-col>
+
+            <v-col
+                cols="12"
+                sm="6"
+                lg="3"
+            >
+                <AppCard
+                    subtitle="Balanço mensal"
+                    :loading="isPending"
+                    size="40"
+                    :value="summary.balancoMensal"
+                    color="primary"
+                    icon="mdi-scale-balance"
+                    text-tool-tip="O balanço mensal é calculado com base na soma de todas as receitas efetivadas menos todas as despesas efetivadas do período selecionado"
+                    icon-tool-tip="mdi-information-outline"
+                    size-icon-tool-tip="20px"
+                />
+            </v-col>
+            </div>
+        </v-row>
+        
+
+        <v-card
+            rounded="xl"
+            elevation="2"
+            class="overflow-hidden"
+            :loading="isPending"
+        >
+            <v-card-text class="pa-5">
                 <v-expand-transition>
-                    <div v-show="isFiltered" class=" mb-2 ml-2  ">
-                        <span v-if="isFiltered" class="font-weight-semibold" style="font-size: var(--text-base); font-weight: 600;">Filtros:</span>
+                    <div
+                        v-show="isFiltered"
+                        class="d-flex flex-wrap align-center ga-2 mb-4"
+                    >
+                        <span class="font-weight-bold text-blue-grey-darken-4">
+                            Filtros:
+                        </span>
+
                         <v-chip
-                        v-if="lastFilter?.start_day && lastFilter.end_day"
-                        class="ma-2"
-                        @click:close="handleClearFilter('period')"
-                        color="primary"
-                        closable
+                            v-if="lastFilter?.start_day && lastFilter.end_day"
+                            color="primary"
+                            closable
+                            @click:close="handleClearFilter('period')"
                         >
-                        {{ `De ${new Date(lastFilter?.start_day ?? new Date()).toLocaleDateString("pt-br", {timeZone: "UTC"})} à ${new Date(lastFilter?.end_day ?? new Date()).toLocaleDateString("pt-br", {timeZone: "UTC"})}`}}
+                            {{ `De ${new Date(lastFilter?.start_day ?? new Date()).toLocaleDateString("pt-br", { timeZone: "UTC" })} à ${new Date(lastFilter?.end_day ?? new Date()).toLocaleDateString("pt-br", { timeZone: "UTC" })}` }}
                         </v-chip>
 
                         <v-chip
-                        v-if="lastFilterLabels.cats"
-                        value="categories"
-                        class="ma-2"
-                        closable
-                        @click:close="handleClearFilter('categories', lastFilter, categorie?.id)"
-                        :key="categorie?.name"
-                        v-for="categorie in lastFilterLabels.cats"
+                            v-for="categorie in lastFilterLabels.cats"
+                            :key="categorie?.name"
+                            value="categories"
+                            closable
+                            @click:close="handleClearFilter('categories', lastFilter, categorie?.id)"
                         >
-                        {{ categorie?.name }}
+                            {{ categorie?.name }}
                         </v-chip>
 
                         <v-chip
-                        v-if="lastFilterLabels.accs"
-                        class="ma-2"
-                        closable
-                        @click:close="handleClearFilter('accounts', lastFilter, account?.id)"
-                        :key="account?.name"
-                        v-for="account in lastFilterLabels.accs"
+                            v-for="account in lastFilterLabels.accs"
+                            :key="account?.name"
+                            closable
+                            @click:close="handleClearFilter('accounts', lastFilter, account?.id)"
                         >
-                        {{ account?.name }}
+                            {{ account?.name }}
                         </v-chip>
 
                         <v-chip
-                        v-if="lastFilter?.situation"
-                        class="ma-2"
-                        closable
-                        @click:close="handleClearFilter('situation',  lastFilter)"
-                        :color="(lastFilter?.situation === 'Pagas' || lastFilter?.situation === 'Recebidas') ? 'success' : 'error'"
+                            v-if="lastFilter?.situation"
+                            closable
+                            :color="lastFilter?.situation === 'Pagas' || lastFilter?.situation === 'Recebidas' ? 'success' : 'error'"
+                            @click:close="handleClearFilter('situation', lastFilter)"
                         >
-                        {{ lastFilter?.situation }}
+                            {{ lastFilter?.situation }}
                         </v-chip>
 
                         <v-chip
-                        class="ma-2"
-                        closable
-                        @click:close="handleClearFilter('for_type',  lastFilter)"
-                        color="primary"
-                        v-for="type in lastFilter?.for_type"
+                            v-for="type in lastFilter?.for_type"
+                            :key="type"
+                            color="primary"
+                            closable
+                            @click:close="handleClearFilter('for_type', lastFilter)"
                         >
-                        {{ type }}
+                            {{ type }}
                         </v-chip>
-                        
                     </div>
                 </v-expand-transition>
 
-                <div v-if="!isFiltered" style="margin-bottom: 12px;">
-                    <DateInput @apply-filter-month="handleGetPeriod"></DateInput>
+                <div
+                    v-if="!isFiltered"
+                    class="mb-4"
+                >
+                    <DateInput @apply-filter-month="handleGetPeriod" />
                 </div>
 
                 <v-text-field
@@ -545,106 +639,153 @@
                     label="Pesquisar transação"
                     prepend-inner-icon="mdi-magnify"
                     variant="solo-filled"
+                    density="comfortable"
                     hide-details
                     single-line
                     autocomplete="off"
-                ></v-text-field>
-                
-            </template>
-                <v-data-table
+                />
+            </v-card-text>
+
+            <v-divider />
+
+            <v-data-table
                 :headers="headers"
                 :items="tableData!"
                 :search="search"
                 :loading="isPending"
                 mobile-breakpoint="md"
                 items-per-page="8"
-                >
+            >
+                <template #item.status_transaction="{ item }">
+                    <v-icon
+                        :color="item.status_transaction === 'recebido' || item.status_transaction === 'entrada' || item.status_transaction === 'saida' || item.status_transaction === 'pago' ? 'green' : 'red'"
+                        :icon="item.status_transaction === 'recebido' || item.status_transaction === 'saida' || item.status_transaction === 'entrada' || item.status_transaction === 'pago' ? 'mdi-check-circle' : 'mdi-alert-circle'"
+                    />
 
-                <template v-slot:item.status_transaction="{ item }">
-                    <v-icon 
-                    :color="item.status_transaction === 'recebido' || item.status_transaction === 'entrada' || item.status_transaction === 'saida' || item.status_transaction === 'pago' ? 'green' : 'red'"
-                    :icon="item.status_transaction === 'recebido' || item.status_transaction === 'saida' || item.status_transaction === 'entrada' || item.status_transaction === 'pago' ? 'mdi-check-circle' : 'mdi-alert-circle'"
-                    >
-                    </v-icon>
                     <v-tooltip
                         activator="parent"
                         location="top"
-                    >{{ item.status_transaction === 'recebido' || item.status_transaction === 'entrada' ||  item.status_transaction === 'pago' ? 'Efetivada' : 'Pendente' }}</v-tooltip>
+                    >
+                        {{ item.status_transaction === 'recebido' || item.status_transaction === 'entrada' || item.status_transaction === 'pago' ? 'Efetivada' : 'Pendente' }}
+                    </v-tooltip>
                 </template>
 
-                <template v-slot:item.value_transaction="{item}">
-                    <v-chip :color="item.type_transaction ===  'receita' || item.type_transaction === 'transferencia_entrada' ? 'green' : 'red'">
+                <template #item.value_transaction="{ item }">
+                    <v-chip
+                        :color="item.type_transaction === 'receita' || item.type_transaction === 'transferencia_entrada' ? 'green' : 'red'"
+                    >
                         {{ formatCurrency(item.value_transaction) }}
                     </v-chip>
                 </template>
 
-                <template v-slot:item.description_transaction="{item}">
+                <template #item.description_transaction="{ item }">
                     <span>
                         {{ item.description_transaction }}
+
                         <span v-if="item.total_installments">
                             {{ `(${item.installment_current} / ${item.total_installments})` }}
+                        </span>
+
+                        <span v-if="item.type_transaction === 'pagamento_fatura'">
+                            {{ `- ${item.credit_card_name}` }}
                         </span>
                     </span>
                 </template>
 
-                <template v-slot:item.date_transaction="{item}"> 
+                <template #item.date_transaction="{ item }">
                     {{ formatDate(item.date_transaction) }}
                 </template>
 
-                <template v-slot:item.actions="{ item }">
-                        <v-menu
-                            transition="slide-y-transition"
+                <template #item.actions="{ item }">
+                    <v-menu transition="slide-y-transition">
+                        <template #activator="{ props }">
+                            <v-tooltip
+                                v-if="item.type_transaction === 'pagamento_fatura'"
+                                text="Por que não posso editar este lançamento? Clique para saber mais."
                             >
-                            <template v-slot:activator="{ props }">
-                                <v-icon class="rounded-xl hover-icon" v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
-                            </template>
-                            <v-list>
-                                <v-list-item
+                                <template #activator="{ props: tooltip }">
+                                    <v-btn
+                                        icon="mdi-help-circle"
+                                        variant="text"
+                                        v-bind="tooltip"
+                                        @click="modalHelp = true"
+                                    />
+                                </template>
+                            </v-tooltip>
+
+                            <v-btn
+                                v-else
+                                icon="mdi-dots-vertical"
+                                variant="text"
+                                v-bind="props"
+                            />
+                        </template>
+
+                        <v-list
+                            density="comfortable"
+                            class="pa-2"
+                        >
+                            <v-list-item
                                 v-for="action in getOptions(item)"
                                 :key="action.title"
                                 :value="action.value"
                                 :prepend-icon="action.icon"
+                                rounded="lg"
                                 @click="handleOptionClick(action, item)"
-                                >
-                                <v-list-item-title>{{ action.title }}</v-list-item-title>
-                                </v-list-item>
-                            </v-list>
-                        </v-menu>
+                            >
+                                <v-list-item-title>
+                                    {{ action.title }}
+                                </v-list-item-title>
+                            </v-list-item>
+                        </v-list>
+                    </v-menu>
                 </template>
-                </v-data-table>
-            </v-card>
-        </div>
-    </div>
+            </v-data-table>
+        </v-card>
 
+        <BaseModal
+            :persistent-modal="true"
+            :model-value="modalHelp"
+            title="Recomendações"
+            @close-modal="closeModalHelpInvoice"
+        >
+            <div class="pa-4">
+                <p>
+                    O pagamento da fatura gera automaticamente um
+                    <strong>lançamento em Transações</strong>.
+                </p>
 
+                <p>
+                    Caso algum lançamento desta fatura esteja incorreto,
+                    acesse a tela de <strong>Cartões de crédito</strong>,
+                    <strong>reabra a fatura</strong> e realize os ajustes necessários
+                    nos lançamentos. Após concluir, <strong>feche a fatura novamente</strong>.
+                </p>
+
+                <p>
+                    <strong>Importante:</strong> alterações nos lançamentos da fatura devem ser
+                    realizadas na tela de <strong>Cartões de crédito</strong>, e não neste
+                    lançamento de pagamento.
+                </p>
+
+                <p class="mb-0">
+                    Esse processo mantém um <strong>padrão de registro e rastreabilidade</strong>,
+                    preservando a <strong>integridade do histórico financeiro</strong> e facilitando
+                    futuras <strong>auditorias e conferências</strong>.
+                </p>
+            </div>
+        </BaseModal>
+    </v-container>
 </template>
 
 <style scoped>
 
-.container-main {
-    margin-top: 30px;
-}
-
 .main-cards {
+    width: 100%;
     margin: 10px;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 16px;
-}
-
-.icon-help:hover {
-    transform: scale(1.3);
-    cursor: pointer;
-}
-
-.hover-icon:hover {
-    background-color: rgba(128, 128, 128, 0.256);
-}
-
-
-:deep(.v-data-table-header__content) {
-    font-weight: 900;
-    font-size: 1rem;
 }
 
 @media (max-width: 1400px) {
@@ -652,39 +793,6 @@
         display: grid;
         grid-template-columns: 1fr;
         padding: 0 6px 0 6px;
-    }
-
-    .container-table {
-        width: 100%;
-        padding: 10px;
-        flex: 1;
-        min-height: 0;
-    }
-
-    .container-main {
-        margin-top: 30px;
-    }
-
-}
-
-@media (max-width: 680px) {
-
-    .btn-options {
-        padding-left: 2px;
-    }
-
-    .container-main {
-        margin-top: 30px;
-    }
-
-    .container-table {
-        width: 100%;
-        padding: 10px;
-    }
-
-    .table {
-        height: fit-content;
-        padding: 10px;
     }
 
 }

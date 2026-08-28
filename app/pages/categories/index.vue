@@ -12,7 +12,14 @@
   import CardEditCategorie from '~/components/forms/CardEditCategorie.vue'
   import CardAddCategorie from '~/components/forms/CardAddCategorie.vue'
   import { useInvalidate } from "~/composables/useInvalidate"
-  import type { TOptionAction } from "~~/types/option_action/TOptionAction"
+
+
+  type TOptionAction = {
+    title: string;
+    icon: string;
+    value: boolean | string | null;
+  }
+
 
   //Importações composables
   const { getAllCategories } = useHttpCategories()
@@ -212,195 +219,221 @@
 
 
 <template>
-  <div class="container">
-    <div class="card-filter">
-      <v-card
-        >
-        <v-list >
-          <v-list-subheader style="font-size: var(--text-base);">Filtro</v-list-subheader>
-
-          <v-divider :thickness="2" ></v-divider>
-
-          <v-list-item
-            color="primary"
-            v-for="(item, i) in items"
-            :key="i"
-            :value="item.value"
-            @click="selectedTypeCategorie = item.value"
+    <v-container
+      fluid
+      class="mt-6 pa-4"
+    >
+      <v-row>
+          <v-col
+              cols="12"
+              lg="4"
           >
-            <template v-slot:prepend>
-              <v-icon :icon="item.icon"></v-icon>
-            </template>
+              <v-card
+                  rounded="lg"
+                  elevation="2"
+              >
+                  <v-card-item class="pa-4 pb-2">
+                      <v-card-title class="text-h6 font-weight-bold text-blue-grey-darken-4">
+                          Filtros
+                      </v-card-title>
 
-            <template v-slot:append>
-              <v-chip class="font-weight-bold"> 
-                {{ item.total }}
-              </v-chip>
-            </template>
+                      <v-card-subtitle class="mt-1">
+                          Organize as categorias exibidas.
+                      </v-card-subtitle>
+                  </v-card-item>
 
-            <v-list-item-title v-text="item.title"></v-list-item-title>
-          </v-list-item>
-          
-          <v-divider :thickness="2" class="mt-2"></v-divider>
+                  <v-divider />
 
-          <div class="d-flex justify-space-between align-center mr-3">
-            <span class="ml-2 text-textSecundary" style="font-size: var(--text-base);">Somente ativas</span>
-            <v-switch
-              size="small"
-              inset
-              v-model="filterCategorieActive"
-              hide-details
-              color="primary"
-            >
-            </v-switch>
-            
-          </div>
+                  <v-list>
+                      <v-list-item
+                          v-for="(item, index) in items"
+                          :key="index"
+                          :value="item.value"
+                          color="primary"
+                          @click="selectedTypeCategorie = item.value"
+                      >
+                          <template #prepend>
+                              <v-icon
+                                  :icon="item.icon"
+                                  :color="item.color"
+                              />
+                          </template>
 
-        </v-list>
-      </v-card>
-    </div>
+                          <v-list-item-title>
+                              {{ item.title }}
+                          </v-list-item-title>
 
-    <div class="card-list elevation-2 rounded-lg">
-      <v-list class="elevation-2" style="height: 100%;" item-props>
+                          <template #append>
+                              <v-chip
+                                  size="small"
+                                  class="font-weight-bold"
+                              >
+                                  {{ item.total }}
+                              </v-chip>
+                          </template>
+                      </v-list-item>
 
-        <v-list-item
-          v-for="(categorie, index) in filteredCategories ||  []"
-          :key="index"
-        >
+                      <v-divider />
 
-        <template #prepend>
-          <v-icon size="25" :icon="categorie.url_icon"></v-icon>
-        </template>
+                      <v-list-item>
+                          <v-list-item-title>
+                              Somente ativas
+                          </v-list-item-title>
 
-        <template #title>
-          <p :class="{'text-disabled': !categorie.active}">{{ categorie.name_identifier }}</p>
-           <p ><v-chip :color="(categorie.type_categorie === 'Despesa') ? 'error': 'green'">{{ categorie.type_categorie }}</v-chip></p>
-        </template>
+                          <template #append>
+                              <v-switch
+                                  v-model="filterCategorieActive"
+                                  color="primary"
+                                  inset
+                                  hide-details
+                              />
+                          </template>
+                      </v-list-item>
+                  </v-list>
+              </v-card>
+          </v-col>
 
-          <v-divider :thickness="1" ></v-divider>
+          <v-col
+              cols="12"
+              lg="8"
+          >
+              <v-card
+                  rounded="lg"
+                  elevation="2"
+              >
+                  <v-card-item class="pa-4 pb-2">
+                      <v-card-title class="text-h6 font-weight-bold text-blue-grey-darken-4">
+                          Categorias
+                      </v-card-title>
 
-          <template #append>
-            <div class="text-center">
-              <v-menu location="center">
-                <template v-slot:activator="{ props }">
-                  <v-btn
-                    v-bind="props"
-                    icon="mdi-dots-vertical"
-                    variant="text"
-                    :loading="isPending"
-                    title="Opções"
+                      <v-card-subtitle class="mt-1">
+                          Gerencie suas categorias de receitas e despesas.
+                      </v-card-subtitle>
+                  </v-card-item>
+
+                  <v-divider />
+
+                  <template v-if="isPending">
+                      <div class="pa-4">
+                          <v-skeleton-loader
+                              v-for="n in 12"
+                              :key="n"
+                              type="list-item-avatar"
+                              class="mb-2"
+                          />
+                      </div>
+                  </template>
+
+                  <v-list
+                      v-else
+                      lines="three"
+                      class="pa-2"
                   >
-                  </v-btn>
-                </template>
+                      <template
+                          v-for="(categorie, index) in filteredCategories || []"
+                          :key="categorie.id"
+                      >
+                          <v-list-item class="py-2">
+                              <template #prepend>
+                                  <v-icon
+                                      :icon="categorie.url_icon"
+                                      size="25"
+                                      class="mr-3"
+                                  />
+                              </template>
 
-                <v-list>
-                  <v-list-item
-                    v-for="item in getOptions(categorie)"
-                    :key="item.title!"
-                    :prepend-icon="item.icon!"
-                    @click="handleOptionClick(item, categorie)"
-                  >
-                    <v-list-item-title>{{ item.title }}</v-list-item-title>
-                  </v-list-item>
-                </v-list>
-              </v-menu>
-            </div>
-          </template>
-        </v-list-item>
-      </v-list>
+                              <v-list-item-title
+                                  :class="{ 'text-disabled': !categorie.active }"
+                                  class="font-weight-medium"
+                              >
+                                  {{ categorie.name_identifier }}
+                              </v-list-item-title>
+
+                              <v-list-item-subtitle class="mt-1">
+                                  <v-chip
+                                      :color="categorie.type_categorie === 'Despesa' ? 'error' : 'success'"
+                                      size="small"
+                                  >
+                                      {{ categorie.type_categorie }}
+                                  </v-chip>
+                              </v-list-item-subtitle>
+
+                              <template #append>
+                                  <v-menu
+                                      location="bottom end"
+                                      offset="8"
+                                  >
+                                      <template #activator="{ props }">
+                                          <v-btn
+                                            v-bind="props"
+                                            icon="mdi-dots-vertical"
+                                            variant="text"
+                                            :loading="isPending"
+                                          >
+                                          </v-btn>
+                                      </template>
+
+                                      <v-list>
+                                          <v-list-item
+                                              v-for="item in getOptions(categorie)"
+                                              :key="item.title"
+                                              :prepend-icon="item.icon"
+                                              @click="handleOptionClick(item, categorie)"
+                                          >
+                                              <v-list-item-title>
+                                                  {{ item.title }}
+                                              </v-list-item-title>
+                                          </v-list-item>
+                                      </v-list>
+                                  </v-menu>
+                              </template>
+                          </v-list-item>
+
+                          <v-divider
+                              v-if="index < (filteredCategories?.length ?? 0) - 1"
+                          />
+                      </template>
+                  </v-list>
+              </v-card>
+          </v-col>
+      </v-row>
 
       <div class="fab-wrapper">
-        <v-tooltip text="Nova Categoria" location="left">
-          <template #activator="{ props }">
-            <BaseFab 
-            v-bind="props"
-            color="blue"
-            icon="mdi-plus"
-            size="60"
-            @click="modalAddCategorie = true"
-            />
-          </template>
-        </v-tooltip>
-    </div>
+          <v-tooltip
+              text="Nova categoria"
+              location="left"
+          >
+              <template #activator="{ props }">
+                  <BaseFab
+                      v-bind="props"
+                      color="primary"
+                      icon="mdi-plus"
+                      size="60"
+                      @click="modalAddCategorie = true"
+                  />
+              </template>
+          </v-tooltip>
+        </div>
 
-    <v-skeleton-loader 
-    v-if="isPending"
-    v-for="n in 12" 
-    :key="n" 
-    type="list-item-avatar"
-    class="mb-2"
-    />
+        <CardAddCategorie v-model="modalAddCategorie" />
 
-  </div>
-
-  <CardAddCategorie v-model="modalAddCategorie" />
-
-  <CardEditCategorie 
-    :draft="editDraft"
-    @Close="handleCloseEditCategorie"
-    v-model="modalEditCategorie" 
-  />
-
-  </div>
+        <CardEditCategorie
+            v-model="modalEditCategorie"
+            :draft="editDraft"
+            @Close="handleCloseEditCategorie"
+        />
+    </v-container>
 </template>
 
-
 <style scoped>
-
-.showOverflow {
-  overflow: hidden;
-}
-
-.container {
-  display: flex;
-  gap: 16px;
-  padding: 25px 0 0 0;
-  justify-content: center;
-}
-
-.card-filter {
-  max-width: 100%;
-  width: 30%;
-  padding: 0 10px 0 10px;
-}
-
-.card-list {
-  width: 60%;
-  height: calc(95dvh - 64px);
-  overflow-y: auto;
-  
-}
-
 .fab-wrapper {
-  position: fixed;
-  bottom: 25px;
-  right: 22px;
-  z-index: 9999;
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 10;
 }
 
 .text-disabled {
-  text-decoration: line-through;
+    text-decoration: line-through;
 }
-
-@media (max-width: 1450px) {
-
-  .container {
-    flex-direction: column;
-  }
-
-  .card-filter {
-    width: 100%;
-  }
-
-  .card-list {
-    width: 100%;
-    height: auto;
-    padding: 0 8px;
-  }
-
-}
-
-
-
 </style>
-

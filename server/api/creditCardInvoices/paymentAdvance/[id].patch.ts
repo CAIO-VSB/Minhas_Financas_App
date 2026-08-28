@@ -1,3 +1,4 @@
+import { number } from "zod"
 import { auth } from "~~/auth"
 import { invoiceRepository } from "~~/server/repositories/invoices.repository"
 
@@ -14,13 +15,17 @@ export default defineEventHandler( async (event) => {
         })
     }
         
-    const { dataPayment, accountsId, invoiceId, totalInvoice, totalPaid } = getQuery(event)
+    const { dataPayment, accountsId, invoiceId, totalInvoice, totalPaid, invoice_month, invoice_year, creditCardId,  closingDay } = getQuery(event)
 
     const dataPaymentFormated = String(dataPayment)
     const accountsIdFormated = Number(accountsId)
     const invoiceIdFormated = Number(invoiceId)
     const totalInvoiceFormated = Number(totalInvoice)
     const totalPaidFormated = Number(totalPaid)
+    const invoiceMonthFormated = Number(invoice_month)
+    const invoiceYearFormated = Number(invoice_year)
+    const creditCardIdFormated = Number(creditCardId)
+    const closingDayFormated = Number(creditCardId)
 
     if (!dataPaymentFormated || !accountsIdFormated || !invoiceIdFormated || !totalInvoiceFormated) {
         throw createError({
@@ -31,7 +36,7 @@ export default defineEventHandler( async (event) => {
 
     try {
 
-        return await invoiceRepository.updatePaymentPartial(session.session.userId, dataPaymentFormated, totalInvoiceFormated, totalPaidFormated, accountsIdFormated, invoiceIdFormated)
+        return await invoiceRepository.updatePaymentAdvance(session.session.userId, dataPaymentFormated, accountsIdFormated, invoiceIdFormated, totalInvoiceFormated, totalPaidFormated, invoiceMonthFormated, invoiceYearFormated, creditCardIdFormated, closingDayFormated)
 
     } catch (error) {
         console.log("Erro ao lancar pagamento da fatura" + error)

@@ -162,7 +162,7 @@
           ></v-alert>
         </div>
         <v-card-text>
-          <v-row dense>
+          <v-row >
 
             <v-col
               cols="12"

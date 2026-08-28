@@ -305,10 +305,10 @@
         <v-card prepend-icon="mdi-bank-plus" title="Nova despesa">
           <v-divider></v-divider>
           <v-card-text>
-            <v-row dense>
+            <v-row >
 
               <v-col
-              dense cols="12" md="6" sm="12"
+               cols="12" md="6" sm="12"
               >
               <CurrencyInput prepend-inner-icon="mdi-cash" input-color="#C62828" base-color="#C62828" color="#C62828" :rules="currencyRules"  autocomplete="off" label="Valor*" v-model="movementsForm.value_transaction" />
               </v-col>

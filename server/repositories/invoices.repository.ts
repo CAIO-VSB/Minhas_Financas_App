@@ -2,9 +2,7 @@ import client from "~/utils/db"
 
 export const invoiceRepository = {
 
-    async updateFullPayment(dataPayment: string, invoiceId: number, totalInvoice: number) {
-
-        console.log("Caiu aqui??? Desgraçaaaaaaaaaaaaaaaaaaaaaaaa" + dataPayment, invoiceId, totalInvoice)
+    async updateFullPayment(userId: string, dataPayment: string, totalInvoice: number, accountsId: number,  invoiceId: number) {
 
         const conn = await client.connect()  // fixa uma conexão dedicada
 
@@ -18,18 +16,17 @@ export const invoiceRepository = {
                     SET date_payment = $1,
                         status_invoice = $2,
                         total_value = $3,
-                        total_paid = $4
-                    WHERE id = $5
-            `, [dataPayment, 'fechada', totalInvoice, totalInvoice, invoiceId])
+                        total_paid = $4,
+                        accounts_id = $5
+                    WHERE id = $6
+            `, [dataPayment, 'fechada', totalInvoice, totalInvoice, accountsId, invoiceId])
 
-
-            await conn.query(`
-            UPDATE movements 
-                SET status_transaction = $1  
-            WHERE movement_credit_card_id IN (
-                SELECT id FROM credit_card_movements WHERE invoice_id = $2
+            await conn.query(
+                `INSERT INTO movements(user_id, type_transaction, value_transaction, date_transaction, description_transaction, categorie_id, accounts_id, observation, url_recibo, status_transaction, is_deleted, invoice_id) 
+                VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
+                RETURNING id`,
+                [userId, 'pagamento_fatura', totalInvoice, dataPayment, 'Pagamento da fatura', 6, accountsId, 'Pagamento da fatura', null, 'pago', false, invoiceId]
             )
-            `,['pago', invoiceId])
           
             await conn.query('COMMIT')
 
@@ -44,9 +41,9 @@ export const invoiceRepository = {
 
     },
 
-    async updatePaymentPartial(userId: string, dataPayment: string, accountsId: number, invoiceId: number, totalInvoice: number, totalPaid: number) {
+    async updatePaymentPartial(userId: string, dataPayment: string, totalInvoice: number, totalPaid: number, accountsId: number, invoiceId: number) {
 
-        console.log("Bateu aqui " + dataPayment, accountsId, invoiceId, totalPaid)
+        console.log("Chgeando aqui os valroes " + userId, dataPayment, totalInvoice, accountsId, invoiceId)
 
         const conn = await client.connect()  // fixa uma conexão dedicada
 
@@ -60,17 +57,10 @@ export const invoiceRepository = {
                     SET date_payment = $1,
                         status_invoice = $2,
                         total_value = $3,
-                        total_paid = $4
-                    WHERE id = $5
-            `, [dataPayment, 'fechada', totalInvoice, totalPaid, invoiceId])
-
-            await conn.query(`
-            UPDATE movements 
-                SET status_transaction = $1  
-            WHERE movement_credit_card_id IN (
-                SELECT id FROM credit_card_movements WHERE invoice_id = $2
-            )
-            `,['pago', invoiceId])
+                        total_paid = $4,
+                        accounts_id = $5
+                    WHERE id = $6
+            `, [dataPayment, 'fechada', totalInvoice, totalPaid, accountsId, invoiceId])
 
             const currentInvoice = await conn.query(`
                 SELECT credit_card_id, invoice_month, invoice_year, closing_date FROM credit_card_invoices WHERE id = $1
@@ -84,6 +74,13 @@ export const invoiceRepository = {
             `SELECT id FROM credit_card_invoices WHERE credit_card_id = $1 AND invoice_month = $2 AND invoice_year = $3`,
             [credit_card_id, nextMonth, nextYear]
             )
+
+            await conn.query(`
+                INSERT INTO credit_card_movements(user_id, credit_card_id, invoice_id, description_credit, value_transaction, purchase_date, status_movement, categorie_id)
+                    VALUES($1, $2, $3, $4, $5, $6, $7, $8)
+                RETURNING id
+                `
+            , [userId, credit_card_id, invoiceId, 'Pagamento parcial*', totalPaid, dataPayment, 'parcial', 8])
 
             let nextInvoiceId: number
 
@@ -105,23 +102,69 @@ export const invoiceRepository = {
 
             const remainingValue = totalInvoice - totalPaid
 
-            const adjustmentMovement = await conn.query(`
+            await conn.query(`
                 INSERT INTO credit_card_movements(user_id, credit_card_id, invoice_id, description_credit, value_transaction, purchase_date, status_movement, categorie_id)
                     VALUES($1, $2, $3, $4, $5, $6, $7, $8)
                 RETURNING id
                 `
             , [userId, credit_card_id, nextInvoiceId, 'Saldo restante da fatura anterior', remainingValue, dataPayment, 'ativa', 5])
 
-            const dateMovements = `${nextYear}-${nextMonth}-${dataPayment.split("-")[2]}`
-
-            await conn.query(`
-                INSERT INTO movements(user_id, type_transaction, value_transaction, date_transaction, description_transaction, categorie_id, accounts_id, observation, url_recibo, status_transaction, is_deleted, movement_credit_card_id)
-                VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-            `, [userId, 'saldo_anterior', remainingValue, dateMovements, 'Saldo restante da fatura anterior', 5, accountsId, null, null, 'pendente', false, adjustmentMovement.rows[0].id])
-
             await conn.query('COMMIT')
 
             return { message: "Fatura paga parcialmente com sucesso" }
+
+        } catch (error) {
+            await conn.query('ROLLBACK')
+            throw error
+        } finally {
+            conn.release()  
+        }
+
+    },
+
+    async updatePaymentAdvance(userId: string, dataPayment: string, accountsId: number, invoiceId: number, totalInvoice: number, totalPaid: number, invoice_month: number, invoice_year: number, creditCardId: number, closingDay: number) {
+
+        const conn = await client.connect()  // fixa uma conexão dedicada
+
+        try {
+
+            const invoiceMonth = invoice_month
+            const invoiceYear = invoice_year
+            
+            await conn.query('BEGIN')
+
+            const existingNextInvoice = await conn.query(
+            `SELECT id FROM credit_card_invoices WHERE credit_card_id = $1 AND invoice_month = $2 AND invoice_year = $3`,
+            [creditCardId, invoiceMonth, invoiceYear]
+            )
+
+            let nextInvoiceId: number
+
+            if (existingNextInvoice.rows.length > 0) {
+                nextInvoiceId = existingNextInvoice.rows[0].id
+            } else {
+                const closingDate = new Date(invoiceYear, invoiceMonth - 1, closingDay ?? undefined)
+
+                const newInvoice = await conn.query(
+                    `INSERT INTO credit_card_invoices(credit_card_id, invoice_month, invoice_year, status_invoice, closing_date, total_value)
+                    VALUES($1, $2, $3, $4, $5, $6)
+                    RETURNING id`,
+                    [creditCardId, invoiceMonth, invoiceYear, 'aberta', closingDate, null]
+                )
+
+                nextInvoiceId = newInvoice.rows[0].id
+            }
+
+            await conn.query(`
+                INSERT INTO credit_card_movements(user_id, credit_card_id, invoice_id, description_credit, value_transaction, purchase_date, status_movement, categorie_id)
+                    VALUES($1, $2, $3, $4, $5, $6, $7, $8)
+                RETURNING id
+                `
+            , [userId, creditCardId, nextInvoiceId, 'Pagamento adiantado*', totalPaid, dataPayment, 'adiantado', 7])
+
+            await conn.query('COMMIT')
+
+            return { message: "Fatura paga adiantada com sucesso" }
 
         } catch (error) {
             await conn.query('ROLLBACK')

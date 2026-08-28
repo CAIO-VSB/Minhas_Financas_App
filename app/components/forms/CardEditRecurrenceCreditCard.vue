@@ -99,7 +99,6 @@
       date.value = `${formattedYear}-${formattedMonth}`
     }, {immediate: true})
 
-
     watch(menuCategorias, (val) => {
       if (!val) searchCategorias.value = ""
     })
@@ -223,13 +222,13 @@
             </v-col>
 
             <v-col
-              dense cols="12" md="6" sm="12"
+               cols="12" md="6" sm="12"
               >
             <v-date-input :disabled="showFields.data_compra" prepend-inner-icon="mdi-calendar" prepend-icon="" :rules="dateRules" autocomplete="off" name="date" label="Data*" variant="underlined" v-model="props.draft.purchase_date"></v-date-input>
             </v-col>
 
             <v-col
-            dense cols="12" md="6" sm="12"
+             cols="12" md="6" sm="12"
             >
             <v-text-field prepend-inner-icon="mdi-pencil" :rules="nameRules" :counter="45" maxlength="45"  autocomplete="name" name="name" label="Descrição*" variant="underlined" v-model="props.draft.description_credit"></v-text-field>
             </v-col>
@@ -272,7 +271,7 @@
               </v-col>
 
             <v-col
-            dense cols="12" md="12" sm="12"
+            cols="12" md="12" sm="12"
             >
             <v-select
               autocomplete="off"
@@ -326,7 +325,7 @@
             </v-col>
 
             <v-col
-            dense cols="12" md="12" sm="12"
+             cols="12" md="12" sm="12"
             >
               <v-text-field prepend-inner-icon="mdi-note-text" v-model="props.draft.observation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="underlined"></v-text-field >
             </v-col>

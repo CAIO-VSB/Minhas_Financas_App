@@ -72,7 +72,7 @@ export const auth = betterAuth({
         errorURL: "/error.vue"
     },
 
-    trustedOrigins: ["http://localhost:3000", "http://10.20.20.7:3000"]
+    //trustedOrigins: ["http://localhost:3000"]
 
     
 })

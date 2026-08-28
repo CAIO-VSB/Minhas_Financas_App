@@ -1,14 +1,14 @@
 <script lang="ts" setup>
 
   import logo from "~~/app/assets/logo-side-bar.svg"
-  
+
   import ButtonActions from './components/ButtonActions.vue'
   import TopBar from "~/layouts/components/TopBar.vue"
 
   const drawer = ref(true)
   const rail = ref(false)
   const openedGroups = ref(['Visão geral'])
-  
+
   const nav = [
     { title: 'Visão geral', icon: 'mdi-home-analytics', value: 'Visão geral', to: '/home' },
     { title: 'Transações', icon: 'mdi-swap-horizontal-bold', value: 'transacoes', to: '/transactions' },
@@ -19,60 +19,105 @@
 </script>
 
 <template>
-    <v-layout >
-      <v-navigation-drawer
-        v-model="drawer"
-        :rail="rail"
-        @click="rail = false"
-        :width="320"
-        border="end"
-        color="surface"
-        class="elavation-2"
+  <v-layout>
+
+    <v-navigation-drawer
+      v-model="drawer"
+      :rail="rail"
+      :width="280"
+      border="end"
+      color="surface"
+      @click="rail = false"
+    >
+
+      <div class="drawer-logo px-6">
+        <img
+          :src="logo"
+          alt="Velto Finance"
+          class="drawer-logo-img"
+        />
+      </div>
+
+      <v-divider />
+      <div class="px-3 pt-4 pb-2">
+        <ButtonActions
+          :rail="rail"
+          class="w-100"
+        />
+      </div>
+
+      <v-list
+        v-model:opened="openedGroups"
+        density="comfortable"
+        nav
+        class="px-3"
       >
-      
-        <div class="drawer-logo">
-          <img class="drawer-logo-img" :src="logo" alt="Velto Finance">
-        </div>
 
-        <v-divider ></v-divider>
+        <v-list-subheader class="text-uppercase text-caption font-weight-bold px-3 mb-1">
+          Principal
+        </v-list-subheader>
 
-        <ButtonActions class="my-4" :rail="rail"/>
+        <v-list-item
+          v-for="item in nav"
+          :key="item.value"
+          :prepend-icon="item.icon"
+          :title="item.title"
+          :value="item.value"
+          :to="item.to"
+          rounded="lg"
+          color="primary"
+          class="mb-1"
+        >
+          <template #title>
+            <span class="size-item-title">
+              {{ item.title }}
+            </span>
+          </template>
+        </v-list-item>
 
-        <v-list density="comfortable" class="px-2 mt-2" nav v-model:opened="openedGroups">
+
+        <v-list-subheader
+          v-if="!rail"
+          class="text-uppercase text-caption font-weight-bold px-3 mt-4 mb-1"
+        >
+          Gestão
+        </v-list-subheader>
+
+        <v-list-item
+          v-if="rail"
+          prepend-icon="mdi-database-plus"
+          rounded="lg"
+          color="primary"
+          class="mb-1"
+        >
+          <v-tooltip
+            activator="parent"
+            location="end"
+          >
+            Cadastros
+          </v-tooltip>
+        </v-list-item>
+
+        <v-list-group
+          v-else
+          value="Cadastros"
+        >
+          <template #activator="{ props }">
             <v-list-item
-            v-for="item in nav"
-              :prepend-icon="item.icon"
-              :title="item.title"
-              :value="item.value"
-              :to="item.to"
+              v-bind="props"
+              prepend-icon="mdi-database-plus"
               rounded="lg"
               color="primary"
             >
               <template #title>
-                <span class="size-item-title">{{ item.title }}</span>
+                <span class="size-item-title">
+                  Cadastros
+                </span>
               </template>
             </v-list-item>
+          </template>
 
-            <v-list-item
-              v-if="rail"
-              prepend-icon="mdi-database-plus"
-              rounded="lg"
-              color="primary"
-              class="cursor-pointer"
-            >
-              <v-tooltip activator="parent" location="end">Cadastros</v-tooltip>
-            </v-list-item>
-            
-
-            <v-list-group v-else value="Cadastros" >
-
-            <template v-slot:activator="{ props }">
-              <v-list-item v-bind="props" prepend-icon="mdi-database-plus" rounded="lg" color="primary">
-                <template #title><span class="size-item-title">Cadastros</span></template>
-              </v-list-item>
-            </template>
-                        
-            <v-list-item
+          <v-list-item
             prepend-icon="mdi-folder-outline"
             title="Categorias"
             value="categoria"
@@ -80,13 +125,15 @@
             rounded="lg"
             color="primary"
             class="mb-1"
-            >
-              <template #title>
-                <span class="size-item-title">Categorias</span>
-              </template>
+          >
+            <template #title>
+              <span class="size-item-title">
+                Categorias
+              </span>
+            </template>
           </v-list-item>
 
-            <v-list-item
+          <v-list-item
             prepend-icon="mdi-bank-outline"
             title="Contas bancárias"
             value="contas"
@@ -94,73 +141,98 @@
             rounded="lg"
             color="primary"
             class="mb-1"
-            >
-
+          >
             <template #title>
-              <span class="size-item-title">Contas bancárias</span>
+              <span class="size-item-title">
+                Contas bancárias
+              </span>
             </template>
           </v-list-item>
+        </v-list-group>
 
-            </v-list-group>
-              <v-list-item
-                prepend-icon="mdi-file-chart-outline"
-                title="Relatórios"
-                value="relatorios"
-                rounded="lg"
+
+        <v-list-item
+          prepend-icon="mdi-file-chart-outline"
+          title="Relatórios"
+          value="relatorios"
+          rounded="lg"
+          class="mb-1 text-medium-emphasis"
+        >
+          <template #title>
+            <div class="d-flex align-center justify-space-between w-100">
+              <span class="size-item-title">
+                Relatórios
+              </span>
+
+              <v-chip
+                size="x-small"
+                variant="tonal"
                 color="primary"
-                class="mb-1"
-            >
-              <template #title>
-                <span class="size-item-title">Relatórios</span>
-              </template>
-                <v-tooltip
-                activator="parent"
-                location="start"
-                >Relatórios</v-tooltip>   
-            </v-list-item>
+                class="mr-2"
+              >
+                Em breve
+              </v-chip>
+            </div>
+          </template>
 
-            <v-divider></v-divider>
+          <v-tooltip
+            activator="parent"
+            location="start"
+          >
+            Relatórios
+          </v-tooltip>
+        </v-list-item>
 
-        </v-list>
+      </v-list>
 
-        <template v-slot:append>
-          <div class="mb-4">
-            <v-list density="compact" nav >
-                <v-list-item
-                prepend-icon="mdi-tag-outline"
-                >
-                <template #title>
-                  <p class="text-caption text-medium-emphasis">Versão 1.0.0</p>
-                </template>
-            </v-list-item>
-            </v-list>
+      <template #append>
+        <div class="px-3 pb-4">
+
+          <v-divider class="mb-3" />
+
+          <div
+            class="d-flex align-center px-3 text-medium-emphasis"
+          >
+            <v-icon
+              icon="mdi-information-outline"
+              size="18"
+              class="mr-2"
+            />
+
+            <span class="text-caption">
+              Velto Finance
+            </span>
+
+            <v-spacer />
+
+            <span class="text-caption">
+              v1.0.0
+            </span>
           </div>
-        </template>
-      </v-navigation-drawer>
 
-      <TopBar v-model="drawer"/>
-
-      <v-main style="overflow-y: auto; overflow-x: hidden;" class="bg-backgroundPrimary">
-        <div class="dashboard-content ">
-          <slot></slot>
         </div>
-      </v-main>
-    </v-layout>
+      </template>
+
+    </v-navigation-drawer>
+
+
+    <TopBar v-model="drawer" />
+
+    <v-main
+      class="bg-backgroundPrimary"
+      style="overflow-y: auto; overflow-x: hidden;"
+    >
+      <div class="dashboard-content">
+        <slot />
+      </div>
+    </v-main>
+
+  </v-layout>
 </template>
 
 <style scoped>
-
 .size-item-title {
   font-size: var(--text-base);
-}
-
-.dashboard-content::-webkit-scrollbar {
-  width: 5px;
-  background: #F4F4F4;
-}
-
-.dashboard-content::-webkit-scrollbar-thumb {
-  background: #dad7d7;
 }
 
 .drawer-logo {
@@ -172,8 +244,16 @@
 }
 
 .drawer-logo-img {
-  width: 250px;
+  width: 220px;
   height: auto;
   display: block;
+}
+
+.dashboard-content::-webkit-scrollbar {
+  width: 5px;
+}
+
+.dashboard-content::-webkit-scrollbar-thumb {
+  background: #dad7d7;
 }
 </style>

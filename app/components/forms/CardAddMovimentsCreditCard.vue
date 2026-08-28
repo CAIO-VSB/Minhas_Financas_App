@@ -347,7 +347,7 @@
           <v-card-text>
             <v-row density="comfortable">
               <v-col
-              dense cols="12" md="6" sm="12"
+               cols="12" md="6" sm="12"
               >
               <CurrencyInput prepend-inner-icon="mdi-cash" :rules="currencyRules" autocomplete="off" label="Valor*" v-model="movementCreditCardForm.value_transaction" />
               </v-col>

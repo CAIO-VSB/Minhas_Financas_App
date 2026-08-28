@@ -44,59 +44,137 @@
 
 
 <template>
-  <div class="text-center">
-    
-    <v-menu position="center" transition="fab-transition" >
-      <template v-slot:activator="{ props: menu }">
-        <v-tooltip location="top">
-          <template v-slot:activator="{ props: tooltip }">
+  <div>
+    <v-menu
+      location="end"
+      origin="top left"
+      transition="scale-transition"
+      offset="8"
+    >
+      <template #activator="{ props: menu }">
+        <v-tooltip
+          location="top"
+          :disabled="!rail"
+        >
+          <template #activator="{ props: tooltip }">
             <v-scale-transition mode="out-in">
-              <div class="ma-3" v-if="!rail">
+              <div
+                v-if="!rail"
+                class="px-3"
+              >
+                <v-btn
+                  v-bind="mergeProps(menu, tooltip)"
+                  block
+                  color="primary"
+                  variant="elevated"
+                  rounded="lg"
+                  size="large"
+                  height="48"
+                  class="text-none font-weight-bold"
+                >
+                  <v-icon
+                    icon="mdi-plus"
+                    size="21"
+                    class="mr-2"
+                  />
+
+                  Novo lançamento
+
+                  <v-icon
+                    icon="mdi-chevron-down"
+                    size="18"
+                    class="ml-auto"
+                  />
+                </v-btn>
+              </div>
+
               <v-btn
-              block
-              color="primary"
-              prepend-icon="mdi-plus"
-              variant="elevated"
-              class="text-none"
-              v-bind="mergeProps(menu, tooltip)"
-            >
-            Novo
-            </v-btn>
-              </div>            
-            <v-btn
-              v-else
-              color="primary"
-              icon="mdi-plus"
-              size="44"
-              variant="elevated"
-              v-bind="mergeProps(menu, tooltip)"
-            >
-            </v-btn>
+                v-else
+                v-bind="mergeProps(menu, tooltip)"
+                color="primary"
+                icon="mdi-plus"
+                size="44"
+                rounded="lg"
+                variant="elevated"
+              />
             </v-scale-transition>
           </template>
+
           <span>Novo lançamento</span>
         </v-tooltip>
       </template>
-      <v-list>
-        <v-list-item
-          v-for="(item, index) in items"
-          :key="index"
-          :value="index"
-          :color="item.color"
-          @click="getOption(item.value)"
+
+      <v-card
+        min-width="260"
+        rounded="xl"
+        elevation="4"
+        class="overflow-hidden"
+      >
+        <div class="pa-4">
+          <div class="text-subtitle-1 font-weight-bold text-blue-grey-darken-4">
+            Novo lançamento
+          </div>
+
+          <div class="text-caption text-medium-emphasis mt-1">
+            Escolha o tipo de movimentação
+          </div>
+        </div>
+
+        <v-divider />
+
+        <v-list
+          density="comfortable"
+          class="pa-2"
         >
-          <template #prepend>
-            <v-icon :color="item.color" :icon="item.icon"></v-icon>
-          </template>
-          <v-list-item-title>{{ item.title }}</v-list-item-title>
-        </v-list-item>
-      </v-list>
+          <v-list-item
+            v-for="(item, index) in items"
+            :key="index"
+            :value="index"
+            rounded="lg"
+            class="launch-item"
+            @click="getOption(item.value)"
+          >
+            <template #prepend>
+              <v-avatar
+                size="38"
+                rounded="lg"
+                :color="`${item.color}-lighten-5`"
+                class="mr-3"
+              >
+                <v-icon
+                  :icon="item.icon"
+                  :color="item.color"
+                  size="21"
+                />
+              </v-avatar>
+            </template>
+
+            <v-list-item-title class="font-weight-medium text-blue-grey-darken-3">
+              {{ item.title }}
+            </v-list-item-title>
+
+            <template #append>
+              <v-icon
+                icon="mdi-chevron-right"
+                size="18"
+                class="text-medium-emphasis"
+              />
+            </template>
+          </v-list-item>
+        </v-list>
+      </v-card>
     </v-menu>
 
     <CardAddMovimentsRevenue v-model="modalAddRevenue" />
 
     <CardAddMovimentsExpenses v-model="modalExpenses" />
-  
-    <CardAddTransfer  v-model="modalTranfer" />
+
+    <CardAddTransfer v-model="modalTranfer" />
   </div>
 </template>
+
+<style scoped>
+.launch-item {
+  transition: background-color 0.15s ease;
+}
+</style>

@@ -26,6 +26,15 @@ import type { TCreditCard } from '~~/types/credit_card/TCredit-card';
   const deleteDraft = ref<TMovementCreditCardPayload | null>(null)
   const shoppingActive  = ref<boolean | null>(true)
 
+  const statusMovementConfig: Record<string, {color: string, icon: string, text?: string}> = {
+    ativa: { color: 'success', icon: 'mdi-sticker-check', text: 'Compra ativa' },
+    deletada: { color: 'red', icon: 'mdi-archive-cancel', text: 'Compra deletada' },
+    estornada: { color: 'orange', icon: 'mdi-credit-card-refund', text: 'Compra estornada' },
+    estorno: { color: 'orange', icon: 'mdi-credit-card-refund', text: 'Compra estornada' },
+    adiantado: { color: 'blue', icon: 'mdi-calendar-arrow-left', text: 'Pagamento adiantado' },
+    parcial: { color: 'blue', icon: 'mdi-cash-minus', text: 'Pagamento parcial' },
+  }
+
   const headers = [
     {
       align: 'center' as const,
@@ -52,6 +61,10 @@ import type { TCreditCard } from '~~/types/credit_card/TCredit-card';
     ]
 
     return options.filter(Boolean) as TOptionAction[]
+  }
+
+  function getStatusConfig(status: string | null | undefined) {
+    return statusMovementConfig[status ?? ''] ?? { color: 'grey', icon: 'mdi-help-circle' }
   }
 
   const movementCreditCardData = computed(() => {
@@ -125,174 +138,206 @@ import type { TCreditCard } from '~~/types/credit_card/TCredit-card';
 </script>
 
 <template>
-    <div class="">
+    <v-card
+        rounded="xl"
+        elevation="2"
+        class="overflow-hidden"
+    >
+        <v-card-item class="pa-5 pb-0">
+            <v-card-title class="text-h6 font-weight-bold text-blue-grey-darken-4">
+                Lançamentos
+            </v-card-title>
 
-      <v-card>
-        <v-card-item>
-          <v-card-title>
-            <span class="title-card">Lançamentos</span>
-          </v-card-title>
+            <v-card-subtitle class="mt-1">
+                Acompanhe as compras realizadas neste cartão.
+            </v-card-subtitle>
         </v-card-item>
 
-        <v-card-text>
-          <v-card
-          flat
-          >
-          <template v-slot:text>
+        <v-card-text class="pa-5">
             <v-text-field
-              v-model="search"
-              label="Pesquisar lançamento"
-              prepend-inner-icon="mdi-magnify"
-              variant="solo-filled"
-              hide-details
-              single-line
-              clearable
-            >
-            <template #append-inner>
-              <v-menu
-                transition="slide-y-transition"
+                v-model="search"
+                label="Pesquisar lançamento"
+                prepend-inner-icon="mdi-magnify"
+                variant="solo-filled"
+                density="comfortable"
                 hide-details
-                >
-                  <template v-slot:activator="{ props }">
-                    <v-btn
-                      color="primary"
-                      v-bind="props"
-                      icon="mdi-dots-vertical"
-                      variant="text"
-                    >
-                    </v-btn>
-                  </template>
-                  <v-list>
-                    <v-list-item
-                      v-for="(item, i) in items"
-                      :key="i"
-                      :value="i"
-                      :prepend-icon="item.icon"
-                      @click="handleShowShoopingActive(item.value)"
-                    >
-                      <v-list-item-title>{{ item.title }}</v-list-item-title>
-                    </v-list-item>
-                  </v-list>
-                </v-menu>
-            </template>  
-          </v-text-field>
-          </template>
-
-            <v-data-table
-              :headers="headers"
-              :items="movementCreditCardData || []"
-              :search="search"
-              hide-default-footer
-              mobile-breakpoint="md"
+                single-line
+                clearable
             >
-
-              <template v-slot:item.purchase_date="{item}"> 
-                {{ formatDate(item.purchase_date) }}
-              </template>
-            
-              <template v-slot:item.value_transaction="{item}">
-                  <v-chip :color="(item.status_movement === 'ativa') ? 'green' : (item.status_movement === 'deletada') ? 'red' : 'orange'">
-                      {{ formatCurrency(item.value_transaction) }}
-                  </v-chip>
-              </template>
-
-              <template v-slot:item.status_movement="{item}">
-                <v-icon 
-                  :color="(item.status_movement === 'ativa') ? 'green' : (item.status_movement === 'deletada') ? 'red' : 'orange'"
-                  :icon="(item.status_movement === 'ativa') ? 'mdi-sticker-check' : (item.status_movement === 'deletada') ? 'mdi-archive-cancel' : 'mdi-credit-card-refund'"
-                  >
-                </v-icon>
-                <v-tooltip
-                  activator="parent"
-                  location="top"
-                  >{{(item.status_movement === 'ativa') ? 'Compra ativa' : (item.status_movement === 'deletada') ? 'Compra deletada' : 'Compra estornada' }}
-                </v-tooltip>
-              </template>
-
-              <template v-slot:item.description_credit="{ item }">
-                <div class="d-flex flex-column">
-                  
-                  <span>
-                    {{ item.description_credit }}
-
-                    <span v-if="item.total_installments">
-                      ({{ item.installment_number }} / {{ item.total_installments }})
-                    </span>
-                  </span>
-
-                  <span
-                    v-if="item.description_reversal"
-                    class="text-error text-caption ml-4"
-                  >
-                    ↳ {{ item.description_reversal }}
-                  </span>
-
-                </div>
-              </template>
-
-              <template v-slot:item.actions="{ item }">
-                <v-menu
-                    transition="slide-y-transition"
-                    :disabled="(item.status_movement === 'deletada')"
+                <template #append-inner>
+                    <v-menu
+                        transition="slide-y-transition"
+                        offset="8"
                     >
+                        <template #activator="{ props }">
+                            <v-btn
+                                v-bind="props"
+                                color="primary"
+                                icon="mdi-dots-vertical"
+                                variant="text"
+                            />
+                        </template>
 
-                    <template v-slot:activator="{ props }">
-                        <v-icon class="rounded-xl hover-icon" v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
+                        <v-list
+                            density="comfortable"
+                            class="pa-2"
+                        >
+                            <v-list-item
+                                v-for="(item, index) in items"
+                                :key="index"
+                                :value="index"
+                                :prepend-icon="item.icon"
+                                rounded="lg"
+                                @click="handleShowShoopingActive(item.value)"
+                            >
+                                <v-list-item-title>
+                                    {{ item.title }}
+                                </v-list-item-title>
+                            </v-list-item>
+                        </v-list>
+                    </v-menu>
+                </template>
+            </v-text-field>
+        </v-card-text>
+
+        <v-divider />
+
+        <v-data-table
+            :headers="headers"
+            :items="movementCreditCardData || []"
+            :search="search"
+            mobile-breakpoint="md"
+            items-per-page="10"
+        >
+            <template #item.purchase_date="{ item }">
+                {{ formatDate(item.purchase_date) }}
+            </template>
+
+            <template #item.value_transaction="{ item }">
+                <v-chip :color="getStatusConfig(item.status_movement).color">
+                    {{ formatCurrency(item.value_transaction) }}
+                </v-chip>
+            </template>
+
+            <template #item.status_movement="{ item }">
+                <v-icon
+                    :color="getStatusConfig(item.status_movement).color"
+                    :icon="getStatusConfig(item.status_movement).icon"
+                />
+
+                <v-tooltip
+                    activator="parent"
+                    location="top"
+                >
+                    {{ getStatusConfig(item.status_movement).text }}
+                </v-tooltip>
+            </template>
+
+            <template #item.description_credit="{ item }">
+                <div class="d-flex flex-column">
+                    <span>
+                        {{ item.description_credit }}
+
+                        <span v-if="item.total_installments">
+                            ({{ item.installment_number }} / {{ item.total_installments }})
+                        </span>
+                    </span>
+
+                    <span
+                        v-if="item.description_reversal"
+                        class="text-error text-caption mt-1"
+                    >
+                        ↳ {{ item.description_reversal }}
+                    </span>
+                </div>
+            </template>
+
+            <template #item.actions="{ item }">
+                <div
+                    v-if="item.status_invoice === 'fechada'"
+                    class="d-flex align-center"
+                >
+                    <v-btn
+                        icon="mdi-block-helper"
+                        variant="text"
+                        disabled
+                    />
+
+                    <v-tooltip text="Ação indisponível em faturas pagas">
+                        <template #activator="{ props }">
+                            <v-btn
+                                v-bind="props"
+                                icon="mdi-alert-circle"
+                                variant="text"
+                            />
+                        </template>
+                    </v-tooltip>
+                </div>
+
+                <v-menu
+                    v-else
+                    transition="slide-y-transition"
+                    :disabled="item.status_movement === 'deletada'"
+                >
+                    <template #activator="{ props }">
+                        <v-btn
+                            v-bind="props"
+                            icon="mdi-dots-vertical"
+                            variant="text"
+                        />
                     </template>
 
-                    <v-list>
+                    <v-list
+                        density="comfortable"
+                        class="pa-2"
+                    >
                         <v-list-item
-                        v-for="action in getOptions(item)"
-                        :key="action.title"
-                        :value="action.value"
-                        :prepend-icon="action.icon"
-                        @click="handleOptionClick(action, item)"
+                            v-for="action in getOptions(item)"
+                            :key="action.title"
+                            :value="action.value"
+                            :prepend-icon="action.icon"
+                            rounded="lg"
+                            @click="handleOptionClick(action, item)"
                         >
-                        <v-list-item-title>{{ action.title }}</v-list-item-title>
+                            <v-list-item-title>
+                                {{ action.title }}
+                            </v-list-item-title>
                         </v-list-item>
                     </v-list>
-                  </v-menu>
-                </template>
+                </v-menu>
+            </template>
+        </v-data-table>
+    </v-card>
 
-            </v-data-table>
-          </v-card>
-        </v-card-text>
-      </v-card>
-      
-      <div>
-        <CardEditMovementCreditCard :draft="editDraft" v-model="modalEditMovement" />
-        <CardAddReversal :draft="editDraft" v-model="modalAddReversal"/>
-        <CardDeleteMovementCreditCard :draft="deleteDraft" title="Deletar despesa de cartão?" text="Atenção: esta ação não pode ser desfeita." title-botton="Deletar" color-botton="primary" v-model="modalDeleteMovement" />
-        <CardEditRecurrenceCreditCard :draft="editDraft" v-model="modalEditRecurrence" />
-        <CardDeleteRecurrenceCreditCard :draft="deleteDraft"  v-model="modalDeleteRecurrence" />
-      </div>
+    <CardEditMovementCreditCard
+        v-model="modalEditMovement"
+        :draft="editDraft"
+    />
 
-    </div>
+    <CardAddReversal
+        v-model="modalAddReversal"
+        :draft="editDraft"
+    />
+
+    <CardDeleteMovementCreditCard
+        v-model="modalDeleteMovement"
+        :draft="deleteDraft"
+        title="Deletar despesa de cartão?"
+        text="Atenção: esta ação não pode ser desfeita."
+        title-botton="Deletar"
+        color-botton="primary"
+    />
+
+    <CardEditRecurrenceCreditCard
+        v-model="modalEditRecurrence"
+        :draft="editDraft"
+    />
+
+    <CardDeleteRecurrenceCreditCard
+        v-model="modalDeleteRecurrence"
+        :draft="deleteDraft"
+    />
 </template>
 
 <style scoped>
-
-.title-card {
-  display: flex;
-  align-items: center;
-  text-align: center;
-}
-
-.title-card::before,
-.title-card::after {
-  content: "";
-  flex: 1;
-  border-bottom: 1px solid rgba(128, 128, 128, 0.25); /* Espessura e cor da linha */
-  margin: 0 10px; /* Espaço entre a linha e o texto */
-}
-
-:deep(.v-data-table-header__content) {
-  font-weight: 900;
-  font-size: 1rem;
-}
-
-.isDeleted {
-  text-decoration: line-through;
-}
-
 </style>

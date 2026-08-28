@@ -13,8 +13,8 @@
 
   function selectdItem(data: TSelectBank) {
     selectBank(data)
+    resetStates()
   }
-
 
   watch(valueEntered, () => {
     loading.value = true
@@ -36,6 +36,12 @@
     }
   })
 
+  function resetStates() {
+    valueEntered.value = ""
+    currentRadio.value = ""
+    radios.value = ""
+  }
+
   watch(radios, (newValue: string) => {
     currentRadio.value = newValue
     dialogFilter.value = false
@@ -50,124 +56,75 @@
 
   })
 
-
   const modelValue = defineModel<boolean>()
-
 
 </script>
 
 <template>
-  <div class="text-center pa-4">
     <v-dialog
-      v-model="modelValue"
-      max-width="550"
-      min-height="550"
-      persistent
+        v-model="modelValue"
+        max-width="520"
+        @update:model-value="resetStates"
     >
-
-      <v-card
-        class="mx-auto"
-        width="360"
-      >
-        <v-toolbar>
-          <v-toolbar-title class="title-card">Selecione uma instituição financeira</v-toolbar-title>
-        </v-toolbar>
-
-        <div>
-            <v-text-field
-                color="blue"
-                :loading="loading"
-                label="Buscar…"
-                class="!p-4"
-                prepend-inner-icon="mdi-magnify"
-                v-model="valueEntered"
-                focus
-            >
-            <template #append-inner>
-                <v-btn
-                text="Fechar"
-                icon="mdi-filter"
-                variant="text"
-                @click="dialogFilter = true"
-                >
-                </v-btn>
-            </template>
-            </v-text-field>
-        </div>
-
-        <v-divider></v-divider>
-
-        <v-list
-          lines="two"
-          item-props
-          activatable
-          >
-
-          <v-list-item
-            v-for="(item, i) in finalData"
-            :key="i"
+        <v-card
             rounded="xl"
-            @click="selectdItem({name: item.text, url: item.url, avatar: item.avatar})"
-          >
+            elevation="4"
+            class="overflow-hidden"
+        >
+            <v-card-item class="pa-5 pb-2">
+                <v-card-title class="text-h6 font-weight-bold text-blue-grey-darken-4">
+                    Selecione uma instituição financeira
+                </v-card-title>
 
-          <template v-slot:prepend>
-            <v-avatar :image="item.avatar" size="54"></v-avatar>
-          </template>
+                <v-card-subtitle class="mt-1">
+                    Escolha o banco, bandeira ou ícone que deseja utilizar.
+                </v-card-subtitle>
+            </v-card-item>
 
-          <v-list-item-title class="item-text">{{ item.text }}</v-list-item-title>
-          
-          </v-list-item>
+            <v-card-text class="pa-5">
+                <v-text-field
+                    v-model="valueEntered"
+                    :loading="loading"
+                    label="Buscar"
+                    prepend-inner-icon="mdi-magnify"
+                    variant="solo-filled"
+                    density="comfortable"
+                    autocomplete="off"
+                    hide-details
+                >
+                </v-text-field>
+            </v-card-text>
 
-        </v-list>
-    </v-card>
+            <v-divider />
 
-  </v-dialog>
+            <v-list
+                lines="two"
+                activatable
+                class="pa-2"
+            >
+                <v-list-item
+                    v-for="(item, index) in finalData"
+                    :key="index"
+                    rounded="lg"
+                    @click="selectdItem({ name: item.text, url: item.url, avatar: item.avatar })"
+                >
+                    <template #prepend>
+                        <v-avatar
+                            :image="item.avatar"
+                            size="48"
+                            class="mr-3"
+                        />
+                    </template>
 
-  <v-dialog
-      v-model="dialogFilter"
-      max-width="250"
-    >
-      <v-card title="Filtro">
-
-        <v-radio-group v-model="radios">
-          <v-radio label="Instituições Financeiras" value="instituicoes" ></v-radio>
-          <v-radio label="Bandeiras Cartão" value="bandeiras"></v-radio>
-          <v-radio label="Ícones Genéricos" value="generics"></v-radio>
-          <v-radio label="Todos" value="todos"></v-radio>
-        </v-radio-group>
-
-      </v-card>
+                    <v-list-item-title class="font-weight-medium">
+                        {{ item.text }}
+                    </v-list-item-title>
+                </v-list-item>
+            </v-list>
+        </v-card>
     </v-dialog>
-
-  </div>
 
 </template>
 
 <style scoped>
-
-.container-icons {
-  padding: 5px;
-  height: 100vh;
-}
-
-.item-text {
-  font-size: 1rem;
-  font-family: "Poppins", sans-serif;
-  color: #AFB1AC;
-}
-
-.title-card {
-  font-family: "Poppins", sans-serif;
-  font-size: 1rem;
-}
-
-::v-deep(.v-selection-control .v-label ) {
-  font-family: "Poppins", sans-serif;
-  font-size: 0.85rem;
-}
-
-::v-deep(.v-card-item .v-card-title ) {
-  font-family: "Poppins", sans-serif;
-  font-size: 1.3rem;
-}
-</style> 
+</style>

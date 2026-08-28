@@ -32,13 +32,13 @@
 
     type formPaymentTotal = {
         datePayment: Date,
-        accontsId: number | null,
+        accountsId: number | null,
         invoiceId: number | null
     }
 
     type formPaymentTotalPayload =  {
         datePayment: string,
-        accontsId: number,
+        accountsId: number,
         invoiceId: number | null,
         totalInvoice: number | null
     }
@@ -50,7 +50,7 @@
 
     const form = ref<formPaymentTotal>({
         datePayment: new Date(),
-        accontsId: modelAccounts.value,
+        accountsId: modelAccounts.value,
         invoiceId: null
     })
     
@@ -95,9 +95,9 @@
         )
 
         if (dueDay !== null && closingDay !== null) {
-            if (dueDay <= closingDay) {
-                dueDate = addMonths(dueDate, 1)
-            }
+          if (dueDay <= closingDay) {
+              dueDate = addMonths(dueDate, 1)
+          }
         }
 
         return {
@@ -108,12 +108,14 @@
 
     const  { mutate, isPending } = useMutation({
 
-      mutationFn: (payload: formPaymentTotalPayload) => patchPaymentTotal(payload.datePayment, payload.accontsId, payload.invoiceId!, payload.totalInvoice!),
+      mutationFn: (payload: formPaymentTotalPayload) => patchPaymentTotal(payload.datePayment, payload.accountsId, payload.invoiceId!, payload.totalInvoice!),
 
       onSuccess: () => {
           notifySuccess("Sucesso", "Operação realizada com sucesso", 6000)
           invalidate(QUERY_KEYS.accounts.all)
           invalidate(QUERY_KEYS.accounts.getBalanceForAccount)
+          invalidate(QUERY_KEYS.movementsCreditCard.byCreditCard)
+          invalidate(QUERY_KEYS.movementsCreditCard.totalInvoice)
           modelValue.value = false
           emit("success")
       },
@@ -124,6 +126,17 @@
   })
 
   function submitForm() {
+    
+    if (props.totalInvoice === 0) {
+      notifyInfo(
+        'Nenhum pagamento necessário',
+        'Esta fatura não possui valor a pagar.',
+        7000,
+        true
+      )
+      return
+    }
+
     const dateFormated = dateToDateOnly(form.value.datePayment)
     const accountsId = modelAccounts.value
 
@@ -135,14 +148,13 @@
     const payload = {
         ...form.value,
         datePayment: dateFormated,
-        accontsId: accountsId,
+        accountsId: accountsId,
         invoiceId: props.invoiceId,
         totalInvoice: props.totalInvoice
     }
 
     mutate(payload)
 
-    console.log("Objeto a ser enviado, ai papito " + JSON.stringify(payload))
   }
 
 
@@ -188,7 +200,7 @@
               </v-col>
               
             <v-col
-            dense cols="12" md="12" sm="12"
+             cols="12" md="12" sm="12"
             >
               <v-select
                 v-model="modelAccounts"

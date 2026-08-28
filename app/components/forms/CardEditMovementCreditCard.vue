@@ -203,7 +203,7 @@
           <v-card-text v-if="props.draft">
             <v-row density="comfortable">
               <v-col
-              dense cols="12" md="6" sm="12"
+               cols="12" md="6" sm="12"
               >
               <CurrencyInput prepend-inner-icon="mdi-cash" :rules="currencyRules" text-color="primary" autocomplete="off" label="Valor*" v-model="props.draft.value_transaction" />
               </v-col>

@@ -172,7 +172,7 @@
         title="Novo cartão de crédito"
       >
         <v-card-text>
-          <v-row dense>
+          <v-row >
 
             <v-col
               cols="12"

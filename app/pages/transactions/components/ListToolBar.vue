@@ -40,51 +40,69 @@
 
 
 <template>
-    <v-menu
-        transition="scale-transition"
+    <div class="d-flex flex-wrap align-center justify-space-between ga-3 w-100">
+        <v-menu
+            transition="scale-transition"
+            offset="8"
         >
-        <template v-slot:activator="{ props }">
-            <v-btn
-            color="primary"
-            v-bind="props"
-            class="text-none elevation-1"
-            variant="tonal"
-            append-icon="mdi-arrow-down-drop-circle"
-            >
-            {{ titleButtonOption }}
-            </v-btn>
-        </template>
-
-        <v-list>
-            <v-list-item
-            v-for="(item, i) in itemsRouter"
-            :key="i"
-            :value="i"
-            @click="getTitleRouter(item)"
-            >
-            <template v-slot:prepend>
-                <v-icon :color="item.color">mdi-circle-medium</v-icon>
+            <template #activator="{ props }">
+                <v-btn
+                    v-bind="props"
+                    color="primary"
+                    variant="tonal"
+                    append-icon="mdi-chevron-down"
+                    rounded="lg"
+                    class="text-none font-weight-medium"
+                >
+                    {{ titleButtonOption }}
+                </v-btn>
             </template>
-            <v-list-item-title>{{ item.title }}</v-list-item-title>
-            </v-list-item>
-        </v-list>
-    </v-menu>
 
-    <div class="w-100 d-flex justify-sm-end ga-3 pr-4 ">
+            <v-card
+                min-width="240"
+                rounded="xl"
+                elevation="3"
+                class="overflow-hidden"
+            >
+                <v-list
+                    density="comfortable"
+                    class="pa-2"
+                >
+                    <v-list-item
+                        v-for="(item, index) in itemsRouter"
+                        :key="index"
+                        :value="index"
+                        rounded="lg"
+                        @click="getTitleRouter(item)"
+                    >
+                        <template #prepend>
+                            <v-icon
+                                icon="mdi-circle-medium"
+                                :color="item.color"
+                                class="mr-2"
+                            />
+                        </template>
+
+                        <v-list-item-title class="font-weight-medium">
+                            {{ item.title }}
+                        </v-list-item-title>
+                    </v-list-item>
+                </v-list>
+            </v-card>
+        </v-menu>
+
         <v-btn
-        color="blue"
-        prepend-icon="mdi-filter-variant"
-        class="text-none elevation-1"
-        variant="flat"
-        @click="showDrawer"
+            color="primary"
+            prepend-icon="mdi-filter-variant"
+            variant="flat"
+            rounded="lg"
+            class="text-none font-weight-bold"
+            @click="showDrawer"
         >
-        Filtro
+            Filtro
         </v-btn>
     </div>
-
 </template>
 
-
 <style scoped>
-
 </style>

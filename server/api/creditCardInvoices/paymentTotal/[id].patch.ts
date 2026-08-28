@@ -1,3 +1,4 @@
+import { number } from "zod"
 import { auth } from "~~/auth"
 import { invoiceRepository } from "~~/server/repositories/invoices.repository"
 
@@ -30,7 +31,7 @@ export default defineEventHandler( async (event) => {
 
     try {
 
-        return await invoiceRepository.updateFullPayment(dataPaymentFormated, invoiceIdFormated, totalInvoiceFormated)
+        return await invoiceRepository.updateFullPayment(session.session.userId, dataPaymentFormated, totalInvoiceFormated, accountsIdFormated, invoiceIdFormated)
 
     } catch (error) {
         console.log("Erro ao lancar pagamento da fatura" + error)

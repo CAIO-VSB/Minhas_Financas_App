@@ -140,207 +140,240 @@
 
 
 <template>
-  <div class="pa-2 mt-7">
-    
-    <div class="w-100 d-flex  align-center justify-sm-end ga-3 pr-4 mb-6 btn-options">
-      <v-btn
-        color="primary"
-        icon="mdi-plus"
-        variant="tonal"
-        size="default"
-        rounded="lg"
-        title="Nova conta"
-        class="elevation-1"
-        @click="handleOpenModalAddAccount"
-      >
-      </v-btn>
-
-        <v-menu
-          transition="slide-y-transition"
-          >
-            <template v-slot:activator="{ props }">
-              <v-btn
-                color="primary"
-                v-bind="props"
-                icon="mdi-dots-vertical"
-                variant="tonal"
-                size="default"
-                rounded="lg"
-                class="elevation-1"
-              >
-              </v-btn>
-            </template>
-            <v-list>
-              <v-list-item
-                v-for="(item, i) in getOptions()"
-                :key="i"
-                :value="i"
-                prepend-icon="mdi-archive-clock"
-                @click="handleOptionAccountsDisable"
-              >
-                <v-list-item-title >{{ item.title }}</v-list-item-title>
-              </v-list-item>
-            </v-list>
-        </v-menu>
-    </div>
-    
-    <div class="cards-main">
-
-      <v-card style="border: 1px dotted #4A7FD4 !important;" height="200">
-        <div class="d-flex justify-center align-center h-100 flex-column ga-2">
-          <v-btn
-          color="primary"
-          icon="mdi-plus"
-          size="60"
-          class="border"
-          variant="tonal"
-          @click="handleOpenModalAddAccount"
-          ></v-btn>
-          <span style="color: #4A7FD4; font-size: var(--text-base);">Nova conta</span>
-        </div>
-      </v-card>
-
-     <v-card :loading="isPending" rounded="lg" elevation="1" class="pa-4" height="200">
-        <div class="d-flex align-center justify-space-between mb-3">
-          <div class="d-flex align-center ga-2">
-            <v-avatar color="primary" size="35" rounded="md">
-              <v-icon color="white" size="22">mdi-bank</v-icon>
-            </v-avatar>
-            <span class="text-medium-emphasis" style="font-size: calc(--text-base);">Saldo atual</span>
-          </div>
-          <v-icon size="15" color="medium-emphasis">mdi-chevron-right</v-icon>
-        </div>
-
-        <div class="d-flex align-center justify-space-between mb-16">
-          <span class="font-weight-bold text-high-emphasis ml-1 mt-2 card-value">
-            {{ formatCurrency(totalForAccountsActive || 0.00) }}
-          </span>
-          <v-chip :color="totalForAccountsActive  >= 0 ? 'success' : 'error'" size="small" variant="tonal">
-            <v-icon start size="15">{{ totalForAccountsActive >= 0 ? 'mdi-trending-up' : 'mdi-trending-down' }}</v-icon>
-            {{ totalForAccountsActive >= 0 ? 'Positivo' : 'Negativo' }}
-          </v-chip>
-        </div>
-
-        <v-divider></v-divider>
-      
-        <div class="pa-2">
-          <span  class="font-weight-semibold text-obs-saldo-atual">
-            *Valor consolidado de todas as contas cadastradas e ativas.
-          </span>
-        </div>
-      
-      </v-card>
-
-      <v-card :style="{ backgroundColor: value.color + '10' }" v-for="value in filteredAccounts" :key="value.id" height="200">
-        <template #prepend>
-            <v-avatar
-            :image="value.url_image"
-            size="45"
-            >
-            </v-avatar>
-             <span class="ml-3 card-label">{{ value.name_identifier }}</span>  
-          </template>
-
-          <template #append>
-    
-            <v-menu
-              transition="scale-transition"
-            >
-              <template v-slot:activator="{ props }">
-                <v-btn
-                color="black"
-                icon="mdi-dots-vertical"
-                variant="text"
-                v-bind="props"
-                >
-                </v-btn>
-              </template>
-
-              <v-list>
-                <v-list-item
-                  v-for="(action, i) in getOptionsAccounts(value)"
-                  :key="i"
-                  :value="i"
-                  :prepend-icon="action.icon"
-                  @click="handleOptionClick(action, value)"
-                >
-                  <v-list-item-title>{{ action.title }}</v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-menu>
-          </template>
-
-          <template #text>
-            <div class="d-flex ga-16 mt-3">
-              <span class="card-value" style="color: #0F172A;">Saldo atual</span>
-              <span class="mb-10 font-weight-bold card-value">{{ formatCurrency(value.saldo_atual ?? 0.00) }}</span>
-            </div>
-          </template>
-
-           <v-divider></v-divider>
-
-          <div class="d-flex mb-1 mt-1 align-center justify-center">
+    <v-container
+      fluid
+      class="mt-6 pa-4 pa-md-6"
+    >
+        <div class="d-flex justify-end ga-2 mb-6" >
             <v-btn
-            variant="text"
-            color="primary"
-            @click="handleOpenAddExpense(value)"
+              color="primary"
+              icon="mdi-plus"
+              variant="tonal"
+              rounded="lg"
+              @click="handleOpenModalAddAccount"
             >
-              ADICIONAR DESPESA
             </v-btn>
-          </div>
-      </v-card>
 
-      <CardAddAccount v-model="modalAddAccount" />
-      <CardEditAccount :draft="editDraft" v-model="modalEditAccount" />
-      <CardAddMovimentsExpenses :draft="draftAccount" v-model="modalAddExpense" />
-      
-    </div>
+            <v-menu
+                transition="scale-transition"
+            >
+                <template #activator="{ props }">
+                    <v-btn
+                      v-bind="props"
+                      color="primary"
+                      icon="mdi-dots-vertical"
+                      variant="tonal"
+                      rounded="lg"
+                    >
+                    </v-btn>
+                </template>
 
-  
-  </div>
-  
+                <v-list
+                    density="comfortable"
+                    class="pa-2"
+                >
+                    <v-list-item
+                        v-for="(item, index) in getOptions()"
+                        :key="index"
+                        :value="index"
+                        :prepend-icon="item.icon"
+                        rounded="lg"
+                        @click="handleOptionAccountsDisable"
+                    >
+                        <v-list-item-title>
+                            {{ item.title }}
+                        </v-list-item-title>
+                    </v-list-item>
+                </v-list>
+            </v-menu>
+        </div>
+
+        <v-row>
+            <v-col
+                cols="12"
+                sm="6"
+                lg="4"
+            >
+                <v-card
+                    height="175"
+                    rounded="xl"
+                    variant="outlined"
+                    class="bg-white"
+                >
+                    <div class="d-flex flex-column align-center justify-center h-100 ga-3">
+                        <v-btn
+                          color="primary"
+                          icon="mdi-plus"
+                          size="large"
+                          variant="tonal"
+                          rounded="lg"
+                          @click="handleOpenModalAddAccount"
+                        />
+
+                        <span class="text-body-1 font-weight-medium text-primary">
+                            Nova conta
+                        </span>
+                    </div>
+                </v-card>
+            </v-col>
+
+            <v-col
+                cols="12"
+                sm="6"
+                lg="4"
+            >
+                <v-card
+                    height="175"
+                    rounded="xl"
+                    elevation="2"
+                    :loading="isPending"
+                >
+                    <v-card-text class="pa-4">
+                        <div class="d-flex align-center justify-space-between">
+                            <div class="d-flex align-center ga-3">
+                                <v-avatar
+                                    color="primary"
+                                    variant="tonal"
+                                    rounded="lg"
+                                    size="40"
+                                >
+                                    <v-icon icon="mdi-bank" />
+                                </v-avatar>
+
+                                <span class="text-body-2 text-medium-emphasis">
+                                    Saldo atual
+                                </span>
+                            </div>
+
+                            <v-chip
+                                :color="totalForAccountsActive >= 0 ? 'success' : 'error'"
+                                size="small"
+                                variant="tonal"
+                            >
+                                <v-icon
+                                    :icon="totalForAccountsActive >= 0 ? 'mdi-trending-up' : 'mdi-trending-down'"
+                                    start
+                                    size="15"
+                                />
+
+                                {{ totalForAccountsActive >= 0 ? 'Positivo' : 'Negativo' }}
+                            </v-chip>
+                        </div>
+
+                        <div class="text-h6 font-weight-bold text-blue-grey-darken-4 mt-5 mb-5">
+                            {{ formatCurrency(totalForAccountsActive || 0.00) }}
+                        </div>
+
+                        <v-divider />
+
+                        <div class="text-caption text-medium-emphasis mt-3">
+                            Valor consolidado de todas as contas cadastradas e ativas.
+                        </div>
+                    </v-card-text>
+                </v-card>
+            </v-col>
+
+            <v-col
+                v-for="value in filteredAccounts"
+                :key="value.id"
+                cols="12"
+                sm="6"
+                lg="4"
+            >
+                <v-card
+                    height="175"
+                    :color="value.color"
+                    variant="tonal"
+                    rounded="xl"
+                    elevation="2"
+                >
+                    <v-card-item class="pa-4 pb-0">
+                        <template #prepend>
+                            <v-avatar
+                              :image="value.url_image"
+                              size="40"
+                            />
+                        </template>
+
+                        <v-card-title style="font-size: var(--text-base);" class="font-weight-bold">
+                            {{ value.name_identifier }}
+                        </v-card-title>
+
+                        <template #append>
+                            <v-menu
+                              transition="scale-transition"
+                            >
+                                <template #activator="{ props }">
+                                    <v-btn
+                                        v-bind="props"
+                                        icon="mdi-dots-vertical"
+                                        variant="text"
+                                    />
+                                </template>
+
+                                <v-list
+                                    density="comfortable"
+                                    class="pa-2"
+                                >
+                                    <v-list-item
+                                        v-for="(action, index) in getOptionsAccounts(value)"
+                                        :key="index"
+                                        :value="index"
+                                        :prepend-icon="action.icon"
+                                        rounded="lg"
+                                        @click="handleOptionClick(action, value)"
+                                    >
+                                        <v-list-item-title>
+                                            {{ action.title }}
+                                        </v-list-item-title>
+                                    </v-list-item>
+                                </v-list>
+                            </v-menu>
+                        </template>
+                    </v-card-item>
+
+                    <v-card-text class="pa-4 pt-3">
+                      <div class="d-flex align-center ga-6">
+                          <div class="text-medium-emphasis">
+                            Saldo atual
+                        </div>
+
+                        <div class="font-weight-bold mt-1">
+                            {{ formatCurrency(value.saldo_atual ?? 0.00) }}
+                        </div>
+                      </div>
+                    </v-card-text>
+
+                    <v-divider />
+
+                    <div class="d-flex justify-center pa-2">
+                      <v-btn
+                          color="primary"
+                          variant="text"
+                          class="font-weight-medium"
+                          @click="handleOpenAddExpense(value)"
+                      >
+                          Adicionar despesa
+                        </v-btn>
+                    </div>
+                </v-card>
+            </v-col>
+        </v-row>
+
+        <CardAddAccount v-model="modalAddAccount" />
+
+        <CardEditAccount
+            v-model="modalEditAccount"
+            :draft="editDraft"
+        />
+
+        <CardAddMovimentsExpenses
+            v-model="modalAddExpense"
+            :draft="draftAccount"
+        />
+    </v-container>
 </template>
 
-
 <style scoped>
-
-.cards-main {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  width: 100%;
-}
-
-.text-obs-saldo-atual {
-  font-size: var(--text-sm);
-}
-
-.card-label {
-  font-size: var(--text-base);
-  font-weight: 600;
-}
-
-.card-value {
-  font-size: var(--text-base);
-}
-
-@media (max-width: 1700px) {
-  .cards-main {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 960px) {
-  .cards-main {
-    display: grid;
-    grid-template-columns: repeat(1, 1fr);
-  }
-
-  .text-obs-saldo-atual {
-    font-size: clamp(0.65rem, 2vw, 0.75rem);
-  }
-}
-
 </style>
 

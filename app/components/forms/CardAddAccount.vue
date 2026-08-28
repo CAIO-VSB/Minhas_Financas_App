@@ -127,129 +127,205 @@
 </script>
 
 <template>
-  <div class="text-center">
-    <v-form
-    @submit.prevent
-    ref="form"
+    <v-dialog
+        v-model="modelValue"
+        max-width="560"
     >
-      <v-dialog v-model="modelValue" max-width="600">
-        <v-card title="Nova conta bancária">
-          <v-divider></v-divider>
-          <v-card-text>
+        <v-card
+            rounded="xl"
+            elevation="4"
+            class="overflow-hidden"
+        >
+            <v-card-item class="pa-5 pb-2">
+                <v-card-title class="text-h6 font-weight-bold text-blue-grey-darken-4">
+                    Nova conta bancária
+                </v-card-title>
 
-              <CurrencyInput prepend-inner-icon="mdi-bank" autocomplete="off" hint="Valor atual da conta no momento do cadastro." v-model="accountForm.initial_balance" label="Saldo inicial" />
+                <v-card-subtitle class="mt-1">
+                    Preencha os dados para cadastrar sua conta.
+                </v-card-subtitle>
+            </v-card-item>
 
-              <v-text-field
-                label="Nome da conta *"
-                variant="underlined"
-                color="primary"
-                name="name"
-                autocomplete="name"
-                v-model="accountForm.name_identifier"
-                :rules="nameRules"
-                maxlength="30"
-                counter="30"
-                prepend-inner-icon="mdi-wallet"
-              >
-              </v-text-field>
+            <v-divider />
 
-              <v-select prepend-inner-icon="mdi-format-list-bulleted" :rules="selectRules" v-model="accountForm.type_account" color="primary" persistent-hint hint="Dúvidas sobre qual conta escolher? Clique no ícone de ajuda." label="Tipo *" :items="items" variant="underlined">
-                <template v-slot:append>
-                  <nuxt-link target="_blank" to="https://www.serasa.com.br/blog/conta-bancaria/">
-                    <v-icon class="cursor-pointer" color="info" icon="mdi-chat-question" size="large"></v-icon>
-                    <v-tooltip
-                      activator="parent"
-                      location="top"
-                    >Se não tiver certeza de qual conta escolher, clique no ícone de ajuda — lá você encontrará uma explicação simples e objetiva sobre cada opção disponível.
-                    </v-tooltip>
-                  </nuxt-link>
-    
-                </template>
-              </v-select>
-
-              <v-text-field   :rules="logoRules" persistent-hint hint="Logo de identifiação *"   color="primary"  v-model="accountForm.name_bank" readonly variant="underlined">
-                <template v-slot:append>
-                    <v-icon @click="dialogAddInstitution = true" class="cursor-pointer icon-add-logo"  icon="mdi-plus" size="large"></v-icon>
-                    <v-tooltip
-                      activator="parent"
-                      location="top"
-                    > Adicionar logo
-                    </v-tooltip>
-                  </template>
-                  <template  #prepend-inner>
-                    <v-avatar style="margin-right: 30px;" :image="accountForm.url_image" ></v-avatar>
-                  </template>
-              </v-text-field>
-
-              <v-text-field :rules="colorRules" persistent-hint hint="Cor de identifiação *" color="primary" v-model="accountForm.color" readonly variant="underlined">
-                <template v-slot:append>
-                    <v-icon @click="dialogColorPicker = true" class="cursor-pointer icon-add-logo"  icon="mdi-eyedropper-variant" size="large"></v-icon>
-                    <v-tooltip
-                      activator="parent"
-                      location="top"
-                    > Adicionar cor
-                    </v-tooltip>
-                  </template>
-                   <template #append-inner>
-                    <v-icon @click="dialogColorPicker = true" class="cursor-pointer icon-add-logo"  icon="mdi-help-circle" size="large"></v-icon>
-                    <v-tooltip
-                      activator="parent"
-                      location="top"
-                    > Dúvidas sobre como escolher a cor? Basta selecionar a cor desejada e clicar fora da janela para finalizar a escolha.
-                    </v-tooltip>
-                  </template>
-                  <template  #prepend-inner>
-                    <v-avatar :color="accountForm.color" style="margin-right: 30px;" ></v-avatar>
-                  </template>
-              </v-text-field>
-
-            <small class="text-caption text-medium-emphasis"
-              >* Indica campos obrigatórios</small
+            <v-form
+                ref="form"
+                @submit.prevent
             >
-          </v-card-text>
+                <v-card-text class="pa-5 d-flex flex-column form-fields">
+                    <CurrencyInput
+                        v-model="accountForm.initial_balance"
+                        prepend-inner-icon="mdi-bank"
+                        autocomplete="off"
+                        hint="Valor atual da conta no momento do cadastro."
+                        label="Saldo inicial"
+                        variant="solo-filled"
+                    />
 
-          <v-divider></v-divider>
+                    <v-text-field
+                        v-model="accountForm.name_identifier"
+                        :rules="nameRules"
+                        variant="solo-filled"
+                        color="primary"
+                        name="name"
+                        autocomplete="name"
+                        maxlength="30"
+                        counter="30"
+                        prepend-inner-icon="mdi-wallet"
+                    >
+                        <template #label>
+                            Nome da conta <span class="required-mark">*</span>
+                        </template>
+                    </v-text-field>
 
-          <v-card-actions>
-            <v-btn
-              class="text-none"
-              text="Fechar"
-              variant="plain"
-              @click="resetForm"
-            ></v-btn>
-            <v-spacer></v-spacer>
-            <v-btn
-              class="text-none"
-              color="primary"
-              text="Salvar"
-              variant="flat"
-              :loading="isPending"
-              @click="handleAddAccount"
-            ></v-btn>
-          </v-card-actions>
+                    <v-select
+                        v-model="accountForm.type_account"
+                        :items="items"
+                        :rules="selectRules"
+                        variant="solo-filled"
+                        color="primary"
+                        hint="Dúvidas sobre qual conta escolher? Clique no ícone de ajuda."
+                        persistent-hint
+                        prepend-inner-icon="mdi-format-list-bulleted"
+                    >
+                        <template #label>
+                            Tipo <span class="required-mark">*</span>
+                        </template>
+
+                        <template #append>
+                            <nuxt-link
+                                target="_blank"
+                                to="https://www.serasa.com.br/blog/conta-bancaria/"
+                            >
+                                <v-icon
+                                    color="info"
+                                    icon="mdi-chat-question"
+                                    size="large"
+                                />
+
+                                <v-tooltip
+                                    activator="parent"
+                                    location="top"
+                                >
+                                    Se não tiver certeza de qual conta escolher, clique no ícone de ajuda.
+                                </v-tooltip>
+                            </nuxt-link>
+                        </template>
+                    </v-select>
+
+                    <v-text-field
+                        v-model="accountForm.name_bank"
+                        :rules="logoRules"
+                        hint="Selecione o banco ou a instituição financeira."
+                        persistent-hint
+                        readonly
+                        variant="solo-filled"
+                        color="primary"
+                    >
+                        <template #label>
+                            Instituição financeira <span class="required-mark">*</span>
+                        </template>
+
+                        <template #prepend-inner>
+                            <v-avatar
+                                :image="accountForm.url_image || undefined"
+                                size="30"
+                                color="grey-lighten-3"
+                                class="mr-2"
+                            >
+                            </v-avatar>
+                        </template>
+
+                        <template #append-inner>
+                            <v-btn
+                              icon="mdi-plus"
+                              variant="text"
+                              density="comfortable"
+                              @click="dialogAddInstitution = true"
+                            >
+                            </v-btn>
+                        </template>
+                    </v-text-field>
+
+                    <v-text-field
+                        v-model="accountForm.color"
+                        :rules="colorRules"
+                        hint="Escolha uma cor para identificar a conta."
+                        persistent-hint
+                        readonly
+                        variant="solo-filled"
+                        color="primary"
+                    >
+                        <template #label>
+                            Cor de identificação <span class="required-mark">*</span>
+                        </template>
+
+                        <template #prepend-inner>
+                            <v-avatar
+                                :color="accountForm.color"
+                                size="30"
+                                class="mr-2"
+                            />
+                        </template>
+
+                        <template #append-inner>
+                            <v-btn
+                                icon="mdi-eyedropper-variant"
+                                variant="text"
+                                density="comfortable"
+                                @click="dialogColorPicker = true"
+                            >
+                            </v-btn>
+
+                            <v-btn
+                              icon="mdi-help-circle-outline"
+                              variant="text"
+                              density="comfortable"
+                              v-tooltip="'Selecione a cor desejada e clique fora da janela para confirmar.'"
+                            >
+                            </v-btn>
+                        </template>
+                    </v-text-field>
+
+                    <div class="text-caption text-medium-emphasis">
+                        * Indica campos obrigatórios.
+                    </div>
+                </v-card-text>
+
+                <v-divider />
+
+                <v-card-actions class="pa-5 justify-space-between">
+                    <v-btn
+                        variant="text"
+                        class="text-none font-weight-medium"
+                        @click="resetForm"
+                    >
+                        Fechar
+                    </v-btn>
+
+                    <v-btn
+                        color="primary"
+                        variant="flat"
+                        rounded="lg"
+                        class="text-none font-weight-bold"
+                        :loading="isPending"
+                        @click="handleAddAccount"
+                    >
+                        Salvar
+                    </v-btn>
+                </v-card-actions>
+            </v-form>
         </v-card>
-      </v-dialog>
-    </v-form>
+    </v-dialog>
 
     <DialogAddFinancialInstitution v-model="dialogAddInstitution" />
-    <DialogAddColor v-model="dialogColorPicker" />
 
-  </div>
+    <DialogAddColor v-model="dialogColorPicker" />
 </template>
 
-<style lang="scss" scoped>
-
-.icon-add-logo:hover {
-  background-color: rgba(128, 128, 128, 0.267);
-  border-radius: 60%;
-}
-
-::v-deep(.v-field__field) {
-  align-items: center;
-}
-
-::v-deep(.v-card-title) {
-  align-items: center;
+<style scoped>
+.form-fields {
+  gap: 20px;
 }
 
 

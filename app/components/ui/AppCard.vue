@@ -16,50 +16,48 @@
 </script>
 
 <template>
+    <v-card
+        rounded="xl"
+        elevation="2"
+        :loading="propsCards.loading"
+    >
+        <v-card-text class="pa-5">
+            <div class="d-flex align-center justify-space-between ga-4">
+                <div class="d-flex align-center ga-3">
+                    <v-avatar
+                        :color="propsCards.color"
+                        variant="tonal"
+                        :icon="propsCards.icon"
+                        :size="propsCards.size"
+                        rounded="lg"
+                    />
 
-    <v-card density="comfortable" :loading="propsCards.loading">
-        <div class="d-flex align-center ga-2 pl-2 mb-2">
-            <div class="pa-1 rounded-lg">
-                <v-avatar 
-                :color="propsCards.color"
-                variant="tonal" 
-                :icon="propsCards.icon"
-                :size="propsCards.size"
-                rounded="lg"
-                ></v-avatar>
+                    <div>
+                        <div class="text-body-2 text-medium-emphasis mb-1">
+                            {{ propsCards.subtitle }}
+                        </div>
+
+                        <div style="font-size: var(--text-base);" class="text-h6 font-weight-bold text-blue-grey-darken-4">
+                            {{ formatCurrency(propsCards.value) }}
+                        </div>
+                    </div>
+                </div>
+
+                <v-tooltip :text="propsCards.textToolTip">
+                    <template #activator="{ props }">
+                        <v-btn
+                            v-bind="props"
+                            icon="mdi-information-outline"
+                            variant="text"
+                            density="comfortable"
+                            :size="propsCards.sizeIconToolTip"
+                        />
+                    </template>
+                </v-tooltip>
             </div>
-            <span class="font-weight-semibold card-value" >{{ formatCurrency(propsCards.value) }}</span>
-        </div>
-        
-        <template #subtitle>
-            <p class="card-label">{{ propsCards.subtitle }}</p>
-        </template>
-
-        <template #append>
-            <v-tooltip :text="propsCards.textToolTip">
-                <template v-slot:activator="{ props }">
-                    <v-icon class="icon-help" v-bind="props" :size="propsCards.sizeIconToolTip" :icon="propsCards.iconToolTip"></v-icon>
-                </template>
-            </v-tooltip>
-        </template>
+        </v-card-text>
     </v-card>
-
 </template>
 
 <style scoped>
-
-.card-label {
-    font-size: var(--text-base);
-}
-
-.card-value {
-    font-size: var(--text-md);
-    font-weight: 500;
-}
-
-.icon-help:hover {
-    transform: scale(1.3);
-    cursor: pointer;
-}
-
 </style>

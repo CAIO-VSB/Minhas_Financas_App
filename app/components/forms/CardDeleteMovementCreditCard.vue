@@ -34,6 +34,8 @@
       onSuccess: () => {
         invalidate(QUERY_KEYS.movementsCreditCard.byCreditCard)
         invalidate(QUERY_KEYS.movementsCreditCard.totalInvoice)
+        invalidate(QUERY_KEYS.movements.only_expenses)
+        invalidate(QUERY_KEYS.movements.all)
         notifySuccess("Sucesso", "Operação realizada com sucesso", 6000)
         //emit("success")
         modelValue.value = false

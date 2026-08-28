@@ -295,9 +295,9 @@
         <v-card prepend-icon="mdi-bank-plus" title="Nova receita">
           <v-divider></v-divider>
           <v-card-text>
-            <v-row dense>
+            <v-row >
               <v-col
-              dense cols="12" md="6" sm="12"
+              cols="12" md="6" sm="12"
               >
               <CurrencyInput prepend-inner-icon="mdi-cash" input-color="#2E7D32" base-color="#2E7D32" color="#2E7D32" :rules="currencyRules"  text-color="green" autocomplete="off" label="Valor*" v-model="movementsForm.value_transaction" />
               </v-col>

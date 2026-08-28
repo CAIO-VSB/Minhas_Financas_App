@@ -43,10 +43,12 @@
         if (resultSchema.success) {
           const token = new URLSearchParams(window.location.search).get("token");
 
-          console.log("Esse é o token " + token);
           if (!token) {
-            alert("Token inválido");
-            return;
+          notifyInfo(
+              "Sessão não encontrada",
+              "Não conseguimos validar sua sessão. Tente novamente, por favor."
+            )
+            return
           }
 
           await $authClient.resetPassword(
@@ -81,135 +83,260 @@
 </script>
 
 <template>
-
-  <div  class="container w-100 bg-backgroundPrimary d-flex justify-center">
-    
-    <v-form validate-on="submit" ref="form" class="bg-surface elevation-2 ma-3 pa-3 rounded-lg form">
-
-      <div class="d-flex align-center justify-center"> 
-        <div class="">
-          <v-img :width="310" :height="180" :src="logoLogin"></v-img>
-        </div>
-      </div>
-
-      <div class="mb-2 text-center d-flex flex-column">
-        <span class="font-weight-bold text-h5 text-textAlternative">Redefinir senha de acesso</span>
-        <span class="font-weight-semibold text-h7 text-textSecundary">Insira sua nova senha logo abaixo</span>
-      </div>
-
-      <div class="pa-2">
-
-        <v-text-field
-        v-model="formPassword.password"
-        placeholder="Senha*"
-        density="compact"
-        prepend-inner-icon="mdi-lock-outline"
-        variant="outlined"
-        color="primary"
-        :type="showPassword ? 'text' : 'password'"
-        :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-        @click:append-inner="showPassword = !showPassword"
-        :rules="passwordRules"
-        autocomplete="off"
-        hide-details="auto"
+  <main class="login-page d-flex">
+    <v-container fluid class="pa-0 d-flex">
+      <v-row
+        no-gutters
+        class="login-layout ma-auto overflow-hidden bg-white"
+      >
+        <!-- LADO ESQUERDO -->
+        <v-col
+          cols="12"
+          md="6"
+          class="login-visual d-none d-md-flex flex-column justify-space-between"
         >
-        </v-text-field>
-        <div class="password-meter">
-          <Password
-            v-model="formPassword.password"
-            :strength-meter-only="true"
-          />
-      </div>
-        
-        <v-text-field
-        v-model="formPassword.confirmPassword"
-        density="compact"
-        placeholder="Confirmar senha*"
-        prepend-inner-icon="mdi-lock-check-outline"
-        variant="outlined"
-        color="primary"
-        :type="showPassword ? 'text' : 'password'"
-        :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-        @click:append-inner="showPassword = !showPassword"
-        :rules="confirmPasswordRules"
-        autocomplete="off"
+          <div class="login-visual__orb" aria-hidden="true" />
+
+          <div class="position-relative">
+            <v-img
+              :src="logoLogin"
+              contain
+              width="300"
+              height="150"
+              class="mb-10"
+              alt="Velto Finance"
+            />
+
+            <div class="text-overline font-weight-bold text-primary mb-3">
+              CONTROLE FINANCEIRO DESCOMPLICADO
+            </div>
+
+            <h1 class="login-visual__title text-blue-grey-darken-4 mb-5">
+              Sua vida financeira,
+              <span class="text-primary">mais inteligente.</span>
+            </h1>
+
+            <p
+              class="login-visual__description text-blue-grey-darken-1 mb-0"
+            >
+              Organize, acompanhe e evolua suas finanças em um só lugar.
+            </p>
+          </div>
+
+          <div
+            class="position-relative d-flex align-center ga-2 text-blue-grey-darken-1 text-body-2"
+          >
+            <v-icon
+              icon="mdi-shield-check-outline"
+              color="primary"
+              size="20"
+            />
+
+            <span>Ambiente seguro e protegido</span>
+          </div>
+        </v-col>
+
+        <v-col
+          cols="12"
+          md="6"
+          class="d-flex align-start align-md-center justify-center pa-6 pa-sm-10 pa-lg-16"
         >
-        </v-text-field>
+          <div class="login-form-wrapper w-100">
+            <header class="text-center text-md-start mb-8">
+              <v-img
+                :src="logoLogin"
+                contain
+                width="300"
+                height="150"
+                class="d-md-none mx-auto mb-7"
+                alt="Velto Finance"
+              />
 
-        <div class="d-flex justify-center aling-center w-100 mt-3">
-          <v-btn @click="handleResetPassword" :loading="loading" color="primary" class="text-none btn-login w-100">
-            <span class="font-weight-bold" style="font-size: var(--font-button-primary);">Redefinir senha</span>
-          </v-btn>
-        </div>
+              <div class="text-overline font-weight-bold text-primary mb-2">
+                RECUPERAÇÃO DE ACESSO
+              </div>
 
-        <div class="mt-5 font-weight-light text-center d-flex justify-center align-center ga-2">
-          <NuxtLink to="/login-page" class="text-decoration-none text-primary link-register text-textPrimary text-no-wrap font-weight-bold">Voltar</NuxtLink>
-        </div>
+              <h2
+                class="text-h4 text-sm-h3 font-weight-bold text-blue-grey-darken-4 mb-3"
+              >
+                Redefinir senha
+              </h2>
 
-      </div>
-      
+              <p class="text-body-1 text-medium-emphasis mb-0">
+                Crie uma nova senha segura para acessar sua conta.
+              </p>
+            </header>
 
-    </v-form>
-  </div>
+            <v-form
+              ref="form"
+              validate-on="submit"
+              class="d-flex flex-column ga-5"
+            >
+              <div>
+                <label
+                  class="text-body-2 font-weight-bold d-block mb-2"
+                  for="reset-password"
+                >
+                  Nova senha
+                </label>
 
+                <v-text-field
+                  id="reset-password"
+                  v-model="formPassword.password"
+                  variant="outlined"
+                  density="comfortable"
+                  placeholder="Digite sua nova senha"
+                  prepend-inner-icon="mdi-lock-outline"
+                  :type="showPassword ? 'text' : 'password'"
+                  :append-inner-icon="
+                    showPassword ? 'mdi-eye' : 'mdi-eye-off'
+                  "
+                  :rules="passwordRules"
+                  autocomplete="new-password"
+                  hide-details="auto"
+                  color="primary"
+                  base-color="blue-grey-lighten-3"
+                  bg-color="blue-grey-lighten-5"
+                  @click:append-inner="showPassword = !showPassword"
+                />
+
+                <div class="mt-2">
+                  <Password
+                    v-model="formPassword.password"
+                    :strength-meter-only="true"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label
+                  class="text-body-2 font-weight-bold d-block mb-2"
+                  for="reset-confirm-password"
+                >
+                  Confirmar nova senha
+                </label>
+
+                <v-text-field
+                  id="reset-confirm-password"
+                  v-model="formPassword.confirmPassword"
+                  variant="outlined"
+                  density="comfortable"
+                  placeholder="Digite sua senha novamente"
+                  prepend-inner-icon="mdi-lock-check-outline"
+                  :type="showPassword ? 'text' : 'password'"
+                  :append-inner-icon="
+                    showPassword ? 'mdi-eye' : 'mdi-eye-off'
+                  "
+                  :rules="confirmPasswordRules"
+                  autocomplete="new-password"
+                  hide-details="auto"
+                  color="primary"
+                  base-color="blue-grey-lighten-3"
+                  bg-color="blue-grey-lighten-5"
+                  @click:append-inner="showPassword = !showPassword"
+                />
+              </div>
+
+              <!-- BOTÃO -->
+              <v-btn
+                :loading="loading"
+                color="primary"
+                size="large"
+                height="52"
+                rounded="lg"
+                block
+                elevation="2"
+                class="mt-1"
+                @click="handleResetPassword"
+              >
+                Redefinir senha
+
+                <v-icon
+                  end
+                  icon="mdi-arrow-right"
+                />
+              </v-btn>
+
+              <!-- RODAPÉ -->
+              <p
+                class="text-center text-body-2 text-medium-emphasis ma-0"
+              >
+                Lembrou sua senha?
+
+                <NuxtLink
+                  to="/login-page"
+                  class="text-primary font-weight-bold text-decoration-none"
+                >
+                  Voltar para o login
+                </NuxtLink>
+              </p>
+            </v-form>
+          </div>
+        </v-col>
+      </v-row>
+    </v-container>
+  </main>
 </template>
 
 <style scoped>
-
-.container {
+.login-page {
   min-height: 100dvh;
   overflow-y: auto;
-  align-items: flex-start;
-  padding: 55px 16px;
+  background: #f6f8fc;
 }
 
-.form {
-  width: 100%;
-  max-width: 520px;
+.login-layout {
+  width: min(100%, 1440px);
+  min-height: 100dvh;
 }
 
-.password-meter {
-  width: 100%;
-  width: 100%;
-  margin: 10px 0 10px;
+.login-visual {
+  position: relative;
+  isolation: isolate;
+  min-height: 100%;
+  padding: clamp(3rem, 7vw, 6rem);
+  overflow: hidden;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgb(255 255 255 / 62%),
+      rgb(230 239 255 / 72%)
+    ),
+    #dce9ff;
 }
 
-.Password {
-  width: 100%;
-  max-width: 100%;
-  margin: 0;
-  padding: 0;
+.login-visual__orb {
+  position: absolute;
+  z-index: -1;
+  top: -13rem;
+  right: -12rem;
+  width: 34rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgb(31 84 255 / 14%);
+  filter: blur(10px);
 }
 
-.divider {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color:#757575;
-  font-size: 0.85rem;
+.login-visual__title {
+  max-width: 11ch;
+  font-size: clamp(2.5rem, 4.2vw, 4.6rem);
+  font-weight: 750;
+  letter-spacing: -0.065em;
+  line-height: 0.98;
 }
 
-.divider::before,
-.divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: #757575;
+.login-visual__title span {
+  display: block;
 }
 
-.link-register:hover {
-  text-decoration: underline !important;
-  color: #2563EB !important;
+.login-visual__description {
+  max-width: 34rem;
+  font-size: clamp(1rem, 1.35vw, 1.15rem);
+  line-height: 1.65;
 }
 
-.list-validator {
-  display: none;
+.login-form-wrapper {
+  max-width: 30rem;
 }
-
-@media (min-height: 1200px) {
-  .container {
-    align-items: center;
-  }
-}
-
 </style>

@@ -378,343 +378,371 @@
 
 
 <template>
-    <div class="mt-7 container-main">
+    <v-container
+        fluid
+        class="mt-6 pa-4 pa-md-6"
+    >
+        <CardAddMovimentsRevenue
+            v-model="modalAddRevenue"
+            @success="handleMutationSuccess"
+        />
 
-        <CardAddMovimentsRevenue @success="handleMutationSuccess" v-model="modalAddRevenue" />
-        <CardDeletTransaction @success="handleMutationSuccess" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" :draft="confirmDraft" v-model="cardDeletTransaction" />
-        <CardEditMovementsRevenue @success="handleMutationSuccess" :draft="editDraft" v-model="modalEditMovementsRevenue"/>
-        <CardSettleTransactionModal @success="handleMutationSuccess" v-model="cardPostValueTransaction" :draft="confirmDraft" :title-botton="labelOptions.textButton" :title="labelOptions.title" :text="labelOptions.text" :color-botton="labelOptions.colorButton" />
-        <CardEditRecurrenceRevenue :draft="editDraft" @success="handleMutationSuccess" v-model="modelEditRecurrenceRevenue" />
-        <CardDeleteMovementRecurrence :draft="confirmDraft" v-model="cardDeletTransactionRecurrence" />
-        
-        <FilterDrawer :items="[ 'Recebidas', 'Pendentes']" :field-type-active="true" color-button="green" @apply-filter="handleApplyFilter" @reset-filter="handleClearFilter" v-model="drawer"/>
+        <CardDeletTransaction
+            v-model="cardDeletTransaction"
+            :draft="confirmDraft"
+            :title-botton="labelOptions.textButton"
+            :title="labelOptions.title"
+            :text="labelOptions.text"
+            :color-botton="labelOptions.colorButton"
+            @success="handleMutationSuccess"
+        />
 
-        <div class="text-center text-center d-flex ga-4 ml-4 mb-5 btn-container">
-            
-            <v-menu
-                transition="scale-transition"
-                >
-                <template v-slot:activator="{ props }">
-                    <v-btn
-                    :color="ColorButtonOption"
-                    v-bind="props"
-                    class="text-none elevation-1"
-                    variant="tonal"
-                    append-icon="mdi-arrow-down-drop-circle"
-                    >
-                    {{ titleButtonOption }}
-                    </v-btn>
-                </template>
+        <CardEditMovementsRevenue
+            v-model="modalEditMovementsRevenue"
+            :draft="editDraft"
+            @success="handleMutationSuccess"
+        />
 
-                <v-list>
-                    <v-list-item
-                    v-for="(item, i) in itemsRouter"
-                    :key="i"
-                    :value="i"
-                    @click="getTitleRouter(item)"
-                    >
-                    <template v-slot:prepend>
-                        <v-icon :color="item.color">mdi-circle-medium</v-icon>
-                    </template>
-                    <v-list-item-title>{{ item.title }}</v-list-item-title>
-                    </v-list-item>
-                </v-list>
-            </v-menu>
+        <CardSettleTransactionModal
+            v-model="cardPostValueTransaction"
+            :draft="confirmDraft"
+            :title-botton="labelOptions.textButton"
+            :title="labelOptions.title"
+            :text="labelOptions.text"
+            :color-botton="labelOptions.colorButton"
+            @success="handleMutationSuccess"
+        />
 
-            <div class="w-100 d-flex justify-sm-end ga-3 pr-4 btn-options">
+        <CardEditRecurrenceRevenue
+            v-model="modelEditRecurrenceRevenue"
+            :draft="editDraft"
+            @success="handleMutationSuccess"
+        />
 
-                <v-btn
-                color="success"
-                prepend-icon="mdi-plus"
-                class="text-none btn-add-receita elevation-1"
-                variant="flat"
-                @click="modalAddRevenue = true"
-                >
-                NOVA RECEITA
-                </v-btn>
+        <CardDeleteMovementRecurrence
+            v-model="cardDeletTransactionRecurrence"
+            :draft="confirmDraft"
+        />
 
-                <v-btn
-                color="green"
-                prepend-icon="mdi-filter"
-                class="text-none btn-filter elevation-1"
-                variant="outlined"
-                @click="drawer = true"
-                >
-                Filtro
-                </v-btn>
+        <FilterDrawer
+            v-model="drawer"
+            :items="['Recebidas', 'Pendentes']"
+            :field-type-active="true"
+            color-button="green"
+            @apply-filter="handleApplyFilter"
+            @reset-filter="handleClearFilter"
+        />
 
-            </div>
-
-        </div>
-
-         <div class="main-cards">
-            <AppCard subtitle="Receitas pendentes" :loading="isPending" size="40" :value="sumary.receitas_pendentes" color="green" icon="mdi-arrow-down-thin-circle-outline"></AppCard>
-            <AppCard subtitle="Receitas recebidas" :loading="isPending" size="40" :value="sumary.receitas_efetivadas" color="green" icon="mdi-arrow-up-thin-circle-outline"></AppCard>
-            <AppCard subtitle="Total" :loading="isPending" size="40" :value="sumary.total_geral" color="primary" icon="mdi-scale-balance"></AppCard>
-        </div>
-        
-        <div class=" w-100 pa-2 container-table">
-
-            <v-card
-                flat
-                class="table  elevation-2"
-                :loading="isPending"
+        <v-row
+            align="center"
+            class="mb-6"
+        >
+            <v-col
+                cols="12"
+                md="auto"
             >
-            <template v-slot:text>
+                <v-menu
+                    transition="scale-transition"
+                    offset="8"
+                >
+                    <template #activator="{ props }">
+                        <v-btn
+                            v-bind="props"
+                            :color="ColorButtonOption"
+                            variant="tonal"
+                            append-icon="mdi-chevron-down"
+                            rounded="lg"
+                            class="text-none font-weight-medium"
+                        >
+                            {{ titleButtonOption }}
+                        </v-btn>
+                    </template>
 
-            <v-expand-transition>
-                <div v-show="isFiltered" class=" mb-2 ml-2  ">
-                    <span v-if="isFiltered" class="font-weight-semibold" style="font-size: var(--text-base); font-weight: 600;">Filtros:</span>
-                    <v-chip
-                    v-if="lastFilter?.start_day && lastFilter.end_day"
-                    class="ma-2"
-                    @click:close="handleClearFilterAdvanced('period')"
+                    <v-card
+                        min-width="240"
+                        rounded="xl"
+                        elevation="4"
+                        class="overflow-hidden"
+                    >
+                        <v-list
+                            density="comfortable"
+                            class="pa-2"
+                        >
+                            <v-list-item
+                                v-for="(item, index) in itemsRouter"
+                                :key="index"
+                                :value="index"
+                                rounded="lg"
+                                @click="getTitleRouter(item)"
+                            >
+                                <template #prepend>
+                                    <v-icon
+                                        icon="mdi-circle-medium"
+                                        :color="item.color"
+                                        class="mr-2"
+                                    />
+                                </template>
+
+                                <v-list-item-title class="font-weight-medium">
+                                    {{ item.title }}
+                                </v-list-item-title>
+                            </v-list-item>
+                        </v-list>
+                    </v-card>
+                </v-menu>
+            </v-col>
+
+            <v-col
+                cols="12"
+                md
+                class="d-flex flex-wrap justify-md-end ga-3"
+            >
+                <v-btn
+                    color="success"
+                    prepend-icon="mdi-plus"
+                    variant="flat"
+                    rounded="lg"
+                    class="text-none font-weight-bold"
+                    @click="modalAddRevenue = true"
+                >
+                    Nova receita
+                </v-btn>
+
+                <v-btn
+                    color="success"
+                    prepend-icon="mdi-filter-outline"
+                    variant="outlined"
+                    rounded="lg"
+                    class="text-none font-weight-medium"
+                    @click="drawer = true"
+                >
+                    Filtro
+                </v-btn>
+            </v-col>
+        </v-row>
+
+        <v-row class="mb-6">
+            <div class="main-cards">
+            <v-col
+                cols="12"
+                md="4"
+            >
+                <AppCard
+                    subtitle="Receitas pendentes"
+                    :loading="isPending"
+                    size="40"
+                    :value="sumary.receitas_pendentes"
+                    color="green"
+                    icon="mdi-arrow-down-thin-circle-outline"
+                />
+            </v-col>
+
+            <v-col
+                cols="12"
+                md="4"
+            >
+                <AppCard
+                    subtitle="Receitas recebidas"
+                    :loading="isPending"
+                    size="40"
+                    :value="sumary.receitas_efetivadas"
+                    color="green"
+                    icon="mdi-arrow-up-thin-circle-outline"
+                />
+            </v-col>
+
+            <v-col
+                cols="12"
+                md="4"
+            >
+                <AppCard
+                    subtitle="Total"
+                    :loading="isPending"
+                    size="40"
+                    :value="sumary.total_geral"
                     color="primary"
-                    closable
-                    >
-                    {{ `De ${new Date(lastFilter?.start_day ?? new Date()).toLocaleDateString("pt-br", {timeZone: "UTC"})} à ${new Date(lastFilter?.end_day ?? new Date()).toLocaleDateString("pt-br", {timeZone: "UTC"})}`}}
-                    </v-chip>
-
-                    <v-chip
-                    v-if="lastFilterLabels.cats"
-                    value="categories"
-                    class="ma-2"
-                    closable
-                    @click:close="handleClearFilterAdvanced('categories', lastFilter, categorie?.id)"
-                    :key="categorie?.name"
-                    v-for="categorie in lastFilterLabels.cats"
-                    >
-                    {{ categorie?.name }}
-                    </v-chip>
-
-                    <v-chip
-                    v-if="lastFilterLabels.accs"
-                    class="ma-2"
-                    closable
-                    @click:close="handleClearFilterAdvanced('accounts', lastFilter, account?.id)"
-                    :key="account?.name"
-                    v-for="account in lastFilterLabels.accs"
-                    >
-                    {{ account?.name }}
-                    </v-chip>
-
-                    <v-chip
-                    v-if="lastFilter?.situation"
-                    class="ma-2"
-                    closable
-                    @click:close="handleClearFilterAdvanced('situation',  lastFilter)"
-                    :color="(lastFilter?.situation === 'Pagas' || lastFilter?.situation === 'Recebidas') ? 'success' : 'error'"
-                    >
-                    {{ lastFilter?.situation }}
-                    </v-chip>
-
-                    <v-chip
-                    class="ma-2"
-                    closable
-                    @click:close="handleClearFilterAdvanced('for_type',  lastFilter)"
-                    color="primary"
-                    v-for="type in lastFilter?.for_type"
-                    >
-                    {{ type }}
-                    </v-chip>
-                </div>
-            </v-expand-transition>
-
-            <div v-if="!isFiltered" style="margin-bottom: 12px;">
-                <DateInput  @apply-filter-month="handleGetPeriod"></DateInput>
+                    icon="mdi-scale-balance"
+                />
+            </v-col>
             </div>
+        </v-row>
 
-            <v-text-field
-                v-model="search"
-                label="Pesquisar"
-                prepend-inner-icon="mdi-magnify"
-                variant="outlined"
-                hide-details
-                single-line
-            ></v-text-field>
-            </template>
-                <v-data-table
+        <v-card
+            rounded="xl"
+            elevation="2"
+            class="overflow-hidden"
+            :loading="isPending"
+        >
+            <v-card-text class="pa-5">
+                <v-expand-transition>
+                    <div
+                        v-show="isFiltered"
+                        class="d-flex flex-wrap align-center ga-2 mb-4"
+                    >
+                        <span class="font-weight-bold text-blue-grey-darken-4">
+                            Filtros:
+                        </span>
+
+                        <v-chip
+                            v-if="lastFilter?.start_day && lastFilter.end_day"
+                            color="primary"
+                            closable
+                            @click:close="handleClearFilterAdvanced('period')"
+                        >
+                            {{ `De ${new Date(lastFilter?.start_day ?? new Date()).toLocaleDateString('pt-br', { timeZone: 'UTC' })} à ${new Date(lastFilter?.end_day ?? new Date()).toLocaleDateString('pt-br', { timeZone: 'UTC' })}` }}
+                        </v-chip>
+
+                        <v-chip
+                            v-for="categorie in lastFilterLabels.cats"
+                            :key="categorie?.name"
+                            value="categories"
+                            closable
+                            @click:close="handleClearFilterAdvanced('categories', lastFilter, categorie?.id)"
+                        >
+                            {{ categorie?.name }}
+                        </v-chip>
+
+                        <v-chip
+                            v-for="account in lastFilterLabels.accs"
+                            :key="account?.name"
+                            closable
+                            @click:close="handleClearFilterAdvanced('accounts', lastFilter, account?.id)"
+                        >
+                            {{ account?.name }}
+                        </v-chip>
+
+                        <v-chip
+                            v-if="lastFilter?.situation"
+                            closable
+                            :color="lastFilter?.situation === 'Pagas' || lastFilter?.situation === 'Recebidas' ? 'success' : 'error'"
+                            @click:close="handleClearFilterAdvanced('situation', lastFilter)"
+                        >
+                            {{ lastFilter?.situation }}
+                        </v-chip>
+
+                        <v-chip
+                            v-for="type in lastFilter?.for_type"
+                            :key="type"
+                            color="primary"
+                            closable
+                            @click:close="handleClearFilterAdvanced('for_type', lastFilter)"
+                        >
+                            {{ type }}
+                        </v-chip>
+                    </div>
+                </v-expand-transition>
+
+                <div
+                    v-if="!isFiltered"
+                    class="mb-4"
+                >
+                    <DateInput @apply-filter-month="handleGetPeriod" />
+                </div>
+
+                <v-text-field
+                    v-model="search"
+                    label="Pesquisar"
+                    prepend-inner-icon="mdi-magnify"
+                    variant="solo-filled"
+                    density="comfortable"
+                    hide-details
+                    single-line
+                />
+            </v-card-text>
+
+            <v-divider />
+
+            <v-data-table
                 :headers="headers"
                 :items="tableData!"
                 :search="search"
                 :loading="isPending"
                 mobile-breakpoint="md"
                 items-per-page="6"
-                >
+            >
+                <template #item.status_transaction="{ item }">
+                    <v-icon
+                        :color="item.status_transaction === 'recebido' || item.status_transaction === 'pago' ? 'green' : 'red'"
+                        :icon="item.status_transaction === 'recebido' || item.status_transaction === 'pago' ? 'mdi-check-circle' : 'mdi-alert-circle'"
+                    />
 
-                <template v-slot:item.status_transaction="{ item }">
-                    <v-icon 
-                    :color="item.status_transaction === 'recebido' || item.status_transaction === 'pago' ? 'green' : 'red'"
-                    :icon="item.status_transaction === 'recebido' || item.status_transaction === 'pago' ? 'mdi-check-circle' : 'mdi-alert-circle'"
-                    >
-                    </v-icon>
                     <v-tooltip
                         activator="parent"
                         location="top"
-                    >{{ item.status_transaction === 'recebido' || item.status_transaction === 'pago' ? 'Efetivada' : 'Pendente' }}</v-tooltip>
+                    >
+                        {{ item.status_transaction === 'recebido' || item.status_transaction === 'pago' ? 'Efetivada' : 'Pendente' }}
+                    </v-tooltip>
                 </template>
 
-                <template v-slot:item.value_transaction="{item}">
+                <template #item.value_transaction="{ item }">
                     <v-chip color="green">
-                    {{ formatCurrency(item.value_transaction) }}
+                        {{ formatCurrency(item.value_transaction) }}
                     </v-chip>
                 </template>
-                
-                <template v-slot:item.description_transaction="{item}">
+
+                <template #item.description_transaction="{ item }">
                     <span>
                         {{ item.description_transaction }}
+
                         <span v-if="item.total_installments">
                             {{ `(${item.installment_current} / ${item.total_installments})` }}
                         </span>
                     </span>
                 </template>
 
-                <template v-slot:item.date_transaction="{item}">
+                <template #item.date_transaction="{ item }">
                     {{ formatDate(item.date_transaction) }}
                 </template>
 
-                <template v-slot:item.actions="{ item }">
-                        <v-menu
-                            transition="slide-y-transition"
-                            >
-                            <template v-slot:activator="{ props }">
-                                <v-icon class="hover-icon rounded-xl"   v-bind="props" icon="mdi-dots-vertical" size="large"></v-icon>
-                            </template>
-                            <v-list>
-                                <v-list-item
+                <template #item.actions="{ item }">
+                    <v-menu transition="slide-y-transition">
+                        <template #activator="{ props }">
+                            <v-btn
+                                icon="mdi-dots-vertical"
+                                variant="text"
+                                v-bind="props"
+                            />
+                        </template>
+
+                        <v-list
+                            density="comfortable"
+                            class="pa-2"
+                        >
+                            <v-list-item
                                 v-for="action in getOptions(item)"
                                 :key="action.title"
                                 :value="action.value"
                                 :prepend-icon="action.icon"
+                                rounded="lg"
                                 @click="handleOptionClick(action, item)"
-                                >
-                                <v-list-item-title>{{ action.title }}</v-list-item-title>
-                                </v-list-item>
-                            </v-list>
-                        </v-menu>
+                            >
+                                <v-list-item-title>
+                                    {{ action.title }}
+                                </v-list-item-title>
+                            </v-list-item>
+                        </v-list>
+                    </v-menu>
                 </template>
-                </v-data-table>
-            </v-card>
-        </div>
-    </div>
-
+            </v-data-table>
+        </v-card>
+    </v-container>
 </template>
 
 <style scoped>
-
-
 .main-cards {
+    width: 100%;
     margin: 10px;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 16px;
 }
 
-.more-option {
-    width: 100%;
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    padding-right: 20px;
-}
-
-.container-table {
-    width: 100%;
-    padding: 10px;
-}
-
-.icon-help:hover {
-    transform: scale(1.3);
-    cursor: pointer;
-}
-
-.card-label {
-    font-size: var(--text-base);
-}
-
-.card-value {
-    font-size: var(--text-md);
-    font-weight: 500;
-}
-
-.hover-icon:hover {
-    background-color: rgba(128, 128, 128, 0.256);
-}
-
-
-:deep(.v-data-table-header__content) {
-    font-weight: 800;
-}
-
-:deep(.v-card-text) {
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    background-color: white;
-}
-
-:deep(.v-data-table-footer) {
-    position: sticky;
-    bottom: 0;
-    background-color: white;
-}
-
-@media (max-width: 1200px) {
-  .main-cards {
-    display: grid;
-    grid-template-columns: 1fr;
-    padding: 0 6px 0 6px;
-  }
-
-      .container-table {
-        width: 100%;
-        padding: 10px;
-    }
-
-    .container-main {
-        margin-top: 30px;
-    }
-
-    .table {
-        height: fit-content;
-    }
-
-    .btn-filter {
-        width: 50%;
-    }
-
-    .btn-add-receita {
-        width: 50%;
-        font-size: clamp(0.75rem, 2.5vw, 0.75rem);
-    }
-}
-
-@media (max-width: 680px) {
-
-    .btn-container {
-        margin: 20px;        
-        flex-direction: column;
-    }
-
-
-    .btn-filter {
-        width: 50%;
-    }
-
-    .container-table {
-        width: 100%;
-        padding: 10px;
-    }
-
-    .container-main {
-        margin-top: 30px;
-    }
-
-    .table {
-        height: fit-content;
-        padding: 10px;
+@media (max-width: 1400px) {
+    .main-cards {
+        display: grid;
+        grid-template-columns: 1fr;
+        padding: 0 6px 0 6px;
     }
 
 }
-
 </style>

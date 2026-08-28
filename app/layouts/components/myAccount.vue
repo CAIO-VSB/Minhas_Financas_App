@@ -24,110 +24,157 @@
 </script>
 
 <template>
-    <div class="text-center">
+  <div>
     <v-menu
       v-model="menu"
       :close-on-content-click="false"
-      location="bottom"
+      location="bottom end"
+      offset="8"
+      transition="scale-transition"
     >
-      <template v-slot:activator="{ props }">
+      <template #activator="{ props }">
         <v-btn
           v-bind="props"
-          append-icon="mdi-menu-down"
           variant="text"
-          color="black text-none"
+          class="text-none px-2"
+          rounded="lg"
+          height="48"
         >
-          Minha conta
           <template #prepend>
-            <img style="border-radius: 100%; width: 2rem; height: 2rem;" :src="session?.user.image || defaultUser" alt="">
+            <v-avatar size="34">
+              <v-img
+                :src="session?.user.image || defaultUser"
+                alt="Avatar do usuário"
+              />
+            </v-avatar>
           </template>
+
+          <div class="d-none d-sm-flex flex-column align-start mr-2">
+            <span class="text-body-2 font-weight-bold text-blue-grey-darken-4">
+              {{ session?.user.name }}
+            </span>
+
+            <span class="text-caption text-medium-emphasis">
+              Minha conta
+            </span>
+          </div>
+
+          <v-icon
+            icon="mdi-chevron-down"
+            size="20"
+            class="text-medium-emphasis"
+          />
         </v-btn>
       </template>
 
-      <v-card min-width="300">
-        <v-list>
+      <v-card
+        min-width="320"
+        max-width="360"
+        rounded="xl"
+        elevation="4"
+        class="overflow-hidden"
+      >
+        <!-- Cabeçalho da conta -->
+        <div class="pa-5">
+          <div class="d-flex align-center ga-3">
+            <v-avatar size="52">
+              <v-img
+                :src="session?.user.image || defaultUser"
+                alt="Avatar do usuário"
+              />
+            </v-avatar>
+
+            <div class="overflow-hidden">
+              <div class="text-subtitle-1 font-weight-bold text-blue-grey-darken-4 text-truncate">
+                {{ session?.user.name }}
+              </div>
+
+              <div class="text-body-2 text-medium-emphasis">
+                Conta pessoal
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <v-divider />
+
+        <!-- Informações -->
+        <div class="px-5 py-4 bg-blue-grey-lighten-5">
+          <div class="text-caption text-medium-emphasis mb-1">
+            LOGADO COMO
+          </div>
+
+          <div class="text-body-2 font-weight-medium text-blue-grey-darken-3 text-truncate">
+            {{ session?.user.email }}
+          </div>
+        </div>
+
+        <v-divider />
+
+        <!-- Ações -->
+        <v-list
+          density="comfortable"
+          class="pa-2"
+        >
           <v-list-item
-            :prepend-avatar="session?.user.image || defaultUser"
-            subtitle="Conta pessoal"
-            :title="session?.user.name"
+            rounded="lg"
+            prepend-icon="mdi-cog-outline"
+            title="Configurações"
+            subtitle="Preferências da conta"
+            @click="handleConfigApplication"
           >
+            <template #prepend>
+              <v-avatar
+                rounded="lg"
+                size="36"
+                color="primary-lighten-5"
+                class="mr-2"
+              >
+                <v-icon
+                  icon="mdi-cog-outline"
+                  color="primary"
+                  size="20"
+                />
+              </v-avatar>
+            </template>
+          </v-list-item>
+
+          <v-list-item
+            rounded="lg"
+            class="mt-1"
+            @click="handleSignOut"
+          >
+            <template #prepend>
+              <v-avatar
+                rounded="lg"
+                size="36"
+                color="red-lighten-5"
+                class="mr-2"
+              >
+                <v-icon
+                  icon="mdi-logout"
+                  color="error"
+                  size="20"
+                />
+              </v-avatar>
+            </template>
+
+            <v-list-item-title class="text-error font-weight-medium">
+              Sair da conta
+            </v-list-item-title>
+
+            <v-list-item-subtitle>
+              Encerrar sessão
+            </v-list-item-subtitle>
           </v-list-item>
         </v-list>
-
-        <v-divider></v-divider>
-
-        <v-divider :thickness="1"></v-divider>
-
-        <v-card-actions style="background-color: #f2f2f2;">
-          <div class="main-logged-as">
-            <span class="title-logged-as">Logado como:</span>
-            <span class="subtitle-logged-as">{{ session?.user.email }}</span>
-          </div>
-          <v-spacer></v-spacer>
-
-          <v-tooltip
-            location="bottom"
-            >
-            <template v-slot:activator="{ props }">
-                <v-btn
-                icon
-                v-bind="props"
-                @click="handleConfigApplication"
-                >
-                <v-icon >
-                    mdi-cog
-                </v-icon>
-                </v-btn>
-            </template>
-            <span>Configurações</span>
-          </v-tooltip>
-
-          <v-tooltip
-            location="bottom"
-            >
-            <template v-slot:activator="{ props }">
-                <v-btn
-                icon
-                v-bind="props"
-                @click="handleSignOut"
-                >
-                <v-icon color="red">
-                  mdi-power
-                </v-icon>
-                </v-btn>
-            </template>
-            <span>Sair</span>
-          </v-tooltip>
-
-        </v-card-actions>
       </v-card>
     </v-menu>
   </div>
-
 </template>
 
 <style lang="scss" scoped>
-
-.new-account-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px;
+.v-list-item {
+  transition: background-color 0.15s ease;
 }
-
-.title-logged-as {
-  font-size: clamp(0.74rem, 4vw, 0.90rem);
-  display: flex;
-  flex-direction: column;
-}
-
-.subtitle-logged-as {
-  font-size: clamp(0.74rem, 4vw, 0.90rem);
-}
-
-.button-singup {
-  background-color: transparent !important;
-  font-size: clamp(0.75rem, 2.5vw, 0.80rem);
-}
-
 </style>

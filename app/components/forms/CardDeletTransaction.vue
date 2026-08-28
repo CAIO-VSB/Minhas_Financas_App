@@ -156,10 +156,17 @@ async function submitForm() {
 }
 
 .info > div:nth-child(2) {
-    display: flex;
-    flex-direction: column;
-    max-width: 350px;
-    font-size: 1rem;
+  display: flex;
+  flex-direction: column;
+  max-width: 350px;
+  font-size: 1rem;
+}
+
+.info > div:nth-child(3) {
+  display: flex;
+  flex-direction: column;
+  max-width: 350px;
+  font-size: 1rem;
 }
 
 </style>

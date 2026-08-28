@@ -66,45 +66,93 @@
 </script>
 
 <template>
-
     <div>
-        
-        <v-expand-transition>
-            <div v-show="!expanded" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
-                <v-btn style="color: #9DA5B2;" icon="mdi-chevron-left" variant="text" @click="prevMonth" />
-                <span
-                    @click="expanded = true"
-                    style="cursor: pointer; font-size: 18px; font-weight: 800; text-transform: capitalize; background-color: #EFF6FF; color: #2563EB; padding: 4px 16px; border-radius: 20px;"
+        <v-expand-transition mode="out-in">
+            <div :key="expanded ? 'months' : 'period'">
+                <div
+                    v-if="!expanded"
+                    class="d-flex align-center justify-center ga-2"
                 >
-                    {{ monthLabel }}
-                </span>
-                <v-btn style="color: #9DA5B2;" icon="mdi-chevron-right" variant="text" @click="nextMonth" />
-            </div>
-        </v-expand-transition>
+                    <v-btn
+                        icon="mdi-chevron-left"
+                        variant="text"
+                        class="text-medium-emphasis"
+                        @click="prevMonth"
+                    />
 
-        <v-expand-transition>
-            <div v-show="expanded">
-                <div style="display: flex; align-items: center; justify-content: center; gap: 24px; margin-bottom: 1rem;">
-                    <v-btn style="color: #1867c0;" icon="mdi-chevron-left" variant="text" @click="changeYear(-1)" />
-                    <span style="font-size: 18px; font-weight: 600; color: #2563EB;">{{ currentYear }}</span>
-                    <v-btn style="color: #1867c0;" icon="mdi-chevron-right" variant="text" @click="changeYear(1)" />
+                    <v-btn
+                        color="primary"
+                        variant="tonal"
+                        rounded="lg"
+                        class="text-none font-weight-bold"
+                        @click="expanded = true"
+                    >
+                        {{ monthLabel }}
+
+                        <v-icon
+                            icon="mdi-chevron-down"
+                            end
+                        />
+                    </v-btn>
+
+                    <v-btn
+                        icon="mdi-chevron-right"
+                        variant="text"
+                        class="text-medium-emphasis"
+                        @click="nextMonth"
+                    />
                 </div>
 
-                
-                <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
+                <v-card
+                    v-else
+                    rounded="xl"
+                    elevation="4"
+                    class="mt-2 pa-4"
+                >
+                    <div class="d-flex align-center justify-center ga-4 mb-4">
                         <v-btn
+                            icon="mdi-chevron-left"
+                            variant="text"
+                            color="primary"
+                            @click="changeYear(-1)"
+                        />
+
+                        <span class="text-subtitle-1 font-weight-bold text-blue-grey-darken-4">
+                            {{ currentYear }}
+                        </span>
+
+                        <v-btn
+                            icon="mdi-chevron-right"
+                            variant="text"
+                            color="primary"
+                            @click="changeYear(1)"
+                        />
+                    </div>
+
+                    <v-row >
+                        <v-col
                             v-for="(month, index) in months"
                             :key="index"
-                            :variant="isActive(index) ? 'tonal' : 'outlined'"
-                            :color="isActive(index) ? 'primary' : 'primary'"
-                            rounded="xl"
-                            size="small"
-                            @click="selectMonth(index)"
+                            cols="4"
+                            sm="3"
                         >
-                            <span style="font-size: var(--text-sm);">{{ month }}</span>
-                    </v-btn>
-                </div>
+                            <v-btn
+                                :variant="isActive(index) ? 'flat' : 'outlined'"
+                                color="primary"
+                                rounded="lg"
+                                block
+                                class="text-none"
+                                @click="selectMonth(index)"
+                            >
+                                {{ month }}
+                            </v-btn>
+                        </v-col>
+                    </v-row>
+                </v-card>
             </div>
-        </v-expand-transition>        
+        </v-expand-transition>
     </div>
 </template>
+
+<style scoped>
+</style>

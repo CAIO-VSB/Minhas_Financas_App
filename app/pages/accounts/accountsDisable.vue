@@ -97,90 +97,124 @@
 </script>
 
 <template>
-
-  <div class="mt-10 mb-16 d-flex align-center ga-3">
-    <span class="ml-1">
-      <v-btn
-        icon="mdi-arrow-left"
-        color="black"
-        variant="text"
-        @click="backScreenAccounts"
-        >
-        </v-btn>
-    </span>
-    <span class="font-weight-bold" style="font-size: var(--text-lg);">Contas arquivadas</span>
-  </div>
-
-  <div class="pa-2 d-flex ga-7 container-main">
-    <div class="w-100">
-      <v-data-table class="elevation-1" :loading="isPending" mobile-breakpoint="md" :headers="headers" :items="onlyAccountsDisable" hide-default-footer>
-
-        <template v-slot:item.actions="{ item }">
-            <v-tooltip text="Restaurar">
-            <template v-slot:activator="{ props }">
+    <v-container
+        fluid
+        class="mt-6 pa-4 pa-md-6"
+    >
+        <div class="d-flex align-center ga-2 mb-6">
             <v-btn
-            v-bind="props"
-            icon="mdi-restore"
-            color="black"
-            variant="text"
-            :loading="loadingButton"
-            @click="restoreAccount(item)"
+              icon="mdi-arrow-left"
+              variant="text"
+              @click="backScreenAccounts"
             >
             </v-btn>
-            </template>
-          </v-tooltip>
-        </template>
 
-        <template v-slot:item.saldo_atual="{ item }">
-          <v-chip :color="(item.saldo_atual! >= 0) ? 'success': 'red'">
-           {{ formatCurrency(item.saldo_atual ?? 0.00) }}
-          </v-chip>
-        </template>
+            <div>
+                <div class="text-h6 font-weight-bold text-blue-grey-darken-4">
+                    Contas arquivadas
+                </div>
 
-      </v-data-table>
-    </div>
-    
-    <v-card style="height: 120px;" class="w-33 card-saldo-total-archived">
-      <template #subtitle>
-        <span class="text-medium-emphasis">Saldo total arquivado</span>
-      </template>
-      <template #text>
-        <div class="d-flex align-center">
-          <span class="font-weight-bold w-100 saldo-total-archived" style="font-size: 1.3rem;">{{ formatCurrency(totalArchived ?? 0.00) }}</span>
-          <span class="w-100 d-flex justify-end"><v-avatar size="47" rounded="lg" icon="mdi-scale-unbalanced" variant="tonal" color="primary"></v-avatar></span>
+                <div class="text-body-2 text-medium-emphasis">
+                    Consulte e restaure contas que foram arquivadas.
+                </div>
+            </div>
         </div>
-        <div>
-          <v-chip color="blue" size="x-small" variant="tonal">
-            Arquivado
-          </v-chip>
-        </div>
-      </template>
-    </v-card>
-  </div>
+
+        <v-row>
+            <v-col
+                cols="12"
+                xl="9"
+            >
+                <v-card
+                    rounded="xl"
+                    elevation="2"
+                    border
+                    class="overflow-hidden"
+                >
+                    <v-card-item class="pa-4 pb-2">
+                        <v-card-title class="text-h6 font-weight-bold text-blue-grey-darken-4">
+                            Contas
+                        </v-card-title>
+                    </v-card-item>
+
+                    <v-divider />
+
+                    <v-data-table
+                        :headers="headers"
+                        :items="onlyAccountsDisable"
+                        :loading="isPending"
+                        mobile-breakpoint="md"
+                        hide-default-footer
+                    >
+                        <template #item.saldo_atual="{ item }">
+                            <v-chip
+                                :color="item.saldo_atual! >= 0 ? 'success' : 'error'"
+                                size="small"
+                            >
+                                {{ formatCurrency(item.saldo_atual ?? 0.00) }}
+                            </v-chip>
+                        </template>
+
+                        <template #item.actions="{ item }">
+                            <v-tooltip text="Restaurar">
+                                <template #activator="{ props }">
+                                    <v-btn
+                                        v-bind="props"
+                                        icon="mdi-restore"
+                                        variant="text"
+                                        :loading="loadingButton"
+                                        @click="restoreAccount(item)"
+                                    />
+                                </template>
+                            </v-tooltip>
+                        </template>
+                    </v-data-table>
+                </v-card>
+            </v-col>
+
+            <v-col
+                cols="12"
+                xl="3"
+            >
+                <v-card
+                    rounded="xl"
+                    elevation="2"
+                    border
+                    height="100%"
+                >
+                    <v-card-text class="pa-4">
+                        <div class="d-flex align-center justify-space-between">
+                            <span class="text-body-2 text-medium-emphasis">
+                                Saldo total arquivado
+                            </span>
+
+                            <v-avatar
+                                color="primary"
+                                variant="tonal"
+                                icon="mdi-scale-unbalanced"
+                                rounded="lg"
+                                size="44"
+                            />
+                        </div>
+
+                        <div style="font-size: var(--text-md);" class="font-weight-bold text-blue-grey-darken-4 mt-5">
+                            {{ formatCurrency(totalArchived ?? 0.00) }}
+                        </div>
+
+                        <v-chip
+                            color="primary"
+                            size="small"
+                            variant="tonal"
+                            class="mt-4"
+                        >
+                            Arquivado
+                        </v-chip>
+                    </v-card-text>
+                </v-card>
+            </v-col>
+        </v-row>
+    </v-container>
 </template>
 
 <style scoped>
-
-:deep(.v-data-table-header__content) {
-  font-weight: 800;
-}
-
-@media (max-width: 1700px) {
-  .container-main {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .card-saldo-total-archived {
-    width: 100% !important;
-  }
-  
-}
-
-@media (max-width: 480px) {
-  .saldo-total-archived {
-    font-size: 1rem !important;
-  }
-}
-
 </style>

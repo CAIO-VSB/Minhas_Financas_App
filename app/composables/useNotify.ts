@@ -1,40 +1,53 @@
 export function useNotify() {
+  const notification = useNotification()
 
-    const notifySuccess = (title: string, message: string, timer?: number) => {
-        useNotification().success({
-            title: title,
-            message: message,
-            position: "topCenter",
-            timeout: timer,
-            transitionIn: "fadeInUp",
-            transitionOut: "fadeOut",
-            backgroundColor: "#f0fdf4",
-            titleColor: "#14532d",
-            messageColor: "#166534",
-            iconColor: "#16a34a",
-            icon: "mdi mdi-check-circle-outline",
-            maxWidth: 380
-        })
-    }
+  const notifySuccess = (
+    title: string,
+    message: string,
+    timer = 4500
+  ) => {
+    notification.success({
+      title,
+      message,
+      position: 'topRight',
+      timeout: timer,
+      transitionIn: 'fadeInDown',
+      transitionOut: 'fadeOutUp',
+      backgroundColor: '#F0FDF4',
+      titleColor: '#166534',
+      messageColor: '#15803D',
+      iconColor: '#16A34A',
+      icon: 'mdi mdi-check-circle-outline',
+      maxWidth: 420,
+      close: false,
+      drag: true,
+    })
+  }
 
-    const notifyInfo = (title: string, message: string, timer?: number, close?: boolean, drag?: boolean) => {
-        useNotification().warning({
-            title: title,
-            message: message,
-            position: "topRight",
-            timeout: timer,
-            transitionIn: "fadeInUp",
-            transitionOut: "fadeOutUp",
-            backgroundColor: "#eff6ff",
-            titleColor: "#78350f",
-            messageColor: "#78350f",
-            iconColor: "#78350f",
-            icon: "mdi mdi-alert-outline",
-            maxWidth: 380,
-            close: close,
-            drag: drag,
-        })
-    }
+  const notifyInfo = (
+    title: string,
+    message: string,
+    timer = 4500,
+    close = false,
+    drag = true
+  ) => {
+    notification.info({
+      title,
+      message,
+      position: 'topRight',
+      timeout: timer,
+      transitionIn: 'fadeInDown',
+      transitionOut: 'fadeOutUp',
+      backgroundColor: '#EFF6FF',
+      titleColor: '#1E3A8A',
+      messageColor: '#2563EB',
+      iconColor: '#2563EB',
+      icon: 'mdi mdi-information-outline',
+      maxWidth: 420,
+      close,
+      drag,
+    })
+  }
 
     const notifyError = (title: string, message: string, timer?: number) => {
         useNotification().error({
@@ -53,9 +66,9 @@ export function useNotify() {
         })
     }
 
-    return {
-        notifySuccess,
-        notifyError,
-        notifyInfo
-    }
+  return {
+    notifySuccess,
+    notifyInfo,
+    notifyError,
+  }
 }

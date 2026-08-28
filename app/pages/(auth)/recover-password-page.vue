@@ -29,7 +29,7 @@
           await $authClient.requestPasswordReset(
             {
               email: formEmail.value.email,
-              redirectTo: "http://10.20.20.7:3000/reset-password-page",
+              redirectTo: "http://localhost:3000/reset-password-page",
             },
             {
               onRequest() {
@@ -61,96 +61,216 @@
 </script>
 
 <template>
+  <main class="login-page d-flex">
+    <v-container fluid class="pa-0 d-flex">
+      <v-row
+        no-gutters
+        class="login-layout ma-auto overflow-hidden bg-white"
+      >
+        <v-col
+          cols="12"
+          md="6"
+          class="login-visual d-none d-md-flex flex-column justify-space-between"
+        >
+          <div class="login-visual__orb" aria-hidden="true" />
 
-  <div class="container w-100 bg-backgroundPrimary d-flex justify-center">
-    
-    <v-form validate-on="submit" ref="form" class="bg-surface elevation-2 ma-3 pa-3 rounded-lg form">
+          <div class="position-relative">
+            <v-img
+              :src="logoLogin"
+              contain
+              width="300"
+              height="150"
+              class="mb-10"
+              alt="Velto Finance"
+            />
 
-      <div class="d-flex align-center justify-center"> 
-        <div class="">
-          <v-img :width="310" :height="180" :src="logoLogin"></v-img>
-        </div>
-      </div>
+            <div class="text-overline font-weight-bold text-primary mb-3">
+              CONTROLE FINANCEIRO DESCOMPLICADO
+            </div>
 
-      <div class="mb-2 text-center d-flex flex-column">
-        <span class="font-weight-bold text-h5 text-textAlternative">Recuperar senha</span>
-        <span class="font-weight-semibold text-h7 text-textSecundary">Informe seu e-mail para recuperar sua senha de acesso.</span>
-      </div>
+            <h1 class="login-visual__title text-blue-grey-darken-4 mb-5">
+              Sua vida financeira,
+              <span class="text-primary">mais inteligente.</span>
+            </h1>
 
-      <div class="pa-2">
-        <v-text-field
-        v-model="formEmail.email"
-        density="compact"
-        placeholder="Adicionar seu e-mail*"
-        prepend-inner-icon="mdi-email-outline"
-        variant="outlined"
-        color="primary"
-        :rules="emailRules"
-        autocomlete="email"
-        name="email"
-        clearable
-        ></v-text-field>
+            <p class="login-visual__description text-blue-grey-darken-1 mb-0">
+              Organize, acompanhe e evolua suas finanças em um só lugar.
+            </p>
+          </div>
 
-        <div class="d-flex justify-center aling-center w-100 mt-3">
-          <v-btn @click="handleRecoverPassword" :loading="loading" color="primary" class="text-none btn-login w-100">
-            <span class="font-weight-bold" style="font-size: var(--font-button-primary);">Recuperar</span>
-          </v-btn>
-        </div>
+          <div
+            class="position-relative d-flex align-center ga-2 text-blue-grey-darken-1 text-body-2"
+          >
+            <v-icon
+              icon="mdi-shield-check-outline"
+              color="primary"
+              size="20"
+            />
 
-        <div class="mt-5 font-weight-light text-center d-flex justify-center align-center ga-2">
-          <NuxtLink to="/login-page" class="text-decoration-none font-weight-bold link-register text-textPrimary">Voltar</NuxtLink>
-        </div>
+            <span>Ambiente seguro e protegido</span>
+          </div>
+        </v-col>
 
-      </div>
-      
+        <v-col
+          cols="12"
+          md="6"
+          class="d-flex align-start align-md-center justify-center pa-6 pa-sm-10 pa-lg-16"
+        >
+          <div class="login-form-wrapper w-100">
+            <header class="text-center text-md-start mb-8">
 
-    </v-form>
-  </div>
+              <v-img
+                :src="logoLogin"
+                contain
+                width="300"
+                height="150"
+                class="d-md-none mx-auto mb-7"
+                alt="Velto Finance"
+              />
 
+              <div class="text-overline font-weight-bold text-primary mb-2">
+                RECUPERAÇÃO DE ACESSO
+              </div>
+
+              <h2
+                class="text-h4 text-sm-h3 font-weight-bold text-blue-grey-darken-4 mb-3"
+              >
+                Recuperar senha
+              </h2>
+
+              <p class="text-body-1 text-medium-emphasis mb-0">
+                Informe seu e-mail para recuperar sua senha de acesso.
+              </p>
+            </header>
+
+            <v-form
+              ref="form"
+              validate-on="submit"
+              class="d-flex flex-column ga-5"
+            >
+              <div>
+                <label
+                  class="text-body-2 font-weight-bold d-block mb-2"
+                  for="recovery-email"
+                >
+                  E-mail
+                </label>
+
+                <v-text-field
+                  id="recovery-email"
+                  v-model="formEmail.email"
+                  variant="outlined"
+                  density="comfortable"
+                  placeholder="seu@email.com"
+                  prepend-inner-icon="mdi-email-outline"
+                  :rules="emailRules"
+                  autocomplete="email"
+                  inputmode="email"
+                  hide-details="auto"
+                  color="primary"
+                  base-color="blue-grey-lighten-3"
+                  bg-color="blue-grey-lighten-5"
+                />
+              </div>
+
+              <v-btn
+                :loading="loading"
+                color="primary"
+                size="large"
+                height="52"
+                rounded="lg"
+                block
+                elevation="2"
+                @click="handleRecoverPassword"
+              >
+                Recuperar senha
+
+                <v-icon
+                  end
+                  icon="mdi-arrow-right"
+                />
+              </v-btn>
+
+              <p
+                class="text-center text-body-2 text-medium-emphasis ma-0"
+              >
+                Lembrou sua senha?
+
+                <NuxtLink
+                  to="/login-page"
+                  class="text-primary font-weight-bold text-decoration-none"
+                >
+                  Voltar para o login
+                </NuxtLink>
+              </p>
+            </v-form>
+          </div>
+        </v-col>
+      </v-row>
+    </v-container>
+  </main>
 </template>
 
 <style scoped>
-
-.container {
+.login-page {
   min-height: 100dvh;
   overflow-y: auto;
-  align-items: flex-start;
-  padding: 32px 16px;
+  background: #f6f8fc;
 }
 
-.form {
-  width: 100%;
-  max-width: 520px;
+.login-layout {
+  width: min(100%, 1440px);
+  min-height: 100dvh;
 }
 
-.divider {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color:#757575;
-  font-size: 0.85rem;
+.login-visual {
+  position: relative;
+  isolation: isolate;
+  min-height: 100%;
+  padding: clamp(3rem, 7vw, 6rem);
+  overflow: hidden;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgb(255 255 255 / 62%),
+      rgb(230 239 255 / 72%)
+    ),
+    #dce9ff;
 }
 
-.divider::before,
-.divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: #757575;
+.login-visual__orb {
+  position: absolute;
+  z-index: -1;
+  top: -13rem;
+  right: -12rem;
+  width: 34rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgb(31 84 255 / 14%);
+  filter: blur(10px);
 }
 
-.link-register:hover {
-  text-decoration: underline !important;
-  color: #2563EB !important;
+.login-visual__title {
+  max-width: 11ch;
+  font-size: clamp(2.5rem, 4.2vw, 4.6rem);
+  font-weight: 750;
+  letter-spacing: -0.065em;
+  line-height: 0.98;
 }
 
-
-@media (min-height: 550px) {
-  .container {
-    align-items: center;
-  }
+.login-visual__title span {
+  display: block;
 }
 
+.login-visual__description {
+  max-width: 34rem;
+  font-size: clamp(1rem, 1.35vw, 1.15rem);
+  line-height: 1.65;
+}
+
+.login-form-wrapper {
+  max-width: 30rem;
+}
 </style>
-  
 

@@ -10,7 +10,7 @@
   
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
   const { getAccountsOnlyActive } = useHttpAccounts()
-  const { patchPaymentPartial } = useHttpInvoices()
+  const { patchPaymentAdvance } = useHttpInvoices()
 
   const { invalidate } = useInvalidate()
   const { selectRules, dateRules, currencyRules } = useValidateFields()
@@ -31,31 +31,43 @@
     period: { month: number, year: number }
   }>()
 
-  type formPaymentPartial = {
+  type formPaymentAdvance = {
     datePayment: Date,
     accontsId: number | null,
     invoiceId: number | null,
-    totalPaid: number | null
+    totalPaid: number | null,
+    invoice_month: number | null,
+    invoice_year: number | null,
+    closing_day: number | null
   }
 
-  type formPaymentPartialPayload =  {
+  type formPaymentAdvancePayload =  {
     datePayment: string,
     accontsId: number,
     invoiceId: number | null,
     totalInvoice: number | null,
-    totalPaid: number | null
+    totalPaid: number | null,
+    invoice_month: number | null,
+    invoice_year: number | null,
+    credit_card_id: number | null,
+    closing_day: number | null
   }
 
   const modelValue = defineModel<boolean>()
   const menuAccounts = ref(false)
   const modelAccounts = ref<number | null>(null)
   const valuePaid = ref(0.00)
+  const date = ref(`${String(new Date().getFullYear())}-${String(new Date().getMonth() + 1)}`)
+  const menu = ref(false)
 
-  const form = ref<formPaymentPartial>({
+  const form = ref<formPaymentAdvance>({
     datePayment: new Date(),
     accontsId: modelAccounts.value,
     invoiceId: null,
-    totalPaid: valuePaid.value
+    totalPaid: valuePaid.value,
+    invoice_month: null,
+    invoice_year: null,
+    closing_day: null
   })
   
   //Watch reponsável por mostrar a categoria e conta atual
@@ -117,7 +129,7 @@
 
   const  { mutate, isPending } = useMutation({
 
-    mutationFn: (payload: formPaymentPartialPayload) => patchPaymentPartial(payload.datePayment, payload.accontsId, payload.invoiceId!, payload.totalInvoice!, payload.totalPaid!),
+    mutationFn: (payload: formPaymentAdvancePayload) => patchPaymentAdvance(payload.datePayment, payload.accontsId, payload.invoiceId!, payload.totalInvoice!, payload.totalPaid!, payload.invoice_month!, payload.invoice_year!, payload.credit_card_id!, payload.closing_day!),
 
     onSuccess: () => {
       notifySuccess("Sucesso", "Operação realizada com sucesso", 6000)
@@ -135,8 +147,24 @@
   })
 
   async function submitForm() {
+
     const dateFormated = dateToDateOnly(form.value.datePayment)
     const accountsId = modelAccounts.value
+
+    if (!dateFormated || !accountsId) {
+      notifyError("Erro inesperado", "Data do pagamento ou conta do pagamento inválidos. Tente novamente mais tarde", 7500)
+      return
+    }     
+
+    if (form.value.totalPaid <= 0 || form.value.totalPaid === null) {
+      notifyInfo(
+        'Valor inválido',
+        'Informe um valor maior que R$ 0,00 para realizar o pagamento parcial.',
+        7000,
+        true
+      )
+      return
+    }
 
     if (props.totalInvoice === 0) {
       notifyInfo(
@@ -148,43 +176,19 @@
       return
     }
 
-    if (form.value.totalPaid === 0) {
-      notifyInfo(
-        'Valor não informado',
-        'Informe um valor maior que R$ 0,00 para realizar o pagamento.',
-        7000,
-        true
-      )
-      return
-    }
+    const [year, month] = date.value.split("-").map(Number)
 
-    if (!dateFormated || !accountsId) {
-      notifyError("Erro inesperado", "Data do pagamento ou conta do pagamento inválidos. Tente novamente mais tarde", 7500)
-      return
-    }     
-    
-    if (!form.value.totalPaid) {
-      notifyError("Erro inesperado", "Data do pagamento ou conta do pagamento inválidos. Tente novamente mais tarde", 7500)
-      return
-    }
-    
-    if (form.value.totalPaid <= 0 || form.value.totalPaid === null) {
-      notifyInfo(
-        'Valor inválido',
-        'Informe um valor maior que R$ 0,00 para realizar o pagamento parcial.',
-        7000,
-        true
-      )
-      return
-    }
-    
     const payload = {
       ...form.value,
       datePayment: dateFormated,
       accontsId: accountsId,
       invoiceId: props.invoiceId,
       totalInvoice: props.totalInvoice,
-      totalPaid: form.value.totalPaid
+      totalPaid: form.value.totalPaid,
+      invoice_month: Number(month),
+      invoice_year: Number(year),
+      credit_card_id: Number(props.draft?.id),
+      closingDay: props.draft?.closing_day
     }
 
     console.log("Objeto antes de ir para o back " + JSON.stringify(payload))
@@ -207,7 +211,7 @@
     validate-on="lazy blur"
     >
       <v-dialog v-model="modelValue" max-width="550">
-        <v-card title="Pagamento parcial">
+        <v-card title="Pagamento adiantado">
           <v-divider></v-divider>
           <v-card-text v-if="props.draft">
             <v-row density="comfortable">
@@ -278,8 +282,36 @@
 
                 </v-select>
                 </v-col>
-            </v-row>
 
+                <v-col cols="12" md="12" sm="12">
+                  <v-menu
+                    v-model="menu"
+                    :close-on-content-click="false"
+                    min-width="auto"
+                    transition="scale-transition"
+                    >
+                    <template v-slot:activator="{ props: activatorProps }">
+                        <v-text-field
+                        v-model="date"
+                        label="Fatura"
+                        prepend-inner-icon="mdi-calendar"
+                        hide-details
+                        readonly
+                        v-bind="activatorProps"
+                        variant="underlined"
+                        >
+                        <template #append-inner> 
+                          <v-icon v-tooltip="'Você pode alterar o período da fatura. O mês atual será sempre considerado.'" icon="mdi-tooltip-question"></v-icon>
+                        </template>
+                        </v-text-field>
+                    </template>
+                    <v-month-picker
+                        v-model="date"
+                        @update:model-value="menu = false"
+                    ></v-month-picker>
+                  </v-menu>
+                </v-col>
+              </v-row>
           </v-card-text>
 
           <v-divider></v-divider>
@@ -296,7 +328,7 @@
               class="text-none"
               value="btn-salvar"
               color="primary"
-              text="Pagar parcial"
+              text="Pagar adiantado"
               variant="flat"
               @click="submitForm"
               :loading="isPending"

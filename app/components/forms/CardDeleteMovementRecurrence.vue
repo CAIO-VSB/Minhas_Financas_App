@@ -164,4 +164,8 @@
     font-size: 1rem;
 }
 
+.info-alert {
+    font-size: 1rem;
+}
+
 </style>

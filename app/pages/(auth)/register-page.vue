@@ -126,215 +126,452 @@
 </script>
 
 <template>
+  <main class="login-page d-flex">
+    <v-container fluid class="pa-0 d-flex">
+      <v-row
+        no-gutters
+        class="login-layout ma-auto overflow-hidden bg-white"
+      >
 
-  <div  class="container w-100 bg-backgroundPrimary d-flex justify-center">
-    
-    <v-form validate-on="submit" ref="form" class="bg-surface elevation-2 ma-3 pa-3 rounded-lg form">
-
-      <div class="d-flex align-center justify-center"> 
-        <div class="">
-          <v-img :width="310" :height="180" :src="logoLogin"></v-img>
-        </div>
-      </div>
-
-      <div class="mb-2 text-center d-flex flex-column">
-        <span class="font-weight-bold text-h5 text-textAlternative">Crie sua conta como quiser</span>
-        <span class="font-weight-semibold text-h7 text-textSecundary">Crie sua conta para começar a controlar sua grana</span>
-      </div>
-
-      <div class="pa-2">
-
-        <v-text-field
-        v-model="registerForm.name"
-        density="compact"
-        placeholder="Nome*"
-        prepend-inner-icon="mdi-account-outline"
-        variant="outlined"
-        color="primary"
-        autocomlete="name"
-        name="name"
-        clearable
-        :rules="nameRules"
-        @keyup.enter="handleRegisterUser"
-        ></v-text-field>
-
-        <v-text-field
-        v-model="registerForm.email"
-        density="compact"
-        placeholder="E-mail*"
-        prepend-inner-icon="mdi-email-outline"
-        variant="outlined"
-        color="primary"
-        :rules="emailRules"
-        autocomlete="email"
-        name="email"
-        clearable
-        @keyup.enter="handleRegisterUser"
-        ></v-text-field>
-
-        <v-text-field
-        v-model="registerForm.password"
-        placeholder="Senha*"
-        density="compact"
-        prepend-inner-icon="mdi-lock-outline"
-        variant="outlined"
-        color="primary"
-        :type="showPassword ? 'text' : 'password'"
-        :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-        @click:append-inner="showPassword = !showPassword"
-        :rules="passwordRules"
-        autocomplete="off"
-        hide-details="auto"
-        @keyup="validateRulesPassword"
-        @keyup.enter="handleRegisterUser"
+        <v-col
+          cols="12"
+          md="6"
+          class="login-visual d-none d-md-flex flex-column justify-space-between"
         >
-        </v-text-field>
-        <div class="password-meter">
-          <Password
-            v-model="registerForm.password"
-            :strength-meter-only="true"
-          />
-          <v-expand-transition>
-          <div v-if="showValidatePassword" class="ml-1">          
-            <div>
-              <v-icon :color="regexValidateMinimoSeis ? 'green':'red'" :icon="regexValidateMinimoSeis ? 'mdi-check-circle-outline': 'mdi-close-circle-outline'" size="small"></v-icon>
-              Pelo menos 6 caracteres
+          <div class="login-visual__orb" aria-hidden="true" />
+
+          <div class="position-relative">
+            <v-img
+              :src="logoLogin"
+              contain
+              width="300"
+              height="150"
+              class="mb-10"
+              alt="Velto Finance"
+            />
+
+            <div class="text-overline font-weight-bold text-primary mb-3">
+              CONTROLE FINANCEIRO DESCOMPLICADO
             </div>
-            <div>
-              <v-icon :color="regexValidateMaiuscula ? 'green':'red'" :icon="regexValidateMaiuscula ? 'mdi-check-circle-outline': 'mdi-close-circle-outline'"  size="small"></v-icon>
-              Uma letra maiúscula
-            </div>
-            <div>
-              <v-icon :color="regexValidateMinuscula ? 'green':'red'" :icon="regexValidateMinuscula ? 'mdi-check-circle-outline': 'mdi-close-circle-outline'" size="small"></v-icon>
-              Uma letra minúscula
-            </div>
-            <div>
-              <v-icon :color="regexValidateNumber ? 'green':'red'" :icon="regexValidateNumber ? 'mdi-check-circle-outline': 'mdi-close-circle-outline'" size="small"></v-icon>
-              Um número
-            </div>
-            <div>
-              <v-icon :color="regexValidateEspecial ? 'green':'red'" :icon="regexValidateEspecial ? 'mdi-check-circle-outline': 'mdi-close-circle-outline'" size="small"></v-icon>
-              Um caractere especial
-            </div>
+
+            <h1 class="login-visual__title text-blue-grey-darken-4 mb-5">
+              Sua vida financeira,
+              <span class="text-primary">mais inteligente.</span>
+            </h1>
+
+            <p
+              class="login-visual__description text-blue-grey-darken-1 mb-0"
+            >
+              Organize, acompanhe e evolua suas finanças em um só lugar.
+            </p>
           </div>
-          </v-expand-transition>
-      </div>
 
-        
-        <v-text-field
-        v-model="registerForm.confirmPassword"
-        density="compact"
-        placeholder="Confirmar senha*"
-        prepend-inner-icon="mdi-lock-check-outline"
-        variant="outlined"
-        color="primary"
-        :type="showPassword ? 'text' : 'password'"
-        :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-        @click:append-inner="showPassword = !showPassword"
-        :rules="confirmPasswordRules"
-        autocomplete="off"
+          <div
+            class="position-relative d-flex align-center ga-2 text-blue-grey-darken-1 text-body-2"
+          >
+            <v-icon
+              icon="mdi-shield-check-outline"
+              color="primary"
+              size="20"
+            />
+
+            <span>Ambiente seguro e protegido</span>
+          </div>
+        </v-col>
+
+
+        <v-col
+          cols="12"
+          md="6"
+          class="d-flex align-start align-md-center justify-center pa-6 pa-sm-10 pa-lg-16"
         >
-        </v-text-field>
+          <div class="login-form-wrapper w-100">
+            <header class="text-center text-md-start mb-8">
+              <v-img
+                :src="logoLogin"
+                contain
+                width="300"
+                height="150"
+                class="d-md-none mx-auto mb-7"
+                alt="Velto Finance"
+              />
 
-        <div class="d-flex justify-center aling-center w-100 mt-3">
-          <v-btn @click="handleRegisterUser" :loading="loading" color="primary" class="text-none btn-login w-100">
-            <span class="font-weight-bold" style="font-size: var(--font-button-primary);">Criar conta</span>
-          </v-btn>
-        </div>
+              <div class="text-overline font-weight-bold text-primary mb-2">
+                COMECE AGORA
+              </div>
 
-        <div class="divider mt-5">
-          <span>OU</span>
-        </div>
+              <h2
+                class="text-h4 text-sm-h3 font-weight-bold text-blue-grey-darken-4 mb-3"
+              >
+                Crie sua conta
+              </h2>
 
-        <div class="d-flex align-center justify-center flex-column ga-3 mt-3">
-          <v-btn  @click="handleWidthGoogle" :loading="loadingGoogle" class="w-100 text-none">
-            <template #prepend>
-              <v-avatar :image="logoGoogle" size="20" ></v-avatar>
-            </template>
-            <span class="font-weight-bold text-textAlternative" style="font-size: var(--text-base);">Criar conta com Google</span>
-          </v-btn>
+              <p class="text-body-1 text-medium-emphasis mb-0">
+                Crie sua conta e comece a organizar suas finanças.
+              </p>
+            </header>
 
-          <v-btn @click="handleWidthDiscord" class="w-100 text-none">
-            <template #prepend>
-              <v-avatar :image="logoDiscord" size="25" ></v-avatar>
-            </template>
-            <span class="font-weight-bold text-textAlternative" style="font-size: var(--text-base);">Criar conta com Discord</span>
-          </v-btn>
-        </div>
+            <v-form
+              ref="form"
+              validate-on="submit"
+              class="d-flex flex-column ga-4"
+            >
+              <div>
+                <label
+                  class="text-body-2 font-weight-bold d-block mb-2"
+                  for="register-name"
+                >
+                  Nome
+                </label>
 
-        <div class="mt-5 font-weight-light text-center d-flex justify-center align-center ga-2 auth-footer">
-          <span class="text-textAlternative text-no-wrap font-weight-bold">Já sou cadastrado.</span>
-          <NuxtLink to="/login-page" class="text-decoration-none text-primary link-register text-textPrimary text-no-wrap font-weight-bold" >Quero fazer login</NuxtLink>
-        </div>
+                <v-text-field
+                  id="register-name"
+                  v-model="registerForm.name"
+                  variant="outlined"
+                  density="comfortable"
+                  placeholder="Seu nome"
+                  prepend-inner-icon="mdi-account-outline"
+                  :rules="nameRules"
+                  autocomplete="name"
+                  name="name"
+                  hide-details="auto"
+                  clearable
+                  color="primary"
+                  base-color="blue-grey-lighten-3"
+                  bg-color="blue-grey-lighten-5"
+                  @keyup.enter="handleRegisterUser"
+                />
+              </div>
 
-        <div class="mt-5 font-weight-light text-center d-flex justify-center align-center ga-2">
-          <NuxtLink to="/login-page" class="text-decoration-none text-primary link-register text-textPrimary text-no-wrap font-weight-bold">Voltar</NuxtLink>
-        </div>
+              <div>
+                <label
+                  class="text-body-2 font-weight-bold d-block mb-2"
+                  for="register-email"
+                >
+                  E-mail
+                </label>
 
-      </div>
-      
+                <v-text-field
+                  id="register-email"
+                  v-model="registerForm.email"
+                  variant="outlined"
+                  density="comfortable"
+                  placeholder="seu@email.com"
+                  prepend-inner-icon="mdi-email-outline"
+                  :rules="emailRules"
+                  autocomplete="email"
+                  inputmode="email"
+                  name="email"
+                  hide-details="auto"
+                  clearable
+                  color="primary"
+                  base-color="blue-grey-lighten-3"
+                  bg-color="blue-grey-lighten-5"
+                  @keyup.enter="handleRegisterUser"
+                />
+              </div>
 
-    </v-form>
-  </div>
+              <div>
+                <label
+                  class="text-body-2 font-weight-bold d-block mb-2"
+                  for="register-password"
+                >
+                  Senha
+                </label>
 
+                <v-text-field
+                  id="register-password"
+                  v-model="registerForm.password"
+                  variant="outlined"
+                  density="comfortable"
+                  placeholder="Crie uma senha segura"
+                  prepend-inner-icon="mdi-lock-outline"
+                  :type="showPassword ? 'text' : 'password'"
+                  :append-inner-icon="
+                    showPassword ? 'mdi-eye' : 'mdi-eye-off'
+                  "
+                  :rules="passwordRules"
+                  autocomplete="new-password"
+                  hide-details="auto"
+                  color="primary"
+                  base-color="blue-grey-lighten-3"
+                  bg-color="blue-grey-lighten-5"
+                  @click:append-inner="showPassword = !showPassword"
+                  @keyup="validateRulesPassword"
+                  @keyup.enter="handleRegisterUser"
+                />
+
+                <div class="mt-2">
+                  <Password
+                    v-model="registerForm.password"
+                    :strength-meter-only="true"
+                  />
+                </div>
+
+                <v-expand-transition>
+                  <div
+                    v-if="showValidatePassword"
+                    class="d-flex flex-column ga-1 mt-2 text-body-2 text-medium-emphasis"
+                  >
+                    <div class="d-flex align-center ga-2">
+                      <v-icon
+                        :color="regexValidateMinimoSeis ? 'success' : 'error'"
+                        :icon="
+                          regexValidateMinimoSeis
+                            ? 'mdi-check-circle-outline'
+                            : 'mdi-close-circle-outline'
+                        "
+                        size="16"
+                      />
+
+                      <span>Pelo menos 6 caracteres</span>
+                    </div>
+
+                    <div class="d-flex align-center ga-2">
+                      <v-icon
+                        :color="regexValidateMaiuscula ? 'success' : 'error'"
+                        :icon="
+                          regexValidateMaiuscula
+                            ? 'mdi-check-circle-outline'
+                            : 'mdi-close-circle-outline'
+                        "
+                        size="16"
+                      />
+
+                      <span>Uma letra maiúscula</span>
+                    </div>
+
+                    <div class="d-flex align-center ga-2">
+                      <v-icon
+                        :color="regexValidateMinuscula ? 'success' : 'error'"
+                        :icon="
+                          regexValidateMinuscula
+                            ? 'mdi-check-circle-outline'
+                            : 'mdi-close-circle-outline'
+                        "
+                        size="16"
+                      />
+
+                      <span>Uma letra minúscula</span>
+                    </div>
+
+                    <div class="d-flex align-center ga-2">
+                      <v-icon
+                        :color="regexValidateNumber ? 'success' : 'error'"
+                        :icon="
+                          regexValidateNumber
+                            ? 'mdi-check-circle-outline'
+                            : 'mdi-close-circle-outline'
+                        "
+                        size="16"
+                      />
+
+                      <span>Um número</span>
+                    </div>
+
+                    <div class="d-flex align-center ga-2">
+                      <v-icon
+                        :color="regexValidateEspecial ? 'success' : 'error'"
+                        :icon="
+                          regexValidateEspecial
+                            ? 'mdi-check-circle-outline'
+                            : 'mdi-close-circle-outline'
+                        "
+                        size="16"
+                      />
+
+                      <span>Um caractere especial</span>
+                    </div>
+                  </div>
+                </v-expand-transition>
+              </div>
+              <div>
+                <label
+                  class="text-body-2 font-weight-bold d-block mb-2"
+                  for="register-confirm-password"
+                >
+                  Confirmar senha
+                </label>
+
+                <v-text-field
+                  id="register-confirm-password"
+                  v-model="registerForm.confirmPassword"
+                  variant="outlined"
+                  density="comfortable"
+                  placeholder="Digite sua senha novamente"
+                  prepend-inner-icon="mdi-lock-check-outline"
+                  :type="showPassword ? 'text' : 'password'"
+                  :append-inner-icon="
+                    showPassword ? 'mdi-eye' : 'mdi-eye-off'
+                  "
+                  :rules="confirmPasswordRules"
+                  autocomplete="new-password"
+                  hide-details="auto"
+                  color="primary"
+                  base-color="blue-grey-lighten-3"
+                  bg-color="blue-grey-lighten-5"
+                  @click:append-inner="showPassword = !showPassword"
+                  @keyup.enter="handleRegisterUser"
+                />
+              </div>
+
+              <v-btn
+                :disabled="authStore.disableButton"
+                :loading="loading"
+                color="primary"
+                size="large"
+                height="52"
+                rounded="lg"
+                block
+                elevation="2"
+                class="mt-1"
+                @click="handleRegisterUser"
+              >
+                Criar minha conta
+
+                <v-icon
+                  end
+                  icon="mdi-arrow-right"
+                />
+              </v-btn>
+
+              <div
+                class="d-flex align-center ga-3 text-medium-emphasis text-caption"
+              >
+                <v-divider />
+
+                <span class="text-no-wrap">
+                  ou continue com
+                </span>
+
+                <v-divider />
+              </div>
+
+              <div class="d-flex flex-column ga-3">
+                <v-btn
+                  :disabled="authStore.disableButton"
+                  :loading="loadingGoogle"
+                  variant="outlined"
+                  color="blue-grey-darken-2"
+                  size="large"
+                  height="52"
+                  rounded="lg"
+                  block
+                  class="text-none"
+                  @click="handleWidthGoogle"
+                >
+                  <template #prepend>
+                    <v-avatar
+                      :image="logoGoogle"
+                      size="20"
+                    />
+                  </template>
+
+                  Criar conta com Google
+                </v-btn>
+
+                <v-btn
+                  :disabled="authStore.disableButton"
+                  :loading="loadingFacebook"
+                  variant="outlined"
+                  color="blue-grey-darken-2"
+                  size="large"
+                  height="52"
+                  rounded="lg"
+                  block
+                  class="text-none"
+                  @click="handleWidthDiscord"
+                >
+                  <template #prepend>
+                    <v-avatar
+                      :image="logoDiscord"
+                      size="22"
+                    />
+                  </template>
+
+                  Criar conta com Discord
+                </v-btn>
+              </div>
+
+              <p
+                class="text-center text-body-2 text-medium-emphasis ma-0 mt-1"
+              >
+                Já possui uma conta?
+
+                <NuxtLink
+                  to="/login-page"
+                  class="text-primary font-weight-bold text-decoration-none"
+                >
+                  Entrar na plataforma
+                </NuxtLink>
+              </p>
+            </v-form>
+          </div>
+        </v-col>
+      </v-row>
+    </v-container>
+  </main>
 </template>
 
 <style scoped>
-
-.container {
+.login-page {
   min-height: 100dvh;
   overflow-y: auto;
-  align-items: flex-start;
-  padding: 55px 16px;
+  background: #f6f8fc;
 }
 
-.form {
-  width: 100%;
-  max-width: 520px;
+.login-layout {
+  width: min(100%, 1440px);
+  min-height: 100dvh;
 }
 
-.password-meter {
-  width: 100%;
-  width: 100%;
-  margin: 10px 0 10px;
+.login-visual {
+  position: relative;
+  isolation: isolate;
+  min-height: 100%;
+  padding: clamp(3rem, 7vw, 6rem);
+  overflow: hidden;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgb(255 255 255 / 62%),
+      rgb(230 239 255 / 72%)
+    ),
+    #dce9ff;
 }
 
-.Password {
-  width: 100%;
-  max-width: 100%;
-  margin: 0;
-  padding: 0;
+.login-visual__orb {
+  position: absolute;
+  z-index: -1;
+  top: -13rem;
+  right: -12rem;
+  width: 34rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgb(31 84 255 / 14%);
+  filter: blur(10px);
 }
 
-.divider {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color:#757575;
-  font-size: 0.85rem;
+.login-visual__title {
+  max-width: 11ch;
+  font-size: clamp(2.5rem, 4.2vw, 4.6rem);
+  font-weight: 750;
+  letter-spacing: -0.065em;
+  line-height: 0.98;
 }
 
-.divider::before,
-.divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: #757575;
+.login-visual__title span {
+  display: block;
 }
 
-.link-register:hover {
-  text-decoration: underline !important;
-  color: #2563EB !important;
+.login-visual__description {
+  max-width: 34rem;
+  font-size: clamp(1rem, 1.35vw, 1.15rem);
+  line-height: 1.65;
 }
 
-.list-validator {
-  display: none;
+.login-form-wrapper {
+  max-width: 30rem;
 }
-
-@media (min-height: 1200px) {
-  .container {
-    align-items: center;
-  }
-}
-
 </style>

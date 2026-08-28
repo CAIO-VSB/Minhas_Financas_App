@@ -1,6 +1,6 @@
 import { auth } from "~~/auth"
 import { schemaMovements } from "~~/schemas/movements.schema"
-import { movementsRespository } from "~~/server/repositories/moviments.repository"
+import { recurrenceRepository } from "~~/server/repositories/recurrence.repository"
 
 export default defineEventHandler( async (event) => {
 
@@ -46,7 +46,7 @@ export default defineEventHandler( async (event) => {
 
     try {
 
-        return await movementsRespository.DeleteOnlyMovementRecurrence(id, result.data, optionEditingFormated, userId, recurrenceIdFormated)
+        return await recurrenceRepository.DeleteOnlyMovementRecurrence(id, result.data, optionEditingFormated, userId, recurrenceIdFormated)
 
     } catch (error) {
         console.log("Erro ao editar movimentação " + error)
