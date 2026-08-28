@@ -90,142 +90,217 @@
 
 <template>
   <v-dialog
-        transition="dialog-top-transition"
-        width="auto"
-        v-model="modelValue"
-        persistent
+    v-model="modelValue"
+    persistent
+    transition="dialog-top-transition"
+    max-width="520"
+  >
+    <v-card rounded="lg" elevation="8">
+      <v-card-item class="pa-4 pb-2">
+        <v-card-title class="text-h6 font-weight-bold text-blue-grey-darken-4">
+          Alterar senha de acesso
+        </v-card-title>
+
+        <v-card-subtitle class="mt-1">
+          Escolha uma senha forte para manter sua conta protegida.
+        </v-card-subtitle>
+
+        <template #append>
+          <v-btn
+            icon="mdi-close"
+            variant="text"
+            size="small"
+            @click="closeModalSubmitChangePassword"
+          />
+        </template>
+      </v-card-item>
+
+      <v-divider />
+
+      <v-card-text class="pa-4 pa-sm-6">
+        <v-alert
+          type="warning"
+          variant="tonal"
+          density="comfortable"
+          icon="mdi-shield-alert-outline"
+          class="mb-6"
         >
+          Todas as sessões ativas serão desconectadas após a alteração.
+        </v-alert>
 
-        <template v-slot:default="{ isActive }">
-            <v-card width="500">
-            <v-toolbar title="Alterar senha de acesso">
-                
-            <template #append>
-                <v-btn @click="closeModalSubmitChangePassword"  icon="mdi-close" variant="text"></v-btn>
-            </template>
+        <v-form ref="form" class="d-flex flex-column ga-2">
+          <v-text-field
+            v-model="currentPassword"
+            :type="showPassword ? 'text' : 'password'"
+            :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+            :rules="passwordRules"
+            autocomplete="current-password"
+            prepend-inner-icon="mdi-lock-question"
+            label="Senha atual"
+            variant="outlined"
+            density="comfortable"
+            color="primary"
+            hide-details="auto"
+            @click:append-inner="showPassword = !showPassword"
+          />
 
-            </v-toolbar>
+          <v-text-field
+            v-model="newPassword"
+            :type="showPassword ? 'text' : 'password'"
+            :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+            :rules="passwordRules"
+            autocomplete="new-password"
+            prepend-inner-icon="mdi-lock-check-outline"
+            label="Nova senha"
+            variant="outlined"
+            density="comfortable"
+            color="primary"
+            hide-details="auto"
+            @click:append-inner="showPassword = !showPassword"
+          />
 
-            <div class="ml-4 mr-5">
-                <v-alert
-                type="warning"
-                variant="tonal"
-                density="comfortable"
-                icon="mdi-information-outline"
-                class="mt-3"
-                >
-                    Todas as sessões ativas serão desconectadas.
-                </v-alert>
+          <v-text-field
+            v-model="confirmPassword"
+            :type="showPassword ? 'text' : 'password'"
+            :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+            :rules="confirmPasswordRules"
+            autocomplete="new-password"
+            prepend-inner-icon="mdi-lock-outline"
+            label="Confirmar nova senha"
+            variant="outlined"
+            density="comfortable"
+            color="primary"
+            hide-details="auto"
+            @click:append-inner="showPassword = !showPassword"
+          />
+
+          <v-sheet
+            rounded="lg"
+            color="blue-grey-lighten-5"
+            class="pa-4 mt-2"
+          >
+            <div class="text-body-2 font-weight-bold text-blue-grey-darken-3 mb-2">
+              Sua senha deve conter no mínimo:
             </div>
 
-            <v-card-text class="text-display-large pa-6">
-                <v-form ref="form">
-                    <v-text-field  
-                    :type="showPassword ? 'text' : 'password'"
-                    :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-                    @click:append-inner="showPassword = !showPassword"
-                    :rules="passwordRules" autocomplete="off" v-model="currentPassword" label="Senha atual*" variant="underlined">
-                        <template #prepend-inner>
-                            <v-icon icon="mdi-lock-question"></v-icon>
-                        </template>
-                    </v-text-field>
+            <v-expand-transition>
+              <v-list
+                density="compact"
+                bg-color="transparent"
+                class="pa-0 text-body-2"
+              >
+                <v-list-item class="px-0 min-height-auto">
+                  <template #prepend>
+                    <v-icon
+                      :color="regexValidateMinimoSeis ? 'success' : 'error'"
+                      :icon="regexValidateMinimoSeis
+                        ? 'mdi-check-circle-outline'
+                        : 'mdi-close-circle-outline'"
+                      size="small"
+                    />
+                  </template>
+                  <v-list-item-title>6 caracteres</v-list-item-title>
+                </v-list-item>
 
-                    <v-text-field
-                    :type="showPassword ? 'text' : 'password'"
-                    :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-                    @click:append-inner="showPassword = !showPassword"
-                    :rules="passwordRules" v-model="newPassword" label="Nova senha*" variant="underlined">
-                        <template #prepend-inner>
-                            <v-icon icon="mdi-lock-check"></v-icon>
-                        </template>
-                    </v-text-field>
+                <v-list-item class="px-0 min-height-auto">
+                  <template #prepend>
+                    <v-icon
+                      :color="regexValidateMaiuscula ? 'success' : 'error'"
+                      :icon="regexValidateMaiuscula
+                        ? 'mdi-check-circle-outline'
+                        : 'mdi-close-circle-outline'"
+                      size="small"
+                    />
+                  </template>
+                  <v-list-item-title>Uma letra maiúscula</v-list-item-title>
+                </v-list-item>
 
-                    <v-text-field 
-                    :type="showPassword ? 'text' : 'password'"
-                    :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-                    @click:append-inner="showPassword = !showPassword"
-                    :rules="confirmPasswordRules" v-model="confirmPassword" autocomplete="off" label="Confirmar nova senha*" variant="underlined">
-                        <template  #prepend-inner>
-                            <v-icon icon="mdi-lock"></v-icon>
-                        </template>
-                    </v-text-field>
-                        <div class="validate-password">
-                            <span class="font-weight-bold" style="font-size: var(--text-base);">Sua senha deve conter no mínimo:</span>
-                            <v-expand-transition>
-                                <div class="ml-1 bg-gray">          
-                                    <div>
-                                    <v-icon :color="regexValidateMinimoSeis ? 'green':'red'" :icon="regexValidateMinimoSeis ? 'mdi-check-circle-outline': 'mdi-close-circle-outline'" size="small"></v-icon>
-                                    6 caracteres
-                                    </div>
-                                    <div>
-                                    <v-icon :color="regexValidateMaiuscula ? 'green':'red'" :icon="regexValidateMaiuscula ? 'mdi-check-circle-outline': 'mdi-close-circle-outline'"  size="small"></v-icon>
-                                    Uma letra maiúscula
-                                    </div>
-                                    <div>
-                                    <v-icon :color="regexValidateMinuscula ? 'green':'red'" :icon="regexValidateMinuscula ? 'mdi-check-circle-outline': 'mdi-close-circle-outline'" size="small"></v-icon>
-                                    Uma letra minúscula
-                                    </div>
-                                    <div>
-                                    <v-icon :color="regexValidateNumber ? 'green':'red'" :icon="regexValidateNumber ? 'mdi-check-circle-outline': 'mdi-close-circle-outline'" size="small"></v-icon>
-                                    Um número
-                                    </div>
-                                    <div>
-                                    <v-icon :color="regexValidateEspecial ? 'green':'red'" :icon="regexValidateEspecial ? 'mdi-check-circle-outline': 'mdi-close-circle-outline'" size="small"></v-icon>
-                                    Um caractere especial
-                                    </div>
-                                </div>
-                            </v-expand-transition>
-                    </div>
-                </v-form>
-            </v-card-text>
+                <v-list-item class="px-0 min-height-auto">
+                  <template #prepend>
+                    <v-icon
+                      :color="regexValidateMinuscula ? 'success' : 'error'"
+                      :icon="regexValidateMinuscula
+                        ? 'mdi-check-circle-outline'
+                        : 'mdi-close-circle-outline'"
+                      size="small"
+                    />
+                  </template>
+                  <v-list-item-title>Uma letra minúscula</v-list-item-title>
+                </v-list-item>
 
-            <v-divider></v-divider>
-            <v-card-actions class="justify-end">
-                <v-btn
-                :loading="loading"
-                text="Solicitar alteração"
-                variant="flat"
-                color="primary"
-                class="text-none"
-                @click="handleUpatePassword"
-                ></v-btn>
-            </v-card-actions>
-            </v-card>
-        </template>
-    </v-dialog>
-    <BaseModal
+                <v-list-item class="px-0 min-height-auto">
+                  <template #prepend>
+                    <v-icon
+                      :color="regexValidateNumber ? 'success' : 'error'"
+                      :icon="regexValidateNumber
+                        ? 'mdi-check-circle-outline'
+                        : 'mdi-close-circle-outline'"
+                      size="small"
+                    />
+                  </template>
+                  <v-list-item-title>Um número</v-list-item-title>
+                </v-list-item>
+
+                <v-list-item class="px-0 min-height-auto">
+                  <template #prepend>
+                    <v-icon
+                      :color="regexValidateEspecial ? 'success' : 'error'"
+                      :icon="regexValidateEspecial
+                        ? 'mdi-check-circle-outline'
+                        : 'mdi-close-circle-outline'"
+                      size="small"
+                    />
+                  </template>
+                  <v-list-item-title>Um caractere especial</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-expand-transition>
+          </v-sheet>
+        </v-form>
+      </v-card-text>
+
+      <v-divider />
+
+      <v-card-actions class="pa-4 justify-end">
+        <v-btn
+          :loading="loading"
+          color="primary"
+          variant="flat"
+          rounded="lg"
+          class="text-none"
+          @click="handleUpatePassword"
+        >
+          Solicitar alteração
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
+  <BaseModal
     :persistent-modal="true"
     :model-value="authStore.showDialogAlertPassword"
-    @close-modal="redirectPageLogin"
     title="Senha alterada com sucesso"
-    >
-    <div class="pa-2">
-        <p>Sua senha foi alterada com sucesso.</p>
+    @close-modal="redirectPageLogin"
+  >
+    <div class="pa-2 text-body-2">
+      <p class="mb-4">
+        Sua senha foi alterada com sucesso.
+      </p>
 
-        <p>
-            Por motivos de segurança, sua sessão atual foi encerrada.
-        </p>
+      <p class="mb-4">
+        Por motivos de segurança, sua sessão atual foi encerrada.
+      </p>
 
-        <br>
-
-        <p>
-            Ao clicar em <strong>OK</strong>, você será redirecionado para a tela de login.
-            Utilize sua nova senha para acessar sua conta novamente.
-        </p>
+      <p class="mb-0">
+        Ao clicar em <strong>OK</strong>, você será redirecionado para a tela
+        de login. Utilize sua nova senha para acessar sua conta novamente.
+      </p>
     </div>
-</BaseModal>
-
+  </BaseModal>
 </template>
 
 <style scoped>
-
-.validate-password {
-    background-color: #f2f2f2;
-    padding: 5px;
+.min-height-auto {
+  min-height: auto;
 }
-
-.text-display-large {
-    font-size: 1.2rem;
-}
-
 </style>

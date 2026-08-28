@@ -77,89 +77,130 @@
 
 <template>
   <v-dialog
-        transition="dialog-top-transition"
-        width="auto"
-        v-model="modelValue"
-        persistent
-        >
+    v-model="modelValue"
+    persistent
+    transition="dialog-top-transition"
+    max-width="520"
+  >
+    <v-card rounded="lg" elevation="8">
+      <v-card-item class="pa-4 pb-2">
+        <v-card-title class="text-h6 font-weight-bold text-blue-grey-darken-4">
+          Alterar e-mail de acesso
+        </v-card-title>
 
-        <template v-slot:default="{ isActive }">
-            <v-card width="500">
-            <v-toolbar title="Alterar email de acesso">
-                
-            <template #append>
-                <v-btn @click="closeModalSubmitChangeEmail"  icon="mdi-close" variant="text"></v-btn>
-            </template>
+        <v-card-subtitle class="mt-1">
+          Confirme sua identidade para solicitar a alteração.
+        </v-card-subtitle>
 
-            </v-toolbar>
-
-            <div class="ml-4 mr-5">
-                <v-alert
-                type="info"
-                variant="tonal"
-                density="comfortable"
-                icon="mdi-information-outline"
-                class="mt-3"
-                >
-                    Esse processo pode levar alguns segundos e envolve duas confirmações por e-mail: uma no seu e-mail atual e outra no novo endereço.
-                </v-alert>
-            </div>
-
-            <v-card-text class="text-display-large pa-6">
-                <v-form ref="form">
-                    <v-text-field prepend-inner-icon="mdi-email" readonly v-model="props.email" label="Email atual*" variant="underlined"></v-text-field>
-                    <v-text-field prepend-inner-icon="mdi-email-check" :rules="emailRules" v-model="newEmail" name="email" autocomplete="email" label="Novo email*" variant="underlined"></v-text-field>
-                    <v-text-field
-                    :type="showPassword ? 'text' : 'password'"
-                    :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-                    @click:append-inner="showPassword = !showPassword"
-                    :rules="passwordRules" v-model="password" label="Senha de acesso*" variant="underlined">
-                        <template #prepend-inner>
-                            <v-icon icon="mdi-lock"></v-icon>
-                        </template>
-                    </v-text-field>
-                </v-form>
-            </v-card-text>
-
-            <v-divider></v-divider>
-            <v-card-actions class="justify-end">
-                <v-btn
-                :loading="loading"
-                text="Solicitar alteração"
-                variant="flat"
-                color="primary"
-                class="text-none"
-                @click="handleUpateEmail"
-                ></v-btn>
-            </v-card-actions>
-            </v-card>
+        <template #append>
+          <v-btn
+            icon="mdi-close"
+            variant="text"
+            size="small"
+            @click="closeModalSubmitChangeEmail"
+          />
         </template>
-    </v-dialog>
-    <BaseModal :persistent-modal="true" @close-modal="redirectPageLogin" :model-value="authStore.showDialogAlertEmail" title="Confirmação de alteração de e-mail">
-        <div class="pa-2">
-            <p>Para proteger sua conta, toda alteração de e-mail precisa ser confirmada.</p>
+      </v-card-item>
 
-            <p>
-                Enviaremos uma mensagem para o seu e-mail atual com as instruções para autorizar a mudança.
-            </p>
+      <v-divider />
 
-            <br>
+      <v-card-text class="pa-4 pa-sm-6">
+        <v-alert
+          type="info"
+          variant="tonal"
+          density="comfortable"
+          icon="mdi-information-outline"
+          class="mb-6"
+        >
+          O processo envolve duas confirmações: uma no seu e-mail atual e
+          outra no novo endereço informado.
+        </v-alert>
 
-            <p>
-                Após a confirmação, o novo e-mail passará a ser utilizado para acessar sua conta e receber comunicações do Velto Finance. Por segurança, será necessário fazer login novamente com o novo endereço de e-mail.
-            </p>
+        <v-form ref="form" class="d-flex flex-column ga-2">
+          <v-text-field
+            v-model="props.email"
+            prepend-inner-icon="mdi-email-outline"
+            readonly
+            label="E-mail atual"
+            variant="outlined"
+            density="comfortable"
+            color="primary"
+            hide-details="auto"
+          />
 
-            <br>
+          <v-text-field
+            v-model="newEmail"
+            :rules="emailRules"
+            prepend-inner-icon="mdi-email-check-outline"
+            name="email"
+            autocomplete="email"
+            label="Novo e-mail"
+            variant="outlined"
+            density="comfortable"
+            color="primary"
+            hide-details="auto"
+          />
 
-            <p class="text-caption text-medium-emphasis">
-                <strong>Observação:</strong> ao clicar em <strong>OK</strong>, você será redirecionado para a tela de login.
-            </p>
-        </div>
-    </BaseModal>
+          <v-text-field
+            v-model="password"
+            :type="showPassword ? 'text' : 'password'"
+            :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+            :rules="passwordRules"
+            prepend-inner-icon="mdi-lock-outline"
+            label="Senha de acesso"
+            variant="outlined"
+            density="comfortable"
+            color="primary"
+            hide-details="auto"
+            @click:append-inner="showPassword = !showPassword"
+          />
+        </v-form>
+      </v-card-text>
 
+      <v-divider />
+
+      <v-card-actions class="pa-4 justify-end">
+        <v-btn
+          :loading="loading"
+          color="primary"
+          variant="flat"
+          rounded="lg"
+          class="text-none"
+          @click="handleUpateEmail"
+        >
+          Solicitar alteração
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
+  <BaseModal
+    :persistent-modal="true"
+    :model-value="authStore.showDialogAlertEmail"
+    title="Confirmação de alteração de e-mail"
+    @close-modal="redirectPageLogin"
+  >
+    <div class="pa-2 text-body-2">
+      <p class="mb-4">
+        Para proteger sua conta, toda alteração de e-mail precisa ser
+        confirmada.
+      </p>
+
+      <p class="mb-4">
+        Enviaremos uma mensagem para o seu e-mail atual com as instruções
+        para autorizar a mudança.
+      </p>
+
+      <p class="mb-4">
+        Após a confirmação, o novo e-mail passará a ser utilizado para acessar
+        sua conta e receber comunicações do Velto Finance. Por segurança, será
+        necessário fazer login novamente com o novo endereço de e-mail.
+      </p>
+
+      <p class="text-caption text-medium-emphasis mb-0">
+        <strong>Observação:</strong> ao clicar em <strong>OK</strong>, você
+        será redirecionado para a tela de login.
+      </p>
+    </div>
+  </BaseModal>
 </template>
-
-<style scoped>
-
-
-</style>
