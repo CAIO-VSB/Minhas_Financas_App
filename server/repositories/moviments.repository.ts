@@ -60,6 +60,8 @@ export const movementsRespository = {
 
     async findMovementsByFilter(userId: string, start_day: string, end_day: string, categorie_id: number[], accounts_id: number[], situation: string, for_type: string[]) {
 
+        console.log("Valores do filtros " + for_type)
+
         const categorieParam = categorie_id.length > 0 ? categorie_id : null
         const accountsParam = accounts_id.length > 0 ? accounts_id : null
         let situationParam = situation || null
@@ -79,6 +81,9 @@ export const movementsRespository = {
             forTypeParam = forTypeParam.map(type => {
                 if (type === 'Receitas') return 'receita'
                 if (type === 'Despesas') return 'despesa'
+                if (type === 'Tranferências de entrada') return 'transferencia_entrada'
+                if (type === 'Transferências de saída') return 'transferencia_saida'
+                if (type === 'Cartão de crédito') return 'pagamento_fatura'
                 return type
             })
         }

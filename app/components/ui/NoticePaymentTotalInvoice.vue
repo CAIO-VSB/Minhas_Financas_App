@@ -18,7 +18,7 @@
 
 <template>
   <v-dialog v-model="modelValue" max-width="500">
-    <v-card class="pa-4 text-center">
+    <v-card class="pa-4 text-center" rounded="lg">
       
       <div>
         <v-icon icon="mdi-invoice-check" size="100" color="success" class="mb-3"></v-icon>
@@ -34,7 +34,7 @@
         Se sua fatura fechou com o valor de <strong>{{ formatCurrency(invoiceValue) }}</strong>, aqui você pagará esse valor todo de uma só vez.
       </p>
 
-      <v-btn color="primary" block @click="handleConfirm">
+      <v-btn rounded="lg" color="primary" block @click="handleConfirm">
         Prosseguir
       </v-btn>
 

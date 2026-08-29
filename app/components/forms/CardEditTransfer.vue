@@ -148,16 +148,27 @@ import type { TTransferPayload } from "~~/schemas/transfer.schema"
     v-if="props.draft"
     >
       <v-dialog persistent v-model="modelValue" max-width="600">
-        <v-card  title="Editar Transferência">
+        <v-card rounded="lg">
+          <v-card-item class="pa-4 pb-2">
+            <v-card-title class="text-h6 font-weight-bold text-blue-grey-darken-4">
+            Editar Transferência
+            </v-card-title>
+
+            <template #prepend>
+            <v-avatar color="primary" variant="tonal" rounded="lg">
+                <v-icon icon="mdi-swap-horizontal" color="primary"/>
+            </v-avatar>
+            </template>
+          </v-card-item>
           <v-divider></v-divider>
           <v-card-text>
             <form>
 
-              <CurrencyInput :rules="currencyRules" prepend-inner-icon="mdi-cash" input-color="#2196F3" base-color="#2196F3" color="#2196F3" text-color="#2196F3" autocomplete="off" label="Valor*" v-model="props.draft.value_transfer"/>
+              <CurrencyInput variant="solo-filled" :rules="currencyRules" prepend-inner-icon="mdi-cash" input-color="#2196F3" base-color="#2196F3" color="#2196F3" text-color="#2196F3" autocomplete="off" label="Valor*" v-model="props.draft.value_transfer"/>
               
-              <v-date-input :rules="dateRules" v-model="props.draft.date_transfer" prepend-inner-icon="mdi-calendar" prepend-icon=""  autocomplete="off" name="date" label="Data*" variant="underlined" ></v-date-input>
+              <v-date-input :rules="dateRules" v-model="props.draft.date_transfer" prepend-inner-icon="mdi-calendar" prepend-icon=""  autocomplete="off" name="date" label="Data*" variant="solo-filled" ></v-date-input>
 
-              <v-select v-model="modelAccountOrigin" clearable  prepend-inner-icon="mdi-bank-transfer-out" :rules="selectRules" item-value="id" item-title="name_identifier" color="primary" label="Conta origem*" :items="accountsFilteredOrigin" variant="underlined">      
+              <v-select v-model="modelAccountOrigin" clearable  prepend-inner-icon="mdi-bank-transfer-out" :rules="selectRules" item-value="id" item-title="name_identifier" color="primary" label="Conta origem*" :items="accountsFilteredOrigin" variant="solo-filled"">      
                  <template v-slot:selection="{item}">
                     <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
                       <v-img  :src="item.url_image" :alt="item.name_identifier"></v-img>
@@ -176,7 +187,7 @@ import type { TTransferPayload } from "~~/schemas/transfer.schema"
                   </template>
               </v-select>
 
-              <v-select v-model="modelAccountDestination" clearable prepend-inner-icon="mdi-bank-transfer-in" :rules="selectRules" item-value="id" item-title="name_identifier"  color="primary" label="Conta destino*" :items="accountsFilteredDestination" variant="underlined">
+              <v-select v-model="modelAccountDestination" clearable prepend-inner-icon="mdi-bank-transfer-in" :rules="selectRules" item-value="id" item-title="name_identifier"  color="primary" label="Conta destino*" :items="accountsFilteredDestination" variant="solo-filled">
                  <template v-slot:selection="{item}">
                     <v-avatar style="width: 30px; height: 30px; margin-right: 12px;"> 
                       <v-img  :src="item.url_image" :alt="item.name_identifier"></v-img>
@@ -195,7 +206,7 @@ import type { TTransferPayload } from "~~/schemas/transfer.schema"
                   </template>
               </v-select>
 
-              <v-text-field v-model="props.draft.observation" prepend-inner-icon="mdi-note-text" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="underlined"></v-text-field >
+              <v-text-field v-model="props.draft.observation" prepend-inner-icon="mdi-note-text" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="solo-filled"></v-text-field >
 
             </form>
 
@@ -206,7 +217,7 @@ import type { TTransferPayload } from "~~/schemas/transfer.schema"
 
           <v-divider></v-divider>
 
-          <v-card-actions>
+          <v-card-actions class="pa-4 d-flex flex-wrap ga-2">
             <v-btn
               class="text-none"
               text="Cancelar"
@@ -220,6 +231,7 @@ import type { TTransferPayload } from "~~/schemas/transfer.schema"
               text="Salvar"
               variant="flat"
               :loading="isPending"
+              rounded="lg"
               @click="handleEditTransfer"
             ></v-btn>
           </v-card-actions>

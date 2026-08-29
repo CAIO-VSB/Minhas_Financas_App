@@ -125,10 +125,10 @@
         v-model="modelValue"
       >
         <template v-slot:default="{ isActive }">
-          <v-card>
+          <v-card rounded="xl" elevation="5" class="pa-1">
             
             <template #title>
-              {{ props.title }}
+              <span class="font-weight-bold text-blue-grey-darken-4">{{ props.title }}</span>
             </template>
 
             <template #subtitle>
@@ -143,9 +143,9 @@
               v-if="props.draft"
               >
 
-                <CurrencyInput @keyup="showButtonSubmit"  :rules="currencyRules"  prepend-inner-icon="mdi-calculator" autocomplete="off" label="Valor" v-model="props.draft.value_transaction" />
+                <CurrencyInput @keyup="showButtonSubmit" variant="solo-filled"  :rules="currencyRules"  prepend-inner-icon="mdi-calculator" autocomplete="off" label="Valor" v-model="props.draft.value_transaction" />
 
-                <v-date-input :rules="dateRules" prepend-inner-icon="mdi-calendar-range"  autocomplete="off" name="date" prepend-icon="" label="Data" variant="underlined" v-model="props.draft.date_transaction"></v-date-input>
+                <v-date-input :rules="dateRules" prepend-inner-icon="mdi-calendar-range"  autocomplete="off" name="date" prepend-icon="" label="Data" variant="solo-filled" v-model="props.draft.date_transaction"></v-date-input>
 
                 <v-select
                 v-model="modelAccounts"
@@ -154,7 +154,7 @@
                 :rules="selectRules"
                 item-title="name_identifier"
                 item-value="id"
-                variant="underlined"
+                variant="solo-filled"
                 label="Conta"
                 persistent-hint
                 autocomplete="off"
@@ -202,20 +202,22 @@
 
             <v-divider></v-divider>
 
-            <v-card-actions style="display: flex; justify-content: space-between; margin-top: 13px;">
+            <v-card-actions class="pa-4 d-flex flex-wrap ga-2">
               <v-btn
                 text="Cancelar"
                 variant="text"
                 :color="props.colorBotton"
                 class="text-none "
+                rounded="lg"
                 @click="isActive.value = false"
               ></v-btn>
-              
+              <v-spacer></v-spacer>
               <v-btn
                 :text="props.titleBotton"
                 variant="flat"
                 :color="props.colorBotton"
                 class="text-none"
+                rounded="lg"
                 :disabled="buttonSubmitDisabled"
                 @click="submitForm"
               ></v-btn>

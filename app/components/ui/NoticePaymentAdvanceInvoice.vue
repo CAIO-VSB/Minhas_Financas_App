@@ -18,7 +18,7 @@
 
 <template>
   <v-dialog v-model="modelValue" max-width="500">
-    <v-card class="pa-4 text-center">
+    <v-card class="pa-4 text-center" rounded="lg">
       
       <div>
         <v-icon icon="mdi-invoice-fast-outline" size="100" color="primary" class="mb-3"></v-icon>
@@ -34,7 +34,7 @@
         Pagar um valor adiantado não faz sua fatura fechar, você ainda terá que pagar o que restou da fatura quando chegar o dia de pagamento.
       </p>
 
-      <v-btn color="primary" block @click="handleConfirm">
+      <v-btn rounded="lg" color="primary" block @click="handleConfirm">
         Prosseguir
       </v-btn>
 

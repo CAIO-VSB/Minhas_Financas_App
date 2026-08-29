@@ -302,7 +302,22 @@
     validate-on="lazy blur"
     >
       <v-dialog v-model="modelValue" max-width="700">
-        <v-card prepend-icon="mdi-bank-plus" title="Nova despesa">
+        <v-card  rounded="lg" elevation="8">
+            <v-card-item class="pa-4 pb-2">
+            <v-card-title class="text-h6 font-weight-bold text-blue-grey-darken-4">
+              Nova despesa
+            </v-card-title>
+
+            <v-card-subtitle class="mt-1">
+              Registre uma nova saída para acompanhar sua vida financeira.
+            </v-card-subtitle>
+
+            <template #prepend>
+              <v-avatar color="red" variant="tonal" rounded="lg">
+                <v-icon icon="mdi-bank-plus" color="red"/>
+              </v-avatar>
+            </template>
+            </v-card-item>
           <v-divider></v-divider>
           <v-card-text>
             <v-row >
@@ -310,19 +325,19 @@
               <v-col
                cols="12" md="6" sm="12"
               >
-              <CurrencyInput prepend-inner-icon="mdi-cash" input-color="#C62828" base-color="#C62828" color="#C62828" :rules="currencyRules"  autocomplete="off" label="Valor*" v-model="movementsForm.value_transaction" />
+              <CurrencyInput variant="solo-filled" prepend-inner-icon="mdi-cash" input-color="#C62828" base-color="#C62828" color="#C62828" :rules="currencyRules"  autocomplete="off" label="Valor*" v-model="movementsForm.value_transaction" />
               </v-col>
             
               <v-col
               dens cols="12" md="6" sm="12"
               >
-              <v-date-input prepend-inner-icon="mdi-calendar" prepend-icon="" :rules="dateRules" autocomplete="off" name="date" label="Data*" variant="underlined" v-model="movementsForm.date_transaction"></v-date-input>
+              <v-date-input prepend-inner-icon="mdi-calendar" prepend-icon="" :rules="dateRules" autocomplete="off" name="date" label="Data*" variant="solo-filled" v-model="movementsForm.date_transaction"></v-date-input>
               </v-col>
 
               <v-col
               dens cols="12" md="6" sm="12"
               >
-              <v-text-field prepend-inner-icon="mdi-pencil" :rules="nameRules" :counter="45" maxlength="45"  autocomplete="name" name="name" label="Descrição*" variant="underlined" v-model="movementsForm.description_transaction"></v-text-field>
+              <v-text-field prepend-inner-icon="mdi-pencil" :rules="nameRules" :counter="45" maxlength="45"  autocomplete="name" name="name" label="Descrição*" variant="solo-filled" v-model="movementsForm.description_transaction"></v-text-field>
               </v-col>
 
               <v-col
@@ -335,7 +350,7 @@
                 :rules="selectRules"
                 item-title="name_identifier"
                 item-value="id"
-                variant="underlined"
+                variant="solo-filled"
                 label="Conta*"
                 hint="O valor será debitado desta conta"
                 persistent-hint
@@ -398,7 +413,7 @@
                 :items="filterCategorias"
                 item-title="name_identifier"
                 item-value="id"
-                variant="underlined"
+                variant="solo-filled"
                 label="Categoria*"
                 persistent-hint
                 :rules="selectRules"
@@ -450,117 +465,147 @@
                 <v-col
                 dens cols="12" md="12" sm="12"
                 >
-                <v-text-field prepend-inner-icon="mdi-note-text" v-model="movementsForm.observation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="underlined"></v-text-field>
+                <v-text-field prepend-inner-icon="mdi-note-text" v-model="movementsForm.observation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="solo-filled""></v-text-field>
                 </v-col>
 
                 <v-col
                 dens cols="12" md="12" sm="12"
                 >
-                <v-file-input prepend-inner-icon="mdi-paperclip" prepend-icon=""  clearable label="Anexar comprovante" variant="underlined"></v-file-input>
+                <v-file-input prepend-inner-icon="mdi-paperclip" prepend-icon=""  clearable label="Anexar comprovante" variant="solo-filled""></v-file-input>
                 </v-col>
 
-                <div class="d-flex ga-3 options-footer">
-                  <v-switch
-                    :disabled="showSwitch"
-                    v-model="movementsForm.status_transaction"
-                    color="error"
-                    :label="labelSwitch"
-                    hide-details
-                    false-value="pendente"
-                    true-value="pago"
-                    true-icon="mdi-check"
-                    false-icon="mdi-close"
-                  ></v-switch> 
-                  <v-switch
-                    v-model="showInputFixa"
-                    color="error"
-                    label="Despesa fixa"
-                    hide-details
-                    false-value="avista"
-                    true-value="fixa"
-                    true-icon="mdi-pin"
-                    false-icon="mdi-close"
-                  ></v-switch> 
-                  <v-switch
-                    v-model="showInputParcelado"
-                    color="error"
-                    label="Despesa parcelada"
-                    hide-details
-                    false-value="unica"
-                    true-value="parcelada"
-                    true-icon="mdi-repeat"
-                    false-icon="mdi-close"
-                  ></v-switch> 
-                    <div class="d-flex align-center">
-                      <v-tooltip location="top" open-on-click>
-                        <template v-slot:activator="{ props }">
-                          <v-icon v-bind="props" icon="mdi-help-circle" size="25" class="ml-1" style="cursor: pointer;"></v-icon>
-                        </template>
-                        Ao marcar como fixa, serão geradas as próximas 12 ocorrências, para melhor previsibilidade e controle. Após esse período, você poderá renovar a recorrência.
-                      </v-tooltip>
-                    </div>
+                <v-col cols="12">
+                <v-sheet border rounded="lg" class="pa-4 mb-3">
+                  <div class="text-body-2 font-weight-bold text-blue-grey-darken-3 mb-3">
+                    Opções da receita
                   </div>
 
-                <v-col
-                  cols="12" md="6" sm="6" class="mt-3"
-                  >
-                  <v-number-input
-                  v-if="showInputParcelado"
-                  v-model="recorrenceForm.total_installments"
-                  density="compact"
-                  variant="underlined"
-                  controlVariant="default"
-                  :min="2"
-                  :max="100"
-                  label="Número de parcelas*"
-                  :hideInput="false"
-                  inset
-                  ></v-number-input>
-                </v-col>
+                  <v-row>
+                    <v-col cols="12" sm="6" md="4">
+                      <v-switch
+                        :disabled="showSwitch"
+                        v-model="movementsForm.status_transaction"
+                        color="error"
+                        :label="labelSwitch"
+                        hide-details
+                        false-value="pendente"
+                        true-value="pago"
+                        true-icon="mdi-check"
+                        false-icon="mdi-close"
+                    ></v-switch> 
+                    </v-col>
 
-                <v-col
-                  cols="12" md="6" sm="6" class="mt-3"
-                  >
-                  <v-select
-                  v-if="showInputParcelado"
-                  v-model="recorrenceForm.frequency_recurrence"
-                  label="Selecione a periodicidade*"
-                  density="compact"
-                  :items="['Dias', 'Semanas', 'Meses', 'Anos']"
-                  variant="underlined"
-                  ></v-select>
-                </v-col>
-                  
+                    <v-col cols="12" sm="6" md="4">
+                      <v-switch
+                        v-model="showInputFixa"
+                        color="error"
+                        label="Despesa fixa"
+                        hide-details
+                        false-value="avista"
+                        true-value="fixa"
+                        true-icon="mdi-pin"
+                        false-icon="mdi-close"
+                      ></v-switch> 
+                    </v-col>
+
+                    <v-col cols="12" sm="6" md="4" class="d-flex align-center">
+                    <v-switch
+                      v-model="showInputParcelado"
+                      color="error"
+                      label="Despesa parcelada"
+                      hide-details
+                      false-value="unica"
+                      true-value="parcelada"
+                      true-icon="mdi-repeat"
+                      false-icon="mdi-close"
+                    ></v-switch> 
+
+                    <v-tooltip location="top">
+                      <template #activator="{ props }">
+                        <v-btn
+                          v-bind="props"
+                          icon="mdi-help-circle-outline"
+                          variant="text"
+                          size="small"
+                        />
+                      </template>
+                      Ao marcar como fixa, serão geradas as próximas 12
+                      ocorrências. Você poderá renovar a recorrência após esse
+                      período.
+                    </v-tooltip>
+
+                    </v-col>
+
+                    </v-row>
+                    
+                  </v-sheet>
+                  </v-col>
+
+                  <v-col
+                    cols="12" md="6"
+                    >
+                    <v-number-input
+                    v-if="showInputParcelado"
+                    v-model="recorrenceForm.total_installments"
+                    variant="solo-filled"
+                    controlVariant="default"
+                    :min="2"
+                    :max="100"
+                    label="Número de parcelas*"
+                    :hideInput="false"
+                    inset
+                    ></v-number-input>
+                  </v-col>
+
+                  <v-col
+                    cols="12" sm="6"
+                    >
+                    <v-select
+                    v-if="showInputParcelado"
+                    v-model="recorrenceForm.frequency_recurrence"
+                    label="Selecione a periodicidade*"
+                    :items="['Dias', 'Semanas', 'Meses', 'Anos']"
+                    variant="solo-filled"
+                    ></v-select>
+                  </v-col>
+
+                
               </v-row>
             <small class="text-caption text-medium-emphasis">* Indica campos obrigatórios</small>
           </v-card-text>
 
           <v-divider></v-divider>
 
-          <v-card-actions>
+          <v-card-actions class="pa-4 d-flex flex-wrap ga-2">
+
             <v-btn
               class="text-none"
               text="Fechar"
               variant="text"
+              rounded="lg"
               @click="resetFormAndCloseModal"
             ></v-btn>
-            <v-spacer></v-spacer>
+             <v-spacer />
             <v-btn
               class="text-none"
               color="error"
               text="Salvar e criar nova"
               variant="outlined"
               :loading="isPending"
+              rounded="lg"
               @click="submitMovement({closeAfterSave: false})"
             ></v-btn>
+
             <v-btn
               class="text-none"
               color="error"
               text="Salvar"
               variant="flat"
+              rounded="lg"
               :loading="isPending"
               @click="submitMovement({closeAfterSave: true})"
             ></v-btn>
+
           </v-card-actions>
         </v-card>
       </v-dialog>

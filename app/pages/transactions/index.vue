@@ -493,15 +493,15 @@
                 md="6"
             >
                 <AppCard
-                    subtitle="Saldo atual"
-                    :loading="isPendingCurrentBalance"
-                    size="40"
-                    :value="balanceCurrent.saldo_atual"
-                    color="primary"
-                    icon="mdi-bank"
-                    text-tool-tip="O cálculo do saldo atual é independente do período selecionado, considerando o saldo inicial das contas ativas juntamente com todas as movimentações efetivadas de entrada e saída"
-                    icon-tool-tip="mdi-information-outline"
-                    size-icon-tool-tip="20px"
+                subtitle="Saldo atual"
+                :loading="isPendingCurrentBalance"
+                size="40"
+                :value="balanceCurrent.saldo_atual"
+                color="primary"
+                icon="mdi-bank"
+                text-tool-tip="O cálculo do saldo atual é independente do período selecionado, considerando o saldo inicial das contas ativas juntamente com todas as movimentações efetivadas de entrada e saída"
+                icon-tool-tip="mdi-information-outline"
+                size-icon-tool-tip="20px"
                 />
             </v-col>
 

@@ -296,20 +296,20 @@
 
                 <v-card-actions class="pa-5 justify-space-between">
                     <v-btn
-                        variant="text"
-                        class="text-none font-weight-medium"
-                        @click="resetForm"
+                    variant="text"
+                    class="text-none font-weight-medium"
+                    @click="resetForm"
                     >
-                        Fechar
+                    Fechar
                     </v-btn>
 
                     <v-btn
-                        color="primary"
-                        variant="flat"
-                        rounded="lg"
-                        class="text-none font-weight-bold"
-                        :loading="isPending"
-                        @click="handleAddAccount"
+                    color="primary"
+                    variant="flat"
+                    rounded="lg"
+                    class="text-none font-weight-bold"
+                    :loading="isPending"
+                    @click="handleAddAccount"
                     >
                         Salvar
                     </v-btn>

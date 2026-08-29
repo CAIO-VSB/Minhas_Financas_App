@@ -206,8 +206,23 @@
     ref="formRef"
     validate-on="lazy blur"
     >
-      <v-dialog v-model="modelValue" max-width="550">
-        <v-card title="Pagamento parcial">
+      <v-dialog v-model="modelValue" max-width="600">
+        <v-card rounded="lg">
+          <v-card-item class="pa-4 pb-2">
+            <v-card-title class="text-h6 font-weight-bold text-blue-grey-darken-4">
+              Pagamento parcial
+            </v-card-title>
+
+            <v-card-subtitle class="mt-1">
+              Preencha os dados para relizar o pagamento parcial da fatura.
+            </v-card-subtitle>
+
+            <template #prepend>
+              <v-avatar color="red" variant="tonal" rounded="lg">
+                <v-icon icon="mdi-credit-card-outline" color="red" />
+              </v-avatar>
+            </template>
+          </v-card-item>
           <v-divider></v-divider>
           <v-card-text v-if="props.draft">
             <v-row density="comfortable">
@@ -215,30 +230,30 @@
             <div class="info w-100">
                 <div class="d-flex ga-2 justify-space-between">
                     <p style="color: rgba(0, 0, 0, 0.70);">Cartão:</p>
-                    <p class="font-weight-semibold">{{ props.draft.name_identifier }}</p>
+                     <v-chip><p class="font-weight-semibold">{{ props.draft.name_identifier }}</p></v-chip>
                 </div>
 
                 <div class="d-flex ga-2 justify-space-between">
                     <p style="color: rgba(0, 0, 0, 0.70);;">Fatura:</p>
-                    <p class="font-weight-semibold">{{sumary?.vencimento}}</p>
+                    <v-chip><p class="font-weight-semibold">{{sumary?.vencimento}}</p></v-chip>
                 </div>
 
                 <div class="d-flex ga-6 justify-space-between">
                     <p style="color: rgba(0, 0, 0, 0.70);">Valor total:</p>
-                    <p class="font-weight-semibold">{{ formatCurrency(props.totalInvoice)}}</p>
+                    <v-chip color="red"><p class="font-weight-semibold">{{ formatCurrency(props.totalInvoice)}}</p></v-chip>
                 </div>
               </div> 
 
               <v-col
               cols="12" md="12" sm="12"
               >
-              <CurrencyInput prepend-inner-icon="mdi-cash" :rules="currencyRules" text-color="primary" autocomplete="off" label="Valor pago" v-model="form.totalPaid"/>
+              <CurrencyInput variant="solo-filled" prepend-inner-icon="mdi-cash" :rules="currencyRules" text-color="primary" autocomplete="off" label="Valor pago" v-model="form.totalPaid"/>
               </v-col>
 
               <v-col
               cols="12" md="12" sm="12"
               >
-              <v-date-input prepend-inner-icon="mdi-calendar" prepend-icon="" :rules="dateRules" autocomplete="off" name="date" label="Data do pagamento" variant="underlined" v-model="form.datePayment"></v-date-input>
+              <v-date-input prepend-inner-icon="mdi-calendar" prepend-icon="" :rules="dateRules" autocomplete="off" name="date" label="Data do pagamento" variant="solo-filled" v-model="form.datePayment"></v-date-input>
               </v-col>
               
             <v-col
@@ -251,7 +266,7 @@
                 :rules="selectRules"
                 item-title="name_identifier"
                 item-value="id"
-                variant="underlined"
+                variant="solo-filled"
                 label="Conta"
                 hint="O valor será debitado desta conta"
                 persistent-hint
@@ -284,11 +299,12 @@
 
           <v-divider></v-divider>
 
-          <v-card-actions >
+          <v-card-actions class="pa-4 d-flex flex-wrap ga-2">
             <v-btn
               class="text-none"
               text="Cancelar"
               variant="text"
+              rounded="lg"
               @click="resetForm"
             ></v-btn>
             <v-spacer></v-spacer>
@@ -298,6 +314,7 @@
               color="primary"
               text="Pagar parcial"
               variant="flat"
+              rounded="lg"
               @click="submitForm"
               :loading="isPending"
             ></v-btn>

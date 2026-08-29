@@ -12,9 +12,14 @@ export function useHttpInvoices() {
         return $fetch(`/api/creditCardInvoices/paymentAdvance/${invoiceId}`, {method: "PATCH", query: {dataPayment: dataPayment, accountsId: accountsId, invoiceId: invoiceId, totalInvoice: totalInvoice, totalPaid: totalPaid, invoice_month: invoice_month, invoice_year: invoice_year, creditCardId: creditCardId, closingDay: closingDay} })
     }
 
+    const patchReopenInvoice = async (invoiceId: number) => {
+        return $fetch(`/api/creditCardInvoices/reopenInvoice/${invoiceId}`, {method: "PATCH", query: {invoiceId: invoiceId} })
+    }
+
     return {
         patchPaymentTotal,
         patchPaymentPartial,
-        patchPaymentAdvance
+        patchPaymentAdvance,
+        patchReopenInvoice
     }
 }

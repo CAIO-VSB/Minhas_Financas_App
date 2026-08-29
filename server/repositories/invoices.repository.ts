@@ -173,6 +173,38 @@ export const invoiceRepository = {
             conn.release()  
         }
 
+    },
+
+    async updateReopenInvoice(userId: string, invoiceId: number) {
+
+        const conn = await client.connect() 
+
+        try {
+            
+            await conn.query('BEGIN')
+
+            await conn.query(`
+                UPDATE credit_card_invoices 
+                    SET status_invoice = $1
+                    WHERE id = $2
+            `, ['aberta', invoiceId])
+
+            await conn.query(`
+                DELETE FROM movements WHERE invoice_id = $1 AND user_id = $2
+                `
+            , [invoiceId, userId])
+
+            await conn.query('COMMIT')
+
+            return { message: "Fatura reaberta com sucesso" }
+
+        } catch (error) {
+            await conn.query('ROLLBACK')
+            throw error
+        } finally {
+            conn.release()  
+        }
+
     }
 
 

@@ -164,6 +164,7 @@
       movementCreditCardForm.value.observation = ""
       movementCreditCardForm.value.value_transaction = 0.00
       movementCreditCardForm.value.purchase_date = new Date()
+      date.value = `${String(new Date().getFullYear())}-${String(new Date().getMonth() + 1)}`
       showSwitch.value = false
     }
 
@@ -181,6 +182,7 @@
       movementCreditCardForm.value.observation = ""
       movementCreditCardForm.value.value_transaction = 0.00
       movementCreditCardForm.value.purchase_date = new Date()
+      date.value = `${String(new Date().getFullYear())}-${String(new Date().getMonth() + 1)}`
       showSwitch.value = false
       modelValue.value = false
     }
@@ -314,7 +316,6 @@
           emit("success")
         } else {
           mutateMovements(resultSchema.data)
-          console.log('Caiu aqui???????????????')
         } 
 
         resetForm()
@@ -341,27 +342,42 @@
     ref="form"
     validate-on="lazy blur"
     >
-      <v-dialog v-model="modelValue" max-width="650">
-        <v-card title="Nova despesa cartão de crédito">
+      <v-dialog v-model="modelValue" max-width="750">
+        <v-card rounded="lg" elevation="8">
+          <v-card-item class="pa-4 pb-2">
+            <v-card-title class="text-h6 font-weight-bold text-blue-grey-darken-4">
+              Nova despesa
+            </v-card-title>
+
+            <v-card-subtitle class="mt-1">
+              Registre uma nova saída para acompanhar sua vida financeira.
+            </v-card-subtitle>
+
+            <template #prepend>
+              <v-avatar color="red" variant="tonal" rounded="lg">
+                <v-icon icon="mdi-bank-plus" color="red"/>
+              </v-avatar>
+            </template>
+          </v-card-item>
           <v-divider></v-divider>
           <v-card-text>
             <v-row density="comfortable">
               <v-col
                cols="12" md="6" sm="12"
               >
-              <CurrencyInput prepend-inner-icon="mdi-cash" :rules="currencyRules" autocomplete="off" label="Valor*" v-model="movementCreditCardForm.value_transaction" />
+              <CurrencyInput variant="solo-filled" prepend-inner-icon="mdi-cash" :rules="currencyRules" autocomplete="off" label="Valor*" v-model="movementCreditCardForm.value_transaction" />
               </v-col>
 
               <v-col
               cols="12" md="6" sm="12"
               >
-              <v-date-input prepend-inner-icon="mdi-calendar" prepend-icon="" :rules="dateRules" autocomplete="off" name="date" label="Data*" variant="underlined" v-model="movementCreditCardForm.purchase_date"></v-date-input>
+              <v-date-input prepend-inner-icon="mdi-calendar" prepend-icon="" :rules="dateRules" autocomplete="off" name="date" label="Data*" variant="solo-filled"" v-model="movementCreditCardForm.purchase_date"></v-date-input>
               </v-col>
               
               <v-col
               cols="12" md="12" sm="12"
               >
-              <v-text-field prepend-inner-icon="mdi-pencil"  prepend-icon="" :rules="nameRules" :counter="45" maxlength="45"  autocomplete="name" name="name" label="Descrição*" variant="underlined" v-model="movementCreditCardForm.description_credit"></v-text-field>
+              <v-text-field prepend-inner-icon="mdi-pencil"  prepend-icon="" :rules="nameRules" :counter="45" maxlength="45"  autocomplete="name" name="name" label="Descrição*" variant="solo-filled"" v-model="movementCreditCardForm.description_credit"></v-text-field>
               </v-col>
 
               <v-col
@@ -375,7 +391,7 @@
                 :items="filterCategorias"
                 item-title="name_identifier"
                 item-value="id"
-                variant="underlined"
+                variant="solo-filled""
                 label="Categoria*"
                 persistent-hint
                 :rules="selectRules"
@@ -436,7 +452,7 @@
                 :items="creditCardOnlyActive"
                 item-title="name_identifier"
                 item-value="id"
-                variant="underlined"
+                variant="solo-filled""
                 label="Cartão de crédito*"
                 persistent-hint
                 :rules="selectRules"
@@ -471,7 +487,7 @@
                 <v-col
                 cols="12" md="12" sm="12"
                 >
-                  <v-text-field prepend-inner-icon="mdi-note-text" v-model="movementCreditCardForm.observation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="underlined"></v-text-field >
+                  <v-text-field prepend-inner-icon="mdi-note-text" v-model="movementCreditCardForm.observation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="solo-filled""></v-text-field >
                 </v-col>
 
                 
@@ -490,7 +506,7 @@
                           hide-details
                           readonly
                           v-bind="activatorProps"
-                          variant="underlined"
+                          variant="solo-filled"
                           >
                           </v-text-field>
                       </template>
@@ -500,46 +516,66 @@
                       ></v-month-picker>
                   </v-menu>
                 </v-col>
+                
+            <small class="text-caption text-medium-emphasis"
+              >* Indica campos obrigatórios</small
+            >
 
-                <div class="d-flex ga-3 options-footer">
-                  <v-switch
-                    v-model="showInputFixa"
-                    color="error"
-                    label="Despesa fixa"
-                    hide-details
-                    false-value="avista"
-                    true-value="fixa"
-                    true-icon="mdi-pin"
-                    false-icon="mdi-close"
-                  ></v-switch> 
-                  <v-switch
-                    v-model="showInputParcelado"
-                    color="error"
-                    label="Despesa parcelada"
-                    hide-details
-                    false-value="unica"
-                    true-value="parcelada"
-                    true-icon="mdi-repeat"
-                    false-icon="mdi-close"
-                  ></v-switch> 
-                  <div class="d-flex align-center">
-                    <v-tooltip location="top" open-on-click>
-                      <template v-slot:activator="{ props }">
-                          <v-icon v-bind="props" icon="mdi-help-circle" size="25" class="ml-1" style="cursor: pointer;"></v-icon>
-                      </template>
-                      Ao marcar como fixa, serão geradas as próximas 12 ocorrências, para melhor previsibilidade e controle. Após esse período, você poderá renovar a recorrência.
-                  </v-tooltip>
+                <v-col cols="12">
+
+                  <v-sheet border rounded="lg" class="pa-4 mb-3">
+                  <div class="text-body-2 font-weight-bold text-blue-grey-darken-3 mb-3">
+                    Opções da despesa
                   </div>
-                </div>
+
+                  <v-row>
+                    <v-col cols="12" sm="6" md="4">
+                      <v-switch
+                        v-model="showInputFixa"
+                        color="error"
+                        label="Despesa fixa"
+                        hide-details
+                        false-value="avista"
+                        true-value="fixa"
+                        true-icon="mdi-pin"
+                        false-icon="mdi-close"
+                      ></v-switch> 
+                    </v-col>
+
+                    <v-col cols="12" sm="6" md="4">
+                      <v-switch
+                        v-model="showInputParcelado"
+                        color="error"
+                        label="Despesa parcelada"
+                        hide-details
+                        false-value="unica"
+                        true-value="parcelada"
+                        true-icon="mdi-repeat"
+                        false-icon="mdi-close"
+                      ></v-switch> 
+                    </v-col>
+
+                    <div class="d-flex align-center">
+                      <v-tooltip location="top" open-on-click>
+                        <template v-slot:activator="{ props }">
+                            <v-icon v-bind="props" icon="mdi-help-circle" size="25" class="ml-1" style="cursor: pointer;"></v-icon>
+                        </template>
+                        Ao marcar como fixa, serão geradas as próximas 12 ocorrências, para melhor previsibilidade e controle. Após esse período, você poderá renovar a recorrência.
+                      </v-tooltip>
+                    </div>
+
+                    </v-row>
+                  </v-sheet>
+
+                </v-col>
 
                 <v-col
-                  cols="12" md="6" sm="6" class="mt-3"
+                  cols="12" md="6" sm="6" 
                   >
                   <v-number-input
                   v-if="showInputParcelado"
                   v-model="recorrenceForm.total_installments"
-                  density="compact"
-                  variant="underlined"
+                  variant="solo-filled"
                   controlVariant="default"
                   :min="2"
                   :max="100"
@@ -550,33 +586,30 @@
                 </v-col>
 
                 <v-col
-                  cols="12" md="6" sm="6" class="mt-3"
+                  cols="12" md="6" sm="6" 
                   >
                   <v-select
                   v-if="showInputParcelado"
                   v-model="recorrenceForm.frequency_recurrence"
                   label="Periodicidade*"
-                  density="compact"
                   :items="['Meses']"
-                  variant="underlined"
+                  variant="solo-filled"
                   readonly
                 ></v-select>
                 </v-col>
 
             </v-row>
 
-            <small class="text-caption text-medium-emphasis"
-              >* Indica campos obrigatórios</small
-            >
           </v-card-text>
 
           <v-divider></v-divider>
 
-          <v-card-actions >
+          <v-card-actions class="pa-4 d-flex flex-wrap ga-2">
             <v-btn
               class="text-none"
               text="Fechar"
               variant="text"
+              rounded="lg"
               @click="resetFormAndCloseModal"
             ></v-btn>
             <v-spacer></v-spacer>
@@ -586,6 +619,7 @@
               color="primary"
               text="Salvar e criar nova"
               variant="outlined"
+              rounded="lg"
               :loading="isPendingMovements"
               @click="submitMovement({closeAfterSave: false})"
             ></v-btn>
@@ -594,6 +628,7 @@
               value="btn-salvar"
               color="primary"
               text="Salvar"
+              rounded="lg"
               variant="flat"
               :loading="isPendingMovements"
               @click="submitMovement({closeAfterSave: true})"

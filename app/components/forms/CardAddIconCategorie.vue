@@ -70,125 +70,124 @@
 </script>
 
 <template>
-  <div class="text-center pa-4">
-
     <v-dialog
-      v-model="modelValue"
+        v-model="modelValue"
+        max-width="520"
     >
+        <v-card
+            rounded="xl"
+            elevation="4"
+            class="overflow-hidden"
+        >
+            <v-card-item class="pa-5 pb-2">
+                <v-card-title class="text-h6 font-weight-bold text-blue-grey-darken-4">
+                    Selecione um ícone
+                </v-card-title>
 
-      <v-card
-        class="mx-auto"
-      >
-        <v-toolbar>
-          <v-toolbar-title class="title-card">Ícone</v-toolbar-title>
-        </v-toolbar>
+                <v-card-subtitle class="mt-1">
+                    Escolha o ícone que melhor representa sua categoria.
+                </v-card-subtitle>
 
-        <v-divider></v-divider>
+                <template #append>
+                    <v-btn
+                        icon="mdi-filter-variant"
+                        variant="text"
+                        @click="dialogFilter = true"
+                    >
+                        <v-tooltip
+                            activator="parent"
+                            text="Filtrar ícones"
+                        />
+                    </v-btn>
+                </template>
+            </v-card-item>
 
-        <div class="icon-grid">
-          <div
-          v-for="item in icons"
-          :key="item.type"
-          @click="selectdItem(item)"
-          class="icon-cell"
-          >
-          <v-icon :icon="item.icon" size="32"></v-icon>
-          </div>
-        </div>
+            <v-divider />
 
-    </v-card>
+            <v-card-text class="pa-5">
+                <div class="icon-grid">
+                    <v-avatar
+                        v-for="item in icons"
+                        :key="item.name"
+                        size="52"
+                        color="grey-lighten-3"
+                        class="icon-cell"
+                        @click="selectdItem(item)"
+                    >
+                        <v-icon
+                            :icon="item.icon"
+                            size="26"
+                            color="blue-grey-darken-2"
+                        />
 
-  </v-dialog>
-
-  <v-dialog
-      v-model="dialogFilter"
-      max-width="250"
-    >
-      <v-card title="Filtro">
-    
-        <v-divider></v-divider>
-
-        <v-radio-group v-model="radios">
-          <v-radio label="Receitas" value="Despesa" ></v-radio>
-          <v-radio label="Despesas" value="Receita"></v-radio>
-        </v-radio-group>
-
-      </v-card>
+                        <v-tooltip
+                            activator="parent"
+                            location="top"
+                            :text="item.name"
+                        />
+                    </v-avatar>
+                </div>
+            </v-card-text>
+        </v-card>
     </v-dialog>
 
-  </div>
+    <v-dialog
+        v-model="dialogFilter"
+        max-width="320"
+    >
+        <v-card
+            rounded="xl"
+            elevation="4"
+        >
+            <v-card-item class="pa-5 pb-2">
+                <v-card-title class="text-h6 font-weight-bold text-blue-grey-darken-4">
+                    Filtro
+                </v-card-title>
 
+                <v-card-subtitle class="mt-1">
+                    Filtre os ícones exibidos na lista.
+                </v-card-subtitle>
+            </v-card-item>
+
+            <v-card-text class="px-5 pb-5">
+                <v-radio-group
+                    v-model="radios"
+                    hide-details
+                >
+                    <v-radio
+                        label="Receitas"
+                        value="Despesa"
+                    />
+
+                    <v-radio
+                        label="Despesas"
+                        value="Receita"
+                    />
+                </v-radio-group>
+            </v-card-text>
+        </v-card>
+    </v-dialog>
 </template>
 
 <style scoped>
 
-.container-icons {
-  padding: 5px;
-  height: 100vh;
-}
-
 .icon-grid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 8px;
-  padding: 10px;
-  overflow: auto;
-  max-width: 100%;
-  width: 348px;
-  margin: 10px;
-}
-
-.icon-cell:hover {
-  background-color: rgba(0, 0, 0, 0.06);
-  cursor: pointer;
+  grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+  gap: 12px;
 }
 
 .icon-cell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px;
-  border-radius: 30px;
-  transition: background-color 0.15s ease;
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.15s ease;
 }
 
-.item-text {
-  font-size: 1rem;
-  color: #AFB1AC;
+.icon-cell:hover {
+  transform: scale(1.08);
+  background-color: rgb(var(--v-theme-primary)) !important;
 }
 
-@media (max-width: 820px) {
-  .icon-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    padding: 5px;
-    overflow: auto;
-    max-width: 100%;
-    width: 298px;
-    margin: 8px;
-  }
+.icon-cell:hover .v-icon {
+  color: white !important;
 }
-
-@media (max-width: 380px) {
-  .icon-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    padding: 5px;
-    overflow: auto;
-    max-width: 100%;
-    width: 262px;
-    margin: 8px;
-  }
-}
-
-
-::v-deep(.v-selection-control .v-label ) {
-  font-size: 0.85rem;
-}
-
-::v-deep(.v-card-item .v-card-title ) {
-  font-size: 1.3rem;
-}
-</style> 
+</style>

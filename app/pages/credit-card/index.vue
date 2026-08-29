@@ -361,10 +361,6 @@
                                         icon="mdi-dots-vertical"
                                         variant="text"
                                     >
-                                        <v-tooltip
-                                            activator="parent"
-                                            text="Opções"
-                                        />
                                     </v-btn>
                                 </template>
 
@@ -415,10 +411,14 @@
                             </template>
 
                             <v-alert
-                                v-else
-                                type="info"
-                                variant="tonal"
-                                text="Cadastre um limite para acompanhar melhor seus gastos e manter suas finanças sob controle."
+                            v-else
+                            type="info"
+                            variant="tonal"
+                            rounded="lg"
+                            density="compact"
+                            class="mx-5 mt-5"
+                            border="start"
+                            text="Cadastre um limite para acompanhar melhor seus gastos e manter suas finanças sob controle."
                             />
                         </div>
 
@@ -430,13 +430,18 @@
                     <v-expand-transition>
                         <div
                             v-if="showAlertLimitedUsed"
-                            class="px-5 pb-5"
+                            class="px-1 pb-4 w-100"
                         >
                             <v-alert
-                                type="warning"
-                                variant="tonal"
-                                title="Limite do cartão"
-                                text="Seus gastos já ultrapassaram 85% do limite disponível. Considere acompanhar as próximas compras para evitar atingir o limite."
+                            v-if="showAlertLimitedUsed"
+                            type="warning"
+                            variant="tonal"
+                            rounded="lg"
+                            density="compact"
+                            class="mx-5 mt-5"
+                            border="start"
+                            title="Limite do cartão"
+                            text="Seus gastos já ultrapassaram 85% do limite disponível. Considere acompanhar as próximas compras para evitar atingir o limite."
                             />
                         </div>
                     </v-expand-transition>

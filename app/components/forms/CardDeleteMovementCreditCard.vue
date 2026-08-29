@@ -81,7 +81,7 @@
         v-if="props.draft"
       >
         <template v-slot:default="{ isActive }">
-          <v-card>
+          <v-card rounded="lg" width="700">
             
               <template #title>
               {{ props.title }}
@@ -96,24 +96,24 @@
             <v-card-text class="text-display-large pa-5">
               <div class="info">
                   <div>
-                      <p style="color: rgba(0, 0, 0, 0.70);;">Descrição</p>
-                      <p style="color: rgba(0, 0, 0, 0.5);">{{ props.draft?.description_credit }}</p>
+                      <p class="font-weight-bold text-blue-grey-darken-4">Descrição</p>
+                      <p style="color: rgba(0, 0, 0, 0.7);">{{ props.draft?.description_credit }}</p>
                   </div>
 
                   <div>
-                      <p style="color: rgba(0, 0, 0, 0.70);">Valor</p>
-                      <p style="color: rgba(0, 0, 0, 0.5);  text-align: center;">{{ formatCurrency(props.draft?.value_transaction ?? 0.00) }}</p>
+                      <p class="font-weight-bold text-blue-grey-darken-4">Valor</p>
+                      <p style="color: rgba(0, 0, 0, 0.7);  text-align: center;">{{ formatCurrency(props.draft?.value_transaction ?? 0.00) }}</p>
                   </div>
                   <div>
-                      <p style="color: rgba(0, 0, 0, 0.70);">Data da compra</p>
-                      <p style="color: rgba(0, 0, 0, 0.5);  text-align: center;">{{ dateFormated }}</p>
+                      <p class="font-weight-bold text-blue-grey-darken-4">Data da compra</p>
+                      <p style="color: rgba(0, 0, 0, 0.7);  text-align: center;">{{ dateFormated }}</p>
                   </div>
               </div> 
             </v-card-text>
 
               <v-divider></v-divider>
 
-              <v-card-actions style="display: flex; justify-content: space-between; margin-top: 13px;">
+              <v-card-actions class="pa-4 d-flex flex-wrap ga-2">
               <v-btn
                   text="Cancelar"
                   variant="text"
@@ -121,13 +121,14 @@
                   class="text-none "
                   @click="isActive.value = false"
               ></v-btn>
-              
+              <v-spacer></v-spacer>
               <v-btn
                   :text="props.titleBotton"
                   variant="flat"
                   :color="props.colorBotton"
                   class="text-none"
                   @click="submitForm"
+                  rounded="lg"
                   :loading="isPendingMovements"
               ></v-btn>
               </v-card-actions>

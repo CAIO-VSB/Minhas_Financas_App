@@ -168,9 +168,18 @@
       max-width="640"
     >
       <v-card
-        prepend-icon="mdi-wallet-plus"
-        title="Novo cartão de crédito"
+      rounded="xl"
       >
+        <v-card-item class="pa-5 pb-2">
+            <v-card-title class="text-h6 font-weight-bold text-blue-grey-darken-4">
+              Novo cartão de crédito
+            </v-card-title>
+
+            <v-card-subtitle class="mt-1">
+              Preencha os dados para cadastrar seu cartão.
+            </v-card-subtitle>
+        </v-card-item>
+        <v-divider />
         <v-card-text>
           <v-row >
 
@@ -181,7 +190,7 @@
             >
               <v-text-field
                 label="Nome do cartão de crédito*"
-                variant="underlined"
+                variant="solo-filled"
                 :rules="nameRules"
                 name="cc-name"
                 v-model="cardCredit.name_identifier"
@@ -197,7 +206,8 @@
               sm="6"
             >
             
-            <CurrencyInput prepend-inner-icon="mdi-cash-multiple"  autocomplete="limite" name="limite" v-model="cardCredit.limit_card!" label="Limite" />
+            <CurrencyInput prepend-inner-icon="mdi-cash-multiple"  autocomplete="limite" name="limite" v-model="cardCredit.limit_card!" label="Limite"
+            variant="solo-filled" />
 
             </v-col>
             <v-col
@@ -207,7 +217,7 @@
             >
               <v-text-field
                 label="Últimos 4 dígitos*"
-                variant="underlined"
+                variant="solo-filled"
                 hint="Ajuda a diferenciar este cartão quando você possui vários cadastrados"
                 persistent-hint
                 autocomplete="off"
@@ -227,7 +237,7 @@
             >
               <v-number-input
                 label="Dia do fechamento*"
-                variant="underlined"
+                variant="solo-filled"
                 maxlength="2"
                 :max="31"
                 autocomplete="off"
@@ -246,7 +256,7 @@
             >
               <v-number-input
                 label="Dia do vencimento*"
-                variant="underlined"
+                variant="solo-filled"
                 isent
                 maxlength="2"
                 autocomplete="off"
@@ -271,7 +281,7 @@
                 item-title="name_identifier"
                 item-value="id"
                 clearable
-                variant="underlined"
+                variant="solo-filled"
                 label="Conta vinculada*"
                 hint="Os débitos do cartão serão debitados desta conta"
                 persistent-hint
@@ -335,7 +345,7 @@
                 item-title="text"
                 item-value="url"
                 clearable
-                variant="underlined"
+                variant="solo-filled"
                 label="Banco*"
                 :rules="logoCreditCardRules"
                 prepend-inner-icon="mdi-bank"
@@ -392,16 +402,15 @@
 
         <v-divider></v-divider>
 
-        <v-card-actions>
+        <v-card-actions class="pa-5 justify-space-between">
           <v-btn
             class="text-none"
             text="Cancelar"
             variant="plain"
             @click="resetForm"
           ></v-btn>
-          <v-spacer></v-spacer>
           <v-btn
-            class="text-none"
+            class="text-none font-weight-bold"
             color="primary"
             text="Salvar"
             variant="flat"

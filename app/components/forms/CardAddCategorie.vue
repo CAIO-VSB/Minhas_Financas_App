@@ -101,13 +101,22 @@
     ref="form"
     >
       <v-dialog persistent v-model="modelValue" max-width="600">
-        <v-card title="Nova Categoria">
+        <v-card rounded="xl" elevation="4">
+          <v-card-item class="pa-5 pb-2">
+            <v-card-title class="text-h6 font-weight-bold text-blue-grey-darken-4">
+                Nova categoria
+            </v-card-title>
+
+            <v-card-subtitle class="mt-1">
+                Preencha os dados para cadastrar sua categoria.
+            </v-card-subtitle>
+          </v-card-item>
           <v-divider></v-divider>
           <v-card-text>
             <form>
               <v-text-field
                 label="Nome da categoria *"
-                variant="underlined"
+                variant="solo-filled"
                 color="primary"
                 v-model="categorieForm.name_identifier"
                 :rules="nameRules"
@@ -116,20 +125,20 @@
                 :counter="30" 
                 maxlength="30"
                 prepend-inner-icon="mdi-rename"
+                class="mb-4"
               >
 
-               <template v-slot:append>
-                <v-icon @click="modalAddIconCategorie = true" class="cursor-pointer" :icon=" categorieForm.url_icon || 'mdi-plus'" size="large"></v-icon>
-                <v-tooltip
-                activator="parent"
-                location="top"
-                >Escolha um ícone de identificação
-                </v-tooltip>
-
+               <template #append-inner>
+                  <v-icon @click.stop="modalAddIconCategorie = true" class="cursor-pointer" color="primary" :icon=" categorieForm.url_icon || 'mdi-plus'" size="large"></v-icon>
+                  <v-tooltip
+                  activator="parent"
+                  location="top"
+                  >Escolha um ícone de identificação
+                  </v-tooltip>
                 </template>
               </v-text-field>
 
-              <v-select prepend-inner-icon="mdi-tag" :rules="selectRules" v-model="categorieForm.type_categorie" color="primary" persistent-hint hint="Selecione o tipo de categoria" label="Tipo *" :items="items" variant="underlined">
+              <v-select prepend-inner-icon="mdi-tag" :rules="selectRules" v-model="categorieForm.type_categorie" color="primary" persistent-hint hint="Selecione o tipo de categoria" label="Tipo *" :items="items" variant="solo-filled">
               </v-select>
 
             </form>
@@ -138,19 +147,19 @@
 
           <v-divider></v-divider>
 
-          <v-card-actions>
+          <v-card-actions class="pa-5 justify-space-between">
             <v-btn
-              class="text-none"
+              class="text-none font-weight-medium"
               text="Fechar"
-              variant="plain"
+              variant="text"
               @click="resetForm"
             ></v-btn>
-            <v-spacer></v-spacer>
             <v-btn
-              class="text-none"
+              class="text-none font-weight-bold"
               color="primary"
               text="Salvar"
               variant="flat"
+              rounded="lg"
               :loading="isPending"
               @click="handleAddAccount"
             ></v-btn>

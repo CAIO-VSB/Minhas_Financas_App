@@ -9,6 +9,7 @@
   import CardPaymentPartial from "~/components/forms/CardPaymentPartialInvoice.vue";
   import CardPaymentAdvance from "~/components/forms/CardPaymentAdvanceInvoice.vue";
   import type { TOptionAction } from "~~/types/option_action/TOptionAction";
+import CardReopenInvoice from "~/components/forms/CardReopenInvoice.vue";
 
   const { notifyError } = useNotify()
 
@@ -25,6 +26,7 @@
   const modelCardPaymentTotal = ref(false)
   const modelCardPaymentPartial = ref(false)
   const modelCardPaymentAdvance = ref(false)
+  const modelReopenInvoice = ref(false)
 
   type TPeriod = {
     year: number,
@@ -129,6 +131,11 @@
 
     if (option === 'pag_parcial') {
       modelNoticePaymentPartial.value = true
+      return
+    }
+
+    if (option === 'reabrir_fatu') {
+      modelReopenInvoice.value = true
       return
     }
   }
@@ -313,6 +320,12 @@
         :invoice-value="props.totalInvoice ?? 0.00"
         @show-modal-payment="showModalPaymentAdvance"
     />
+
+    <CardReopenInvoice
+        v-model="modelReopenInvoice"
+        :invoice-id="props.invoiceId"
+    />
+    
 </template>
 
 <style scoped>

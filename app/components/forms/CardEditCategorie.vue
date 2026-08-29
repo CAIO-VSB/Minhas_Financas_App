@@ -114,13 +114,22 @@
     v-if="props.draft"
     >
       <v-dialog persistent v-model="modelValue" max-width="600">
-        <v-card title="Editar categoria">
+        <v-card rounded="xl" elevation="4">
+          <v-card-item class="pa-5 pb-2">
+            <v-card-title class="text-h6 font-weight-bold text-blue-grey-darken-4">
+                Editar categoria
+            </v-card-title>
+
+            <v-card-subtitle class="mt-1">
+                Preencha os dados para editar sua categoria.
+            </v-card-subtitle>
+          </v-card-item>
           <v-divider></v-divider>
           <v-card-text>
             <form>
               <v-text-field
                 label="Nome da categoria *"
-                variant="underlined"
+                variant="solo-filled"
                 color="primary"
                 v-model="props.draft.name_identifier"
                 :rules="nameRules"
@@ -129,10 +138,11 @@
                 :counter="30" 
                 maxlength="30"
                 prepend-inner-icon="mdi-rename"
+                class="mb-4"
               >
 
-               <template v-slot:append>
-                <v-icon @click="modalAddIconCategorie = true" class="cursor-pointer" :icon=" props.draft.url_icon || 'mdi-plus'" size="large"></v-icon>
+               <template #append-inner>
+                <v-icon @click.stop="modalAddIconCategorie = true" class="cursor-pointer" :icon=" props.draft.url_icon || 'mdi-plus'" color="primary" size="large"></v-icon>
                 <v-tooltip
                 activator="parent"
                 location="top"
@@ -142,17 +152,23 @@
                 </template>
               </v-text-field>
 
-              <v-select prepend-inner-icon="mdi-tag" :rules="selectRules" v-model="props.draft.type_categorie" color="primary" persistent-hint hint="Selecione o tipo de categoria" label="Tipo *" :items="items" variant="underlined">
+              <v-select prepend-inner-icon="mdi-tag" :rules="selectRules" v-model="props.draft.type_categorie" color="primary" persistent-hint hint="Selecione o tipo de categoria" label="Tipo *" :items="items" variant="solo-filled">
               </v-select>
 
-              <v-switch
-                v-model="switchValue"
-                color="primary"
-                :label="labelSwitch"
-                true-icon="mdi-check"
-                false-icon="mdi-close"
-                hide-details
-              ></v-switch>
+              <v-sheet border rounded="lg" class="pa-4 mt-4 mb-2">
+                <div class="text-body-2 font-weight-bold text-blue-grey-darken-3 mb-3">
+                  Opções da categoria
+                </div>
+
+                <v-switch
+                  v-model="switchValue"
+                  color="primary"
+                  :label="labelSwitch"
+                  true-icon="mdi-check"
+                  false-icon="mdi-close"
+                  hide-details
+                ></v-switch>
+              </v-sheet>
 
             </form>
 
@@ -163,21 +179,19 @@
 
           <v-divider></v-divider>
 
-          <v-card-actions>
-            
-
+          <v-card-actions class="pa-5 justify-space-between">
             <v-btn
-              class="text-none"
+              class="text-none font-weight-medium"
               text="Fechar"
-              variant="plain"
+              variant="text"
               @click="modelValue = false"
             ></v-btn>
-            <v-spacer></v-spacer>
             <v-btn
-              class="text-none"
+              class="text-none font-weight-bold"
               color="primary"
               text="Editar"
               variant="flat"
+              rounded="lg"
               :loading="isPending"
               @click="handleAddAccount"
             ></v-btn>

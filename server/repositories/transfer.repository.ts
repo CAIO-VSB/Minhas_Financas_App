@@ -43,13 +43,13 @@ export const transferRepository = {
             await conn.query(`
                 INSERT INTO movements(user_id, type_transaction, value_transaction, date_transaction, description_transaction, categorie_id, accounts_id, observation, url_recibo, status_transaction, is_deleted, transfer_id) 
                 VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
-                [userId, 'transferencia_saida', data.value_transfer, data.date_transfer, 'Transferência de saída', 150, data.account_origin, null, null, 'saida', false, transferId]
+                [userId, 'transferencia_saida', data.value_transfer, data.date_transfer, 'Transferência de saída', 5, data.account_origin, 5, 5, 'saida', false, transferId]
             )
 
             await conn.query(`
                 INSERT INTO movements(user_id, type_transaction, value_transaction, date_transaction, description_transaction, categorie_id, accounts_id, observation, url_recibo, status_transaction, is_deleted, transfer_id) 
                 VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
-                [userId, 'transferencia_entrada', data.value_transfer, data.date_transfer, 'Transferência de entrada', 150, data.account_destination, null, null, 'entrada', false, transferId]
+                [userId, 'transferencia_entrada', data.value_transfer, data.date_transfer, 'Transferência de entrada', 5, data.account_destination, 5, 5, 'entrada', false, transferId]
             )
 
             await conn.query('COMMIT')
@@ -99,7 +99,7 @@ export const transferRepository = {
                         status_transaction = $9,
                         is_deleted = $10
                     WHERE transfer_id = $11 AND type_transaction = $12`,
-                ['transferencia_saida', data.value_transfer, data.date_transfer, 'Transferência de saída', 150, data.account_origin, null, null, 'saida', false, id,'transferencia_saida']
+                ['transferencia_saida', data.value_transfer, data.date_transfer, 'Transferência de saída', 5, data.account_origin, 5, 5, 'saida', false, id,'transferencia_saida']
             )
 
             await client.query(`
@@ -117,7 +117,7 @@ export const transferRepository = {
                         is_deleted = $10
                     WHERE transfer_id = $11 AND type_transaction = $12
                 `,
-                ['transferencia_entrada', data.value_transfer, data.date_transfer, 'Transferência de entrada', 150, data.account_destination, null, null, 'entrada', false, id, 'transferencia_entrada']
+                ['transferencia_entrada', data.value_transfer, data.date_transfer, 'Transferência de entrada', 5, data.account_destination, 5, 5, 'entrada', false, id, 'transferencia_entrada']
             )
 
             await client.query('COMMIT')

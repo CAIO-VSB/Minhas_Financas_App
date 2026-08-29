@@ -71,11 +71,11 @@ async function submitForm() {
   <div>
       <v-dialog
         transition="dialog-bottom-transition"
-        width="450"
+        width="500"
         v-model="modelValue"
       >
         <template v-slot:default="{ isActive }">
-          <v-card>
+          <v-card rounded="lg">
             
             <template #title>
             {{ props.title }}
@@ -90,31 +90,31 @@ async function submitForm() {
             <v-card-text class="text-display-large pa-5">
               <div class="info">
                   <div>
-                      <p style="color: rgba(0, 0, 0, 0.70);;">De</p>
-                        <v-avatar size="30">
+                      <p class="font-weight-bold text-blue-grey-darken-4">De</p>
+                        <v-avatar size="35">
                             <v-img :src="props.draft?.logo_origem"></v-img>
                         </v-avatar>
-                      <p style="color: rgba(0, 0, 0, 0.5); text-align: center;">{{ props.draft?.account_origin_name }}</p>
+                      <p style="color: rgba(0, 0, 0, 0.7); text-align: center;">{{ props.draft?.account_origin_name }}</p>
                   </div>
 
                   <div >
-                    <p style="color: rgba(0, 0, 0, 0.70);">Para</p>
-                      <v-avatar size="30">
+                    <p class="font-weight-bold text-blue-grey-darken-4">Para</p>
+                      <v-avatar size="35">
                         <v-img :src="props.draft?.logo_destino"></v-img>
                       </v-avatar>
-                    <p style="color: rgba(0, 0, 0, 0.5); text-align: center;">{{ props.draft?.account_destination_name}}</p>
+                    <p style="color: rgba(0, 0, 0, 0.7); text-align: center;">{{ props.draft?.account_destination_name}}</p>
                   </div>
 
                   <div>
-                      <p style="color: rgba(0, 0, 0, 0.70);">Valor</p>
-                      <p style="color: rgba(0, 0, 0, 0.5); font-size: 0.90rem;"> {{ formatCurrency(props.draft?.value_transfer ?? 0)}}</p>
+                      <p class="font-weight-bold text-blue-grey-darken-4">Valor</p>
+                      <p style="color: rgba(0, 0, 0, 0.7); font-size: 1rem;"> {{ formatCurrency(props.draft?.value_transfer ?? 0)}}</p>
                   </div>
               </div> 
             </v-card-text>
 
               <v-divider></v-divider>
 
-              <v-card-actions style="display: flex; justify-content: space-between; margin-top: 13px;">
+              <v-card-actions class="pa-4 d-flex flex-wrap ga-2">
               <v-btn
                   text="Cancelar"
                   variant="text"
@@ -122,12 +122,13 @@ async function submitForm() {
                   class="text-none"
                   @click="isActive.value = false"
               ></v-btn>
-              
+              <v-spacer></v-spacer>
               <v-btn
                   :text="props.titleBotton"
                   variant="flat"
                   :color="props.colorBotton"
                   class="text-none"
+                  rounded="lg"
                   @click="submitForm"
               ></v-btn>
               </v-card-actions>
@@ -144,21 +145,28 @@ async function submitForm() {
 
 .info {
   display: flex;
-  gap: 23px;
+  gap: 100px;
 }
 
 .info > div:nth-child(1) {
   display: flex;
   flex-direction: column;
   max-width: 240px;
-  font-size: 0.90rem;
+  font-size: 1rem;
 }
 
 .info > div:nth-child(2) {
   display: flex;
   flex-direction: column;
   max-width: 320px;
-  font-size: 0.90rem;
+  font-size: 1rem;
+}
+
+.info > div:nth-child(3) {
+  display: flex;
+  flex-direction: column;
+  max-width: 320px;
+  font-size: 1rem;
 }
 
 </style>

@@ -101,10 +101,12 @@
   async function handleEditCreditCard() {
 
     if (props.draft?.due_day === props.draft?.closing_day) {
-      showAlertDueDayDffClosingDay.value = true
+      notifyInfo(
+        "Atenção",
+        "O dia de vencimento não pode ser igual ao dia de fechamento."
+      )
       return
     }
-
 
     try {
 
@@ -113,11 +115,8 @@
         return
       }
 
-
       const formValid = await form.value.validate()
       const resultSchema = validateShemaCrediCard(props.draft)
-
-      console.log("Obejto a ser enviado no componente" + JSON.stringify(props.draft))
 
       if (formValid) {
         if (!props.draft.four_digits || props.draft.four_digits.length < 4) {
@@ -149,21 +148,22 @@
 
     >
       <v-card
-        prepend-icon="mdi-wallet-plus"
-        title="Editar cartão de crédito"
+        rounded="lg" elevation="4"
       >
-        <div class="ml-2 mr-3">
-          <v-alert
-          v-model="showAlertDueDayDffClosingDay"
-          type="warning"
-          variant="tonal"
-          title="Atenção"
-          text="O dia de vencimento deve ser diferente do dia de fechamento da fatura."
-          ></v-alert>
-        </div>
+        <v-card-item class="pa-5 pb-2">
+          <v-card-title class="text-h6 font-weight-bold text-blue-grey-darken-4">
+              Editar cartão de crédito
+          </v-card-title>
+
+          <v-card-subtitle class="mt-1">
+              Preencha os dados para editar seu cartão.
+          </v-card-subtitle>
+        </v-card-item>
+
+        <v-divider></v-divider>
+
         <v-card-text>
           <v-row >
-
             <v-col
               cols="12"
               md="12"
@@ -171,7 +171,7 @@
             >
               <v-text-field
                 label="Nome do cartão de crédito*"
-                variant="underlined"
+                variant="solo-filled"
                 :rules="nameRules"
                 v-model="props.draft.name_identifier"
                 prepend-inner-icon="mdi-card-text"
@@ -182,7 +182,7 @@
               md="6"
               sm="6"
             >
-              <CurrencyInput prepend-inner-icon="mdi-cash-multiple" v-model="props.draft.limit_card!" label="Limite" />
+              <CurrencyInput variant="solo-filled" prepend-inner-icon="mdi-cash-multiple" v-model="props.draft.limit_card!" label="Limite" />
             </v-col>
             <v-col
               cols="12"
@@ -191,7 +191,7 @@
             >
               <v-text-field
                 label="Últimos 4 dígitos*"
-                variant="underlined"
+                variant="solo-filled"
                 hint="Ajuda a diferenciar este cartão quando você possui vários cadastrados"
                 persistent-hint
                 isent
@@ -209,7 +209,7 @@
             >
               <v-number-input
                 label="Dia do fechamento*"
-                variant="underlined"
+                variant="solo-filled"
                 maxlength="2"
                 :max="31"
                 :min="1"
@@ -227,7 +227,7 @@
             >
               <v-number-input
                 label="Dia do vencimento*"
-                variant="underlined"
+                variant="solo-filled"
                 isent
                 maxlength="2"
                 :max="31"
@@ -250,7 +250,7 @@
                 item-title="name_identifier"
                 item-value="id"
                 clearable
-                variant="underlined"
+                variant="solo-filled"
                 label="Conta vinculada*"
                 hint="Os débitos do cartão serão debitados desta conta"
                 persistent-hint
@@ -313,7 +313,7 @@
                 item-title="text"
                 item-value="url"
                 clearable
-                variant="underlined"
+                variant="solo-filled"
                 label="Banco*"
                 persistent-hint
                 :rules="selectRules"
@@ -365,31 +365,35 @@
               </v-select>
             </v-col>
           </v-row>
-        
-          <v-switch
-            color="success"
-            label="Ativo"
-            hide-details
-            true-icon="mdi-check"
-            false-icon="mdi-close"
-            v-model="props.draft.active"
-          ></v-switch>
+          <v-sheet border rounded="lg" class="pa-4 mt-4 mb-2">
+            <div class="text-body-2 font-weight-bold text-blue-grey-darken-3 mb-3">
+              Opções da conta
+            </div>
+            <v-switch
+              color="success"
+              label="Ativo"
+              hide-details
+              true-icon="mdi-check"
+              false-icon="mdi-close"
+              v-model="props.draft.active"
+            ></v-switch>
+          </v-sheet>
 
           <small class="text-caption text-medium-emphasis">* Indica campos obrigatórios</small>
         </v-card-text>
 
         <v-divider></v-divider>
 
-        <v-card-actions>
+        <v-card-actions class="pa-5 justify-space-between">
           <v-btn
             class="text-none"
             text="Cancelar"
             variant="plain"
             @click="modelValue = false"
           ></v-btn>
-            <v-spacer></v-spacer>
+
           <v-btn
-            class="text-none"
+            class="text-none font-weight-bold"
             color="primary"
             text="Editar"
             variant="flat"

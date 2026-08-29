@@ -18,7 +18,7 @@
 
 <template>
   <v-dialog v-model="modelValue" max-width="500">
-    <v-card class="pa-4 text-center">
+    <v-card class="pa-4 text-center" rounded="lg">
       
       <div>
         <v-icon icon="mdi-invoice-text-arrow-right" size="100" color="warning" class="mb-3"></v-icon>
@@ -34,7 +34,7 @@
         Quando isso ocorre, sua fatura no Velto será fechada (não se pode mais adicionar transações), e uma despesa com o valor restante será adicionada à fatura seguinte.
       </p>
 
-      <v-btn color="primary" block @click="handleConfirm">
+      <v-btn rounded="lg" color="primary" block @click="handleConfirm">
         Prosseguir
       </v-btn>
 

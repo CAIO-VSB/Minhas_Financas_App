@@ -80,7 +80,7 @@
         v-model="modelValue"
       >
         <template v-slot:default="{ isActive }">
-          <v-card>
+          <v-card rounded="xl">
             
               <template #title>
               <span>Deseja deletar esta despesa {{ props.draft?.type_recurrence}}?</span>

@@ -201,13 +201,25 @@
     ref="form"
     v-if="props.draft"
     >
-      <v-dialog persistent v-model="modelValue" max-width="600">
-        <v-card title="Editar conta">
+      <v-dialog persistent v-model="modelValue" max-width="600" >
+        <v-card
+        rounded="xl" elevation="4"
+        >
+
+          <v-card-item class="pa-5 pb-2">
+            <v-card-title class="text-h6 font-weight-bold text-blue-grey-darken-4">
+                Editar conta bancária
+            </v-card-title>
+
+            <v-card-subtitle class="mt-1">
+                Preencha os dados para editar sua conta.
+            </v-card-subtitle>
+          </v-card-item>
           <v-divider></v-divider>
           <v-card-text>
             <form>
 
-              <CurrencyInput prepend-inner-icon="mdi-bank"  autocomplete="off" hint="Saldo lançado no ato do cadastro" v-model="props.draft.initial_balance" label="Saldo inicial" ></CurrencyInput>
+              <CurrencyInput variant="solo-filled" prepend-inner-icon="mdi-bank"  autocomplete="off" hint="Saldo lançado no ato do cadastro" v-model="props.draft.initial_balance" label="Saldo inicial" ></CurrencyInput>
 
               <CurrencyInput 
                 prepend-inner-icon="mdi-bank-check"
@@ -216,10 +228,11 @@
                 label="Saldo atual"
                 :readonly="true"
                 :allow-negative="true"
+                variant="solo-filled"
             />
               <v-text-field
                 label="Nome da conta *"
-                variant="underlined"
+                variant="solo-filled"
                 color="primary"
                 v-model="props.draft.name_identifier"
                 :rules="nameRules"
@@ -227,7 +240,7 @@
               >
               </v-text-field>
 
-              <v-select :rules="selectRules" prepend-inner-icon="mdi-format-list-bulleted"  v-model="props.draft.type_account" color="primary" persistent-hint hint="Dúvidas sobre qual conta escolher? Clique no ícone de ajuda." label="Tipo *" :items="items" variant="underlined">
+              <v-select class="mb-4" :rules="selectRules" prepend-inner-icon="mdi-format-list-bulleted"  v-model="props.draft.type_account" color="primary" persistent-hint hint="Dúvidas sobre qual conta escolher? Clique no ícone de ajuda." label="Tipo *" :items="items" variant="solo-filled"">
                 <template v-slot:append>
                   <nuxt-link target="_blank" to="https://www.serasa.com.br/blog/conta-bancaria/">
                     <v-icon class="cursor-pointer" color="info" icon="mdi-chat-question" size="large"></v-icon>
@@ -240,7 +253,7 @@
                 </template>
               </v-select>
 
-              <v-text-field  :rules="logoRules" persistent-hint hint="Logo de identifiação *"   color="primary"  v-model="props.draft.name_bank" readonly variant="underlined">
+              <v-text-field class="mb-4" :rules="logoRules" persistent-hint hint="Logo de identifiação *"   color="primary"  v-model="props.draft.name_bank" readonly variant="solo-filled">
                 <template v-slot:append>
                     <v-icon @click="dialogAddInstitution = true" class="cursor-pointer icon-add-logo" icon="mdi-plus" size="large"></v-icon>
                     <v-tooltip
@@ -254,7 +267,7 @@
                   </template>
               </v-text-field>
 
-              <v-text-field  :rules="colorRules" persistent-hint hint="Cor de identifiação" color="primary" v-model="props.draft.color" readonly variant="underlined">
+              <v-text-field  :rules="colorRules" persistent-hint hint="Cor de identifiação" color="primary" v-model="props.draft.color" readonly variant="solo-filled"">
                 <template v-slot:append>
                     <v-icon @click="dialogColorPicker = true" class="cursor-pointer icon-add-logo"  icon="mdi-eyedropper-variant" size="large"></v-icon>
                     <v-tooltip
@@ -266,17 +279,22 @@
                   <template  #prepend-inner>
                     <v-avatar style="margin-right: 30px;" :color="props.draft.color"  ></v-avatar>
                   </template>
-                  
               </v-text-field>
 
-              <v-switch
-                v-model="switchValue"
-                color="primary"
-                :label="labelSwitch"
-                true-icon="mdi-check"
-                false-icon="mdi-close"
-                hide-details
-              ></v-switch>
+              <v-sheet border rounded="lg" class="pa-4 mt-4 mb-2">
+                <div class="text-body-2 font-weight-bold text-blue-grey-darken-3 mb-3">
+                  Opções da conta
+                </div>
+
+                <v-switch
+                  v-model="switchValue"
+                  color="primary"
+                  :label="labelSwitch"
+                  true-icon="mdi-check"
+                  false-icon="mdi-close"
+                  hide-details
+                ></v-switch>
+              </v-sheet>
 
             </form>
 
@@ -287,22 +305,23 @@
 
           <v-divider></v-divider>
 
-          <v-card-actions>
+          <v-card-actions class="pa-5 justify-space-between">
             <v-btn
-              class="text-none"
+              class="text-none font-weight-medium"
               text="Fechar"
-              variant="plain"
+              variant="text"
               @click="modelValue = false"
-            ></v-btn>
-            <v-spacer></v-spacer>
+            />
+
             <v-btn
-              class="text-none"
+              class="text-none font-weight-bold"
               color="primary"
               text="Editar"
               variant="flat"
+              rounded="lg"
               :loading="isPending"
               @click="handleEditAccount"
-            ></v-btn>
+            />
           </v-card-actions>
         </v-card>
       </v-dialog>

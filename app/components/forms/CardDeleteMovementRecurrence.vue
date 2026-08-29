@@ -78,10 +78,10 @@
         v-model="modelValue"
       >
         <template v-slot:default="{ isActive }">
-          <v-card>
+          <v-card rounded="xl">
             
               <template #title>
-              <span>Deseja deletar esta {{ props.draft?.type_transaction === 'despesa' ? 'despesa' : 'receita' }}?</span>
+              <span class="font-weight-bold text-blue-grey-darken-4">Deseja deletar esta {{ props.draft?.type_transaction === 'despesa' ? 'despesa' : 'receita' }}?</span>
               </template>
 
               <template #subtitle>
@@ -93,13 +93,18 @@
             <v-card-text class="text-display-large pa-5">
               <div class="info-transaction">
                   <div>
-                      <p style="color: rgba(0, 0, 0, 0.70);;">Descrição</p>
+                      <p class="font-weight-bold text-blue-grey-darken-4">Descrição</p>
                       <p style="color: rgba(0, 0, 0, 0.5);">{{ props.draft?.description_transaction }}</p>
                   </div>
 
                   <div>
-                      <p style="color: rgba(0, 0, 0, 0.70);">Valor</p>
+                      <p class="font-weight-bold text-blue-grey-darken-4">Valor</p>
                       <p style="color: rgba(0, 0, 0, 0.5);  text-align: center;">{{ formatCurrency(props.draft?.value_transaction ?? 0.00) }}</p>
+                  </div>
+
+                  <div>
+                      <p class="font-weight-bold text-blue-grey-darken-4">Valor</p>
+                      <p style="color: rgba(0, 0, 0, 0.5);  text-align: center;">{{ props.draft?.date_transaction?.split("-").reverse().join("/") }}</p>
                   </div>
               </div> 
 
@@ -117,21 +122,25 @@
 
               <v-divider></v-divider>
 
-              <v-card-actions style="display: flex; justify-content: space-between; margin-top: 13px;">
+              <v-card-actions class="pa-4 d-flex flex-wrap ga-2">
               <v-btn
                   text="Cancelar"
                   variant="text"
                   :color="props.draft?.type_transaction === 'despesa' ? 'red' : 'green'"
                   class="text-none "
                   @click="resetStates"
+                  rounded="lg"
               ></v-btn>
-              
+
+              <v-spacer></v-spacer>
+
               <v-btn
                   text="Deletar"
                   variant="elevated"
                   :color="props.draft?.type_transaction === 'despesa' ? 'red' : 'green'"
                   class="text-none"
                   @click="submitForm"
+                  rounded="lg"
               ></v-btn>
               </v-card-actions>
             
@@ -158,6 +167,13 @@
 }
 
 .info-transaction > div:nth-child(2) {
+    display: flex;
+    flex-direction: column;
+    max-width: 350px;
+    font-size: 1rem;
+}
+
+.info-transaction > div:nth-child(3) {
     display: flex;
     flex-direction: column;
     max-width: 350px;

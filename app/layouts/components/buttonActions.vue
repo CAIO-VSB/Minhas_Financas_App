@@ -5,6 +5,7 @@
   import CardAddMovimentsRevenue  from '~/components/forms/CardAddMovimentsRevenue.vue'
   import CardAddMovimentsExpenses from '~/components/forms/CardAddMovimentsExpenses.vue'
   import CardAddTransfer from '~/components/forms/CardAddTransfer.vue';
+import CardAddMovimentsCreditCard from '~/components/forms/CardAddMovimentsCreditCard.vue';
 
   const props = defineProps<{
     rail: boolean
@@ -13,6 +14,7 @@
   const modalAddRevenue = ref(false)
   const modalExpenses = ref(false)
   const modalTranfer = ref(false)
+  const modalAddMovementCreditCard = ref(false)
 
   const items = [
     { title: 'Receita', icon: "mdi-arrow-up-circle-outline", value: "receita", color: "green" },
@@ -35,6 +37,12 @@
 
     if (data === "transfer") {
       modalTranfer.value = true
+      return
+    }
+
+    if (data === "despesaCartao") {
+      modalAddMovementCreditCard.value = true
+      return
     }
 
   }
@@ -170,6 +178,9 @@
     <CardAddMovimentsExpenses v-model="modalExpenses" />
 
     <CardAddTransfer v-model="modalTranfer" />
+
+    <CardAddMovimentsCreditCard v-model="modalAddMovementCreditCard" />
+
   </div>
 </template>
 

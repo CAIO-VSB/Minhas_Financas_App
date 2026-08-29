@@ -119,16 +119,31 @@
 
     <div>
         <v-form ref="form" v-if="props.draft">
-            <v-dialog v-model="modelValue" max-width="500">
-                <v-card  title="Estornar lançamento">
+            <v-dialog v-model="modelValue" max-width="600">
+                <v-card rounded="lg">
+                    <v-card-item class="pa-4 pb-2">
+                        <v-card-title class="text-h6 font-weight-bold text-blue-grey-darken-4">
+                        Estornar lançamento
+                        </v-card-title>
+
+                        <v-card-subtitle class="mt-1">
+                        Registre uma nova saída para acompanhar sua vida financeira.
+                        </v-card-subtitle>
+
+                        <template #prepend>
+                        <v-avatar color="red" variant="tonal" rounded="lg">
+                            <v-icon icon="mdi-credit-card-refund" color="red"/>
+                        </v-avatar>
+                        </template>
+                    </v-card-item>
                     <v-divider></v-divider>
                         <v-card-text >
-                            <CurrencyInput prepend-inner-icon="mdi-cash"  input-color="#2196F3" base-color="#2196F3" color="#2196F3" :rules="currencyRules"  autocomplete="off" label="Valor*" v-model="props.draft.value_transaction" />
+                            <CurrencyInput variant="solo-filled" prepend-inner-icon="mdi-cash"  input-color="#2196F3" base-color="#2196F3" color="#2196F3" :rules="currencyRules"  autocomplete="off" label="Valor*" v-model="props.draft.value_transaction" />
                         
-                            <v-text-field prepend-inner-icon="mdi-pencil" :rules="nameRules" :counter="45" maxlength="45" autocomplete="name" name="name" label="Descrição*" variant="underlined" v-model="descriptionMovement">
+                            <v-text-field prepend-inner-icon="mdi-pencil" :rules="nameRules" :counter="45" maxlength="45" autocomplete="name" name="name" label="Descrição*" variant="solo-filled"" v-model="descriptionMovement">
                             </v-text-field>
 
-                            <v-date-input prepend-inner-icon="mdi-calendar" prepend-icon="" :rules="dateRules" autocomplete="off" name="date" label="Data*" variant="underlined" v-model="props.draft.purchase_date"></v-date-input>
+                            <v-date-input prepend-inner-icon="mdi-calendar" prepend-icon="" :rules="dateRules" autocomplete="off" name="date" label="Data*" variant="solo-filled"" v-model="props.draft.purchase_date"></v-date-input>
 
                             <v-select
                                 autocomplete="off"
@@ -138,7 +153,7 @@
                                 :items="creditCardOnlyActive"
                                 item-title="name_identifier"
                                 item-value="id"
-                                variant="underlined"
+                                variant="solo-filled"
                                 label="Cartão de crédito"
                                 persistent-hint
                                 :rules="selectRules"
@@ -177,7 +192,7 @@
                                     hide-details
                                     readonly
                                     v-bind="activatorProps"
-                                    variant="underlined"
+                                    variant="solo-filled"
                                     ></v-text-field>
                                 </template>
                                 <v-month-picker
@@ -186,17 +201,18 @@
                                 ></v-month-picker>
                             </v-menu>
 
-                            <v-text-field class="mt-6" prepend-inner-icon="mdi-note-text" v-model="movementObservation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="underlined"></v-text-field >
+                            <v-text-field class="mt-6" prepend-inner-icon="mdi-note-text" v-model="movementObservation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="solo-filled"></v-text-field >
 
                         </v-card-text>
 
                         <v-divider></v-divider>
 
-                        <v-card-actions >
+                        <v-card-actions class="pa-4 d-flex flex-wrap ga-2">
                         <v-btn
                         class="text-none"
                         text="Fechar"
                         variant="text"
+                        rounded="lg"
                         @click="modelValue = false"
                         ></v-btn>
                         <v-spacer></v-spacer>
@@ -206,6 +222,7 @@
                         color="primary"
                         text="Salvar"
                         variant="flat"
+                        rounded="lg"
                         @click="submitMovement"
                         :loading="isPendingMovements"
                         ></v-btn>

@@ -227,8 +227,25 @@
     validate-on="lazy blur"
     v-if="props.draft"
     >
-      <v-dialog v-model="modelValue" max-width="600">
-        <v-card prepend-icon="mdi-bank-plus" title="Edit Despesa">
+      <v-dialog v-model="modelValue" max-width="750">
+        <v-card rounded="lg" elevation="5"> 
+        
+          <v-card-item class="pa-4 pb-2">
+            <v-card-title class="text-h6 font-weight-bold text-blue-grey-darken-4">
+              Editar despesa 
+            </v-card-title>
+
+            <v-card-subtitle class="mt-1">
+              Preencha os dados para editar seu lançamento.
+            </v-card-subtitle>
+
+            <template #prepend>
+              <v-avatar color="red" variant="tonal" rounded="lg">
+                <v-icon icon="mdi-pencil" color="red" />
+              </v-avatar>
+            </template>
+          </v-card-item>
+
           <v-divider></v-divider>
           <v-card-text>
             <v-row >
@@ -236,19 +253,19 @@
             <v-col
              cols="12" md="6" sm="12"
             >
-            <CurrencyInput :disabled="showFields.valor" prepend-inner-icon="mdi-cash"  input-color="#C62828" base-color="#C62828" color="#C62828" :rules="currencyRules"  autocomplete="off" label="Valor*" v-model="props.draft.value_transaction" />
+            <CurrencyInput :disabled="showFields.valor" prepend-inner-icon="mdi-cash"  input-color="#C62828" base-color="#C62828" color="#C62828" :rules="currencyRules"  autocomplete="off" label="Valor*" v-model="props.draft.value_transaction" variant="solo-filled"/>
             </v-col>
 
             <v-col
                cols="12" md="6" sm="12"
               >
-            <v-date-input :disabled="showFields.vencimento" prepend-inner-icon="mdi-calendar" prepend-icon="" :rules="dateRules" autocomplete="off" name="date" label="Data*" variant="underlined" v-model="props.draft.date_transaction"></v-date-input>
+            <v-date-input :disabled="showFields.vencimento" prepend-inner-icon="mdi-calendar" prepend-icon="" :rules="dateRules" autocomplete="off" name="date" label="Data*" variant="solo-filled"" v-model="props.draft.date_transaction"></v-date-input>
             </v-col>
 
             <v-col
              cols="12" md="6" sm="12"
             >
-            <v-text-field prepend-inner-icon="mdi-pencil" :rules="nameRules" :counter="45" maxlength="45"  autocomplete="name" name="name" label="Descrição*" variant="underlined" v-model="props.draft.description_transaction"></v-text-field>
+            <v-text-field prepend-inner-icon="mdi-pencil" :rules="nameRules" :counter="45" maxlength="45"  autocomplete="name" name="name" label="Descrição*" variant="solo-filled"" v-model="props.draft.description_transaction"></v-text-field>
             </v-col>
 
             <v-col
@@ -261,7 +278,7 @@
                 :rules="selectRules"
                 item-title="name_identifier"
                 item-value="id"
-                variant="underlined"
+                variant="solo-filled""
                 label="Conta*"
                 hint="O valor será debitado desta conta"
                 persistent-hint
@@ -326,7 +343,7 @@
               :items="filterCategorias"
               item-title="name_identifier"
               item-value="id"
-              variant="underlined"
+              variant="solo-filled""
               label="Categoria*"
               persistent-hint
               :rules="selectRules"
@@ -379,12 +396,16 @@
             <v-col
             cols="12" md="12" sm="12"
             >
-              <v-text-field prepend-inner-icon="mdi-note-text" v-model="props.draft.observation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="underlined"></v-text-field >
+              <v-text-field prepend-inner-icon="mdi-note-text" v-model="props.draft.observation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="solo-filled""></v-text-field >
             </v-col>
 
             <v-col
               dens cols="12" md="12" sm="12"
             >
+              <v-sheet border rounded="lg" class="pa-4">
+                <div class="text-body-2 font-weight-bold text-blue-grey-darken-3 mb-3">
+                  Opções da despesa
+                </div>
               <v-switch
                 :disabled="showFields.efetivar"
                 v-model="switchValue"
@@ -396,46 +417,42 @@
                 true-icon="mdi-check"
                 false-icon="mdi-close"
               ></v-switch> 
+              </v-sheet>
             </v-col>
-
-            <small class="text-caption text-medium-emphasis"
-              >* Indica campos obrigatórios</small
-            >
 
               <v-col
                 dens cols="12" md="12" sm="12"
               >
-                  <v-alert
-                  class="mb-2 mt-2"
-                  :text="`Atenção! Esta é uma despesa ${(props.draft.type_recurrence === 'fixa') ? 'fixa' : 'parcelada'}. Você deseja:`"
-                  type="info"
-                  variant="tonal"
-                  density="comfortable"
-                  >
+                <v-sheet border rounded="lg" class="pa-4">
+                  <div class="text-body-2 font-weight-bold text-blue-grey-darken-3 mb-3">
+                    {{ `Atenção! Esta é uma despesa ${(props.draft.type_recurrence === 'fixa') ? 'fixa' : 'parcelada'}. Você deseja:` }}
+                  </div>
+
                   <div class="mt-2">
                     <v-radio-group v-model="editScope" hide-details>
-                      <v-radio  label="Editar somente esta" value="somente_esta"></v-radio>
-                      <v-radio label="Editar todas as pendentes" value="pendentes"></v-radio>
-                      <v-radio  label="Editar todas (incluindo efetivadas)" value="todas"></v-radio>
+                      <v-radio color="red" label="Editar somente esta" value="somente_esta"></v-radio>
+                      <v-radio color="red" label="Editar todas as pendentes" value="pendentes"></v-radio>
+                      <v-radio color="red" label="Editar todas (incluindo efetivadas)" value="todas"></v-radio>
                     </v-radio-group>
                   </div>
+
                   <div class="mt-2">
                     <span v-if="showAlertPrimary" class="mt-2 font-weight-bold">{{ alertPrimary }}</span>
                     <span v-if="showAlertSecundary" class="mt-2 font-weight-bold">{{ alertSecundary }}</span>
                   </div>
-                </v-alert>
+                </v-sheet>
               </v-col>
-
             </v-row>
           </v-card-text>
 
           <v-divider></v-divider>
 
-          <v-card-actions>
+          <v-card-actions class="pa-4 d-flex flex-wrap ga-2">
             <v-btn
               class="text-none"
               text="Fechar"
               variant="text"
+              rounded="lg"
               @click="resetStates"
             ></v-btn>
             <v-spacer></v-spacer>
@@ -444,6 +461,7 @@
               color="primary"
               text="Salvar"
               variant="flat"
+              rounded="lg"
               :loading="isPending"
               @click="submitEditMovement"
             ></v-btn>

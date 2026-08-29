@@ -181,29 +181,44 @@ async function handleEditMovementRevenue() {
     v-if="props.draft"
     >
       <v-dialog v-model="modelValue" max-width="600">
-        <v-card prepend-icon="mdi-bank-plus" title="Editar receita">
+        <v-card rounded="xl" elevation="5">
+
+          <v-card-item class="pa-4 pb-2">
+            <v-card-title class="text-h6 font-weight-bold text-blue-grey-darken-4">
+              Editar receita
+            </v-card-title>
+
+            <v-card-subtitle class="mt-1">
+              Preencha os dados para editar seu lançamento.
+            </v-card-subtitle>
+
+            <template #prepend>
+              <v-avatar color="green" variant="tonal" rounded="lg">
+                <v-icon icon="mdi-pencil" color="green" />
+              </v-avatar>
+            </template>
+          </v-card-item>
+
           <v-divider></v-divider>
+
           <v-card-text>
             <v-row>
-
-              
             <v-col
              cols="12" md="6" sm="12"
             >
-            <CurrencyInput prepend-inner-icon="mdi-cash" input-color="#2E7D32" base-color="#2E7D32" color="#2E7D32" :rules="currencyRules"  text-color="green" autocomplete="off" label="Valor*" v-model="props.draft.value_transaction" />
+            <CurrencyInput prepend-inner-icon="mdi-cash" input-color="#2E7D32" base-color="#2E7D32" color="#2E7D32" :rules="currencyRules"  text-color="green" autocomplete="off" label="Valor*" v-model="props.draft.value_transaction"  variant="solo-filled" />
             </v-col>
 
-            
             <v-col
               cols="12" md="6" sm="12"
             >
-            <v-date-input prepend-inner-icon="mdi-calendar" prepend-icon="" :rules="dateRules" autocomplete="off" name="date" label="Data*" variant="underlined" v-model="props.draft.date_transaction"></v-date-input>
+            <v-date-input prepend-inner-icon="mdi-calendar" prepend-icon="" :rules="dateRules" autocomplete="off" name="date" label="Data*" variant="solo-filled"" v-model="props.draft.date_transaction"></v-date-input>
             </v-col>
 
             <v-col
             cols="12" md="6" sm="12"
             >
-            <v-text-field prepend-inner-icon="mdi-pencil" :rules="nameRules" :counter="30" maxlength="30"  autocomplete="name" name="name" label="Descrição*" variant="underlined" v-model="props.draft.description_transaction"></v-text-field>
+            <v-text-field prepend-inner-icon="mdi-pencil" :rules="nameRules" :counter="30" maxlength="30"  autocomplete="name" name="name" label="Descrição*" variant="solo-filled"" v-model="props.draft.description_transaction"></v-text-field>
             </v-col>
 
             <v-col
@@ -216,7 +231,7 @@ async function handleEditMovementRevenue() {
                 :rules="selectRules"
                 item-title="name_identifier"
                 item-value="id"
-                variant="underlined"
+                variant="solo-filled"
                 label="Conta*"
                 hint="O valor será creditado nesta conta"
                 persistent-hint
@@ -272,7 +287,7 @@ async function handleEditMovementRevenue() {
                 :items="filterCategorias"
                 item-title="name_identifier"
                 item-value="id"
-                variant="underlined"
+                variant="solo-filled"
                 label="Categoria*"
                 persistent-hint
                 :rules="selectRules"
@@ -317,12 +332,17 @@ async function handleEditMovementRevenue() {
               <v-col
               cols="12" md="12" sm="12"
               >
-              <v-text-field prepend-inner-icon="mdi-note-text" v-model="props.draft.observation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="underlined"></v-text-field >
+              <v-text-field prepend-inner-icon="mdi-note-text" v-model="props.draft.observation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="solo-filled""></v-text-field >
               </v-col>
 
+              
               <v-col
               dens cols="12" md="12" sm="12"
               >
+              <v-sheet border rounded="lg" class="pa-4">
+                <div class="text-body-2 font-weight-bold text-blue-grey-darken-3 mb-3">
+                  Opções da receita
+                </div>
               <v-switch
                 v-model="switchValue"
                 color="success"
@@ -333,6 +353,7 @@ async function handleEditMovementRevenue() {
                 true-icon="mdi-check"
                 false-icon="mdi-close"
               ></v-switch> 
+              </v-sheet>
               </v-col>
 
             <small class="text-caption text-medium-emphasis"
@@ -343,16 +364,18 @@ async function handleEditMovementRevenue() {
 
           <v-divider></v-divider>
 
-          <v-card-actions>
+          <v-card-actions class="pa-4 d-flex flex-wrap ga-2">
             <v-btn
               text="Fechar"
-              variant="plain"
+              variant="text"
+              rounded="lg"
               @click="resetForm"
             ></v-btn>
             <v-spacer></v-spacer>
             <v-btn
               color="primary"
               text="Salvar"
+              rounded="lg"
               variant="flat"
               :loading="isPending"
               @click="handleEditMovementRevenue"

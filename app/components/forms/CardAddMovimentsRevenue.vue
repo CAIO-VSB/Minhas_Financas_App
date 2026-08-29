@@ -302,8 +302,8 @@
           </v-card-subtitle>
 
           <template #prepend>
-            <v-avatar color="primary" variant="tonal" rounded="lg">
-              <v-icon icon="mdi-bank-plus" color="primary" />
+            <v-avatar color="green" variant="tonal" rounded="lg">
+              <v-icon icon="mdi-bank-plus" color="green" />
             </v-avatar>
           </template>
         </v-card-item>
@@ -317,10 +317,10 @@
                 v-model="movementsForm.value_transaction"
                 :rules="currencyRules"
                 prepend-inner-icon="mdi-cash"
-                input-color="#1F54FF"
-                base-color="#1F54FF"
-                color="#1F54FF"
-                text-color="#1F54FF"
+                input-color="green"
+                base-color="green"
+                color="green"
+                text-color="green"
                 variant="solo-filled"
                 autocomplete="off"
                 label="Valor *"
@@ -647,7 +647,7 @@
 
           <v-btn
             :loading="isPendingMovements"
-            color="primary"
+            color="green"
             variant="outlined"
             rounded="lg"
             class="text-none"
@@ -658,7 +658,7 @@
 
           <v-btn
             :loading="isPendingMovements"
-            color="primary"
+            color="green"
             variant="flat"
             rounded="lg"
             class="text-none"

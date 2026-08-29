@@ -83,15 +83,15 @@ async function submitForm() {
   <div>
       <v-dialog
         transition="dialog-bottom-transition"
-        width="550"
+        width="600"
         v-model="modelValue"
       >
         <template v-slot:default="{ isActive }">
-          <v-card>
+          <v-card rounded="xl">
             
-              <template #title>
-              {{ props.title }}
-              </template>
+            <template #title>
+              <span class="font-weight-bold text-blue-grey-darken-4">{{ props.title }}</span>
+            </template>
 
               <template #subtitle>
               {{ props.text }}
@@ -102,33 +102,40 @@ async function submitForm() {
             <v-card-text class="text-display-large pa-5">
               <div class="info">
                   <div>
-                      <p style="color: rgba(0, 0, 0, 0.70);;">Descrição</p>
+                      <p class="font-weight-bold text-blue-grey-darken-4">Descrição</p>
                       <p style="color: rgba(0, 0, 0, 0.5);">{{ props.draft?.description_transaction }}</p>
                   </div>
 
                   <div>
-                      <p style="color: rgba(0, 0, 0, 0.70);">Valor</p>
+                      <p class="font-weight-bold text-blue-grey-darken-4">Valor</p>
                       <p style="color: rgba(0, 0, 0, 0.5);  text-align: center;">{{ formatCurrency(props.draft?.value_transaction ?? 0.00) }}</p>
+                  </div>
+
+                  <div>
+                      <p class="font-weight-bold text-blue-grey-darken-4">Data</p>
+                      <p style="color: rgba(0, 0, 0, 0.5);  text-align: center;">{{ props.draft?.date_transaction?.split("-").reverse().join("/")}}</p>
                   </div>
               </div> 
             </v-card-text>
 
               <v-divider></v-divider>
 
-              <v-card-actions style="display: flex; justify-content: space-between; margin-top: 13px;">
+              <v-card-actions class="pa-4 d-flex flex-wrap ga-2">
               <v-btn
                   text="Cancelar"
                   variant="text"
                   :color="props.colorBotton"
-                  class="text-none "
+                  class="text-none"
+                  rounded="lg"
                   @click="isActive.value = false"
               ></v-btn>
-              
+              <v-spacer></v-spacer>
               <v-btn
                   :text="props.titleBotton"
                   variant="elevated"
                   :color="props.colorBotton"
                   class="text-none"
+                  rounded="lg"
                   @click="submitForm"
               ></v-btn>
               </v-card-actions>
