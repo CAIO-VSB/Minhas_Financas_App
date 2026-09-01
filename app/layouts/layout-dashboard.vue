@@ -13,7 +13,7 @@
     { title: 'Visão geral', icon: 'mdi-home-analytics', value: 'Visão geral', to: '/home' },
     { title: 'Transações', icon: 'mdi-swap-horizontal-bold', value: 'transacoes', to: '/transactions' },
     { title: 'Cartões de crédito', icon: 'mdi-credit-card-multiple-outline', value: 'cartoes', to: '/credit-card' },
-    { title: 'Economia', icon: 'mdi-piggy-bank-outline', value: 'economia', to: undefined },
+    { title: 'Economia', icon: 'mdi-piggy-bank-outline', value: 'economia', to: 'economy' },
   ]
 
 </script>
@@ -174,13 +174,38 @@
               </v-chip>
             </div>
           </template>
+        </v-list-item>
 
-          <v-tooltip
-            activator="parent"
-            location="start"
-          >
-            Relatórios
-          </v-tooltip>
+        <v-list-subheader
+          v-if="!rail"
+          class="text-uppercase text-caption font-weight-bold px-3 mt-4 mb-1"
+        >
+          Atualizações
+        </v-list-subheader>
+
+        <v-list-item
+          prepend-icon="mdi-update"
+          title="Relatórios"
+          value="relatorios"
+          rounded="lg"
+          class="mb-1 text-medium-emphasis"
+        >
+          <template #title>
+            <div class="d-flex align-center justify-space-between w-100">
+              <span class="size-item-title">
+                Novidades
+              </span>
+
+              <v-chip
+                size="x-small"
+                variant="tonal"
+                color="primary"
+                class="mr-2"
+              >
+                Em breve
+              </v-chip>
+            </div>
+          </template>
         </v-list-item>
 
       </v-list>

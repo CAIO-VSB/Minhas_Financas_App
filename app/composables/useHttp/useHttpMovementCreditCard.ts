@@ -22,11 +22,12 @@ export function useHttpMovementCreditCard() {
         return $fetch(`/api/crediCardMovements/patchMovementCardById/${id}`, {method: "PATCH", body: data, query: {choice}})
     }
 
+
     return {
        postMovementCreditCard,
        getByCreditCard,
        getTotalInvoice,
        patchMovementCardById,
-       allMovementsCreditCard
+       allMovementsCreditCard,
     }
 }

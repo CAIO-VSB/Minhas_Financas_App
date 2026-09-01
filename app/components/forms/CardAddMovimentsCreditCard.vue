@@ -3,6 +3,7 @@
     import { useHttpCategories } from '~/composables/useHttp/useHttpCategories'
     import { useHttpCreditsCards } from "~/composables/useHttp/useHttpCreditCard"
     import { useHttpMovementCreditCard } from "~/composables/useHttp/useHttpMovementCreditCard.js"
+    import { useHttpInvoices } from "~/composables/useHttp/useHttpInvoices.js"
     import { useValidateSchemas } from "~/composables/useValidateSchema"
     import { useValidateFields } from "~/composables/useValidateFields"
     import { useInvalidate } from "~/composables/useInvalidate"
@@ -12,12 +13,15 @@
     import { useRecurrenceStore } from "~~/store/modules/recurrence-store"
     import CardAddCreditCard from "./CardAddCreditCard.vue"
     import type { TCreditCard } from "~~/types/credit_card/TCredit-card.js"
+    import BaseModal from "../ui/BaseModal.vue"
+    
 
     const { notifyError, notifyInfo, notifySuccess } = useNotify()
     const { getCategoriesOnlyActive } = useHttpCategories()
     const { getCreditCardOnlyActive } = useHttpCreditsCards()
     const { validateSchemaMovementsCreditCard } = useValidateSchemas()
     const { postMovementCreditCard } = useHttpMovementCreditCard()
+    const { getNextOpenPeriod } = useHttpInvoices()
     const { invalidate } = useInvalidate()
     const { nameRules, selectRules, dateRules, currencyRules } = useValidateFields()
 
@@ -47,11 +51,12 @@
     const searchCategorias = ref("")
     const modalAddCategorie = ref(false)
     const modalAddCreditCard = ref(false)
+    const modalHelpInvoice = ref(false)
     const showInputParcelado = ref("")
     const showInputFixa = ref("")
     const showSwitch = ref(false)
     const creditCardData = ref<TCreditCard | null>(null)
-    const date = ref(`${String(new Date().getFullYear())}-${String(new Date().getMonth() + 1)}`)
+    const date = ref('')
     const menu = ref(false)
     const updateInvoiceAutomatically = ref(false)
 
@@ -132,7 +137,7 @@
       movementCreditCardForm.value.accounts_id = val?.accounts_id ?? null
     })
 
-    watch(modelCreditCard, (val) => {
+    watch(modelCreditCard, async (val) => {
       movementCreditCardForm.value.credit_card_id = val
 
       const selectCard = creditCardOnlyActive.value?.find(
@@ -141,14 +146,18 @@
 
       if (selectCard) {
         creditCardData.value = selectCard
-        updateSuggestedInvoice()
+        await updateSuggestedInvoice()
       }
+
     })
 
     const filterCategorias = computed(() => {
       return categories.value?.filter(item => item.name_identifier.toLowerCase().includes(searchCategorias.value.toLowerCase()))
     })
     
+    function closeModalHelpInvoice() {
+      modalHelpInvoice.value = false
+    }
 
     function resetForm() {
       showInputFixa.value = ""
@@ -199,11 +208,12 @@
       creditCardData.value = data
     }
 
-    function updateSuggestedInvoice() {
+    async function updateSuggestedInvoice() {
       const purchaseDate = movementCreditCardForm.value.purchase_date
       const closingDay = creditCardData.value?.closing_day
+      const cardId = creditCardData.value?.id
 
-      if (!purchaseDate || !closingDay){
+      if (!purchaseDate || !closingDay || !cardId){
         return
       }
 
@@ -212,15 +222,41 @@
         closingDay ?? 0
       )
 
+      let finalMonth = result.month
+      let finalYear = result.year
+
+      try {
+        const nextOpenPeriod = await getNextOpenPeriod(cardId ?? 0)
+
+        //Aqui seria uma conversão para meu front-end
+        //Pois no front os meses se iniciam em 0-11, e o back trabalha com 1-12
+        //Caso não existisse conversão, a conversão iria ficar sempre um mês a frente
+        const suggestedMonthZeroBased = finalMonth 
+
+        const suggestedIsBeforeOpen = 
+          finalYear < nextOpenPeriod.year ||
+          (finalYear === nextOpenPeriod.year && suggestedMonthZeroBased < nextOpenPeriod.month)
+
+          if (suggestedIsBeforeOpen) {
+            finalMonth = nextOpenPeriod.month 
+            finalYear = nextOpenPeriod.year
+          }
+
+      } catch {
+
+      }
+
       updateInvoiceAutomatically.value = true
 
-      date.value = `${result.year}-${String(result.month).padStart(2, "0")}`
+      date.value = `${finalYear}-${String(finalMonth).padStart(2, "0")}`
 
       nextTick(() => {
         updateInvoiceAutomatically.value = false
       })
     }
 
+    console.log(calculateInvoiceMonth(new Date(), 10))
+    
     watch(() => movementCreditCardForm.value.purchase_date, () => {
       updateSuggestedInvoice()
     })
@@ -279,7 +315,7 @@
     const [year, month] = date.value.split("-").map(Number)
 
     try {
-      const formValid = await form.value.validate()
+      const { formValid } = await form.value.validate()
 
       if (formValid) {
 
@@ -487,7 +523,7 @@
                 <v-col
                 cols="12" md="12" sm="12"
                 >
-                  <v-text-field prepend-inner-icon="mdi-note-text" v-model="movementCreditCardForm.observation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="solo-filled""></v-text-field >
+                  <v-text-field prepend-inner-icon="mdi-note-text" v-model="movementCreditCardForm.observation" :counter="100" maxlength="100" autocomplete="off" label="Observação" variant="solo-filled"></v-text-field >
                 </v-col>
 
                 
@@ -501,19 +537,23 @@
                       <template v-slot:activator="{ props: activatorProps }">
                           <v-text-field
                           v-model="date"
-                          label="Fatura"
+                          label="Fatura (Selecione um cartão)"
                           prepend-inner-icon="mdi-calendar"
                           hide-details
                           readonly
                           v-bind="activatorProps"
                           variant="solo-filled"
                           >
+                          <template #append-inner>
+                            <v-icon @click.stop="modalHelpInvoice = true" v-tooltip="'Sugestão de fatura'" style="cursor: pointer;" icon="mdi-help-circle"></v-icon>
+                          </template>
                           </v-text-field>
                       </template>
                       <v-month-picker
-                          v-model="date"
-                          @update:model-value="handleInvoiceManualChange"
-                      ></v-month-picker>
+                        v-model="date"
+                        @update:model-value="handleInvoiceManualChange"
+                      >
+                    </v-month-picker>
                   </v-menu>
                 </v-col>
                 
@@ -641,6 +681,23 @@
     <div style="position: absolute;">
       <CardAddCategorie v-model="modalAddCategorie"/>
       <CardAddCreditCard v-model="modalAddCreditCard" />
+    </div>
+    <div>
+      <BaseModal @close-modal="closeModalHelpInvoice" title="Sobre a sugestão de fatura" :model-value="modalHelpInvoice">
+        <div class="pa-4">
+          <v-alert
+              type="info"
+              variant="tonal"
+              rounded="lg"
+              border="start"
+              density="comfortable"
+          >
+              A fatura é sugerida automaticamente com base na data da compra
+              e no fechamento do cartão. Se a fatura sugerida já estiver
+              fechada, o sistema aponta a próxima fatura em aberto.
+          </v-alert>
+        </div>
+      </BaseModal>
     </div>
 
   </div>

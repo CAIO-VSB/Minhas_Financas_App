@@ -13,7 +13,6 @@
   import type { TCreditCard } from "~~/types/credit_card/TCredit-card"
   import CardEditCard from "~/components/forms/CardEditCreditCard.vue";
   import { useInvalidate } from "~/composables/useInvalidate"
-  import type { TOptionAction } from "~~/types/option_action/TOptionAction";
   import CardInfoCreditCard from "~/pages/credit-card/components/CardInfoCreditCard.vue";
   import CardMovementsCreditCard from "~/pages/credit-card/components/CardMovementsCreditCard.vue";
   import DateInput from '~/components/ui/DateInput.vue'
@@ -21,9 +20,11 @@
   import type { TPeriod } from "~~/types/period/TPeriod"
   import DialogHelpInvoice from "./components/DialogHelpInvoice.vue"
   import type { TMovementCreditCard } from "~~/types/credit_card/TMovementCreditCard.js"
+  import { useHttpInvoices } from "~/composables/useHttp/useHttpInvoices.js"
 
   const { getCreditCardOnlyActive, patchCreditCardById, getCreditCardOnlyDisable } = useHttpCreditsCards()
   const { getByCreditCard, getTotalInvoice } = useHttpMovementCreditCard()
+  const { getNextOpenPeriod } = useHttpInvoices()
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
   const { invalidate } = useInvalidate()
 
@@ -36,6 +37,7 @@
     queryKey: QUERY_KEYS.creditCards.disable,
     queryFn: getCreditCardOnlyDisable,
   })
+
 
   export type TOptionActionGetOptions = {
     title: string,
@@ -61,22 +63,29 @@
     year: new Date().getFullYear(),
   })
 
-  const { data:dataByCreditCard, isPending: isPendingByCreditCard, refetch  } = useQuery({
+    const { data:dataByCreditCard, isPending: isPendingByCreditCard, refetch  } = useQuery({
     queryKey: QUERY_KEYS.movementsCreditCard.byCreditCard,
     queryFn: () => getByCreditCard(period.value.month, period.value.year, selectedCardData.value?.id ?? 0),
     enabled: computed(() => !!selectedCardData.value?.id)
-  })
+    })
 
-  const { data:totalInvoice, isPending: isPendingTotalInvoice, refetch: refetchTotalInvoice } = useQuery({
+    const { data:totalInvoice, isPending: isPendingTotalInvoice, refetch: refetchTotalInvoice } = useQuery({
     queryKey: computed(() => [
-      ...QUERY_KEYS.movementsCreditCard.totalInvoice,
-      selectedCardData.value?.id,
-      period.value.month,
-      period.value.year
+        ...QUERY_KEYS.movementsCreditCard.totalInvoice,
+        selectedCardData.value?.id,
+        period.value.month,
+        period.value.year
     ]),
     queryFn: () => getTotalInvoice(period.value.month, period.value.year, selectedCardData.value?.id ?? 0),
     enabled: computed(() => !!selectedCardData.value?.id)
-  })
+    })
+
+    const { data: nextOpenPeriod } = useQuery({
+        queryKey: computed(() => [...QUERY_KEYS.creditCards.nextOpenPeriod, selectedCardData.value?.id]),
+        queryFn: () => getNextOpenPeriod(selectedCardData.value?.id ?? 0),
+        enabled: computed(() => !!selectedCardData.value?.id)
+    })
+
 
   const  { mutate } = useMutation({
 
@@ -205,6 +214,21 @@
 </script>
 
 <template>
+
+    <CardAddCartao v-model="modalAddCard" />
+
+    <CardEditCard
+        v-model="modalEditCard"
+        :draft="editDraft"
+    />
+
+    <CardAddMovimentsCreditCard v-model="modalAddMovementCreditCard" />
+
+    <DialogHelpInvoice
+        :model-value="showDialogHelpInvoice"
+        @close-modal="closeModalHelpInvoice"
+    />
+
     <v-empty-state
         v-if="!isPending && !isPendingDisable && !allCreditCard?.length && !allDeactivatedCrediCard?.length"
         title="Adicione um cartão de crédito"
@@ -227,19 +251,6 @@
         fluid
         class="mt-6 pa-4 pa-md-6"
     >
-        <CardAddCartao v-model="modalAddCard" />
-
-        <CardEditCard
-            v-model="modalEditCard"
-            :draft="editDraft"
-        />
-
-        <CardAddMovimentsCreditCard v-model="modalAddMovementCreditCard" />
-
-        <DialogHelpInvoice
-            :model-value="showDialogHelpInvoice"
-            @close-modal="closeModalHelpInvoice"
-        />
 
         <v-row>
             <v-col
@@ -424,7 +435,7 @@
 
                         <v-divider class="my-5" />
 
-                        <DateInput @apply-filter-month="handleGetPeriod" />
+                        <DateInput :initial-period="nextOpenPeriod" @apply-filter-month="handleGetPeriod" />
                     </v-card-text>
 
                     <v-expand-transition>

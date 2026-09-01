@@ -137,6 +137,7 @@
       invalidate(QUERY_KEYS.accounts.getBalanceForAccount)
       invalidate(QUERY_KEYS.movementsCreditCard.byCreditCard)
       invalidate(QUERY_KEYS.movementsCreditCard.totalInvoice)
+      invalidate(QUERY_KEYS.creditCards.nextOpenPeriod)
       modelValue.value = false
       emit("success")
     },

@@ -45,7 +45,6 @@
         }
       }
     } catch (error) {
-      notifyError("Algo deu errado", "Ocorreu um erro inesperado. Tente novamente em alguns instantes.")
       console.log("Erro ao tentar fazer login (geral no catch)" + error)
     } finally {
       loadingEmail.value = false
@@ -59,7 +58,6 @@
       await authStore.loginGoogle()
       
     } catch (error) {
-      notifyError("Algo deu errado", "Ocorreu um erro inesperado. Tente novamente em alguns instantes.")
       console.log("Erro ao autenteicar com o google" + error);
     } finally {
       loadingGoogle.value = true;
@@ -73,7 +71,6 @@
       await authStore.loginDiscord()
 
     } catch (error) {
-      notifyError("Algo deu errado", "Ocorreu um erro inesperado. Tente novamente em alguns instantes.")
       console.log("Erro ao autenteicar com o google" + error);
     } finally {
       loadingFacebook.value = false

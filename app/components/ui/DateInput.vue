@@ -6,6 +6,10 @@
         applyFilterMonth: [filter: TPeriod]
     }>()    
 
+    const props = defineProps<{
+        initialPeriod?: TPeriod | null
+    }>()
+
     const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
 
     const fullMonths = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
@@ -18,6 +22,16 @@
     const currentYear = ref(new Date().getFullYear())
 
     const expanded = ref(false)
+
+    watch(() => props.initialPeriod, (newVal, oldVal) => {
+        if (!newVal) return
+        if (oldVal && newVal.month === oldVal.month && newVal.year === oldVal.year) return
+
+        period.value = { month: newVal.month, year: newVal.year}
+        currentYear.value = newVal.year
+
+        emit("applyFilterMonth", period.value)
+    })
 
     function changeYear(direction: number) {
         currentYear.value += direction

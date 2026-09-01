@@ -10,7 +10,8 @@ export const QUERY_KEYS = {
     },
     creditCards: {
         all: ['credit-cards'],
-        disable: ['credit-cards-disable']
+        disable: ['credit-cards-disable'],
+        nextOpenPeriod: ['nextPeriod']
     },
     movements: {
         all: ['movements'],
@@ -29,5 +30,8 @@ export const QUERY_KEYS = {
         byCreditCard: ['byCreditCard'],
         totalInvoice: ['totalInvoice'],
         allMovements: ['allMovements']
+    },
+    goals: {
+        all: ['allGoals']
     }
 }

@@ -62,6 +62,13 @@ export const invoiceRepository = {
                     WHERE id = $6
             `, [dataPayment, 'fechada', totalInvoice, totalPaid, accountsId, invoiceId])
 
+            await conn.query(
+                `INSERT INTO movements(user_id, type_transaction, value_transaction, date_transaction, description_transaction, categorie_id, accounts_id, observation, url_recibo, status_transaction, is_deleted, invoice_id) 
+                VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
+                RETURNING id`,
+                [userId, 'pagamento_fatura', totalPaid, dataPayment, 'Pagamento da fatura', 6, accountsId, 'Pagamento da fatura', null, 'pago', false, invoiceId]
+            )
+          
             const currentInvoice = await conn.query(`
                 SELECT credit_card_id, invoice_month, invoice_year, closing_date FROM credit_card_invoices WHERE id = $1
             `, [invoiceId])
@@ -205,6 +212,43 @@ export const invoiceRepository = {
             conn.release()  
         }
 
+    },
+
+    async getNextOpenPeriod(creditCardId: number) {
+
+       const conn = await client.connect()
+
+       try {
+
+        const result = await conn.query(`
+            SELECT invoice_month, invoice_year
+            FROM credit_card_invoices
+            WHERE credit_card_id = $1 AND status_invoice = 'fechada'
+            ORDER BY invoice_year DESC, invoice_month DESC
+            LIMIT 1
+        `, [creditCardId])
+
+        if (result.rows.length === 0) {
+            const now = new Date()
+            return { month: now.getMonth(), year: now.getFullYear() }
+        }
+
+        const { invoice_month, invoice_year } = result.rows[0]
+
+        let nextMonth = invoice_month === 12 ? 1 : invoice_month + 1
+        let nextYear = invoice_month === 12 ? invoice_year + 1 : invoice_year
+
+        return {
+            month: nextMonth - 1,
+            year: nextYear
+        }
+
+       } catch (e) {
+        throw new Error("Erro ao buscar o mês da fatura atual")
+       } finally {
+        conn.release()
+       } 
+ 
     }
 
 

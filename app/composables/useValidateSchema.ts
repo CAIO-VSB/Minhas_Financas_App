@@ -10,8 +10,9 @@ import type { TUser } from "~~/types/auth/Tauth.types"
 import type { TCategorie } from "~~/types/categorie/TCategorie"
 import type { TCreditCard } from "~~/types/credit_card/TCredit-card"
 import type { TRecoveryForm, TLoginForm, TResetForm } from "~~/types/user/Tuser.types"
-import type { TTransfer } from "~~/types/transfer/TTransfer"
 import { schemaMovementCreditCard, type TMovementCreditCardPayload } from "~~/schemas/movementCreditCard.schema"
+import { type TGoalsPayload, schemaGoals } from "~~/schemas/goals.schema"
+import { type TGoalsMovementsPayload, schemaGoalsMovements } from "~~/schemas/goalsMovements.schema"
 
 //Tipo para validar o retorno de cada função
 type ValidateResult<T> = 
@@ -157,6 +158,32 @@ export function useValidateSchemas() {
 
     }
 
+    const validateSchemaGoals = (data: unknown):ValidateResult<TGoalsPayload> => {
+
+        const result = schemaGoals.safeParse(data)
+
+        if (!result.success) {
+            console.log("Erro ao validar schema de recorrência", result.error)
+            return {success: false}
+        }
+
+        return {success: true, data: result.data}
+
+    }
+
+    const validateSchemaGoalsMovements = (data: unknown):ValidateResult<TGoalsMovementsPayload> => {
+
+        const result = schemaGoalsMovements.safeParse(data)
+
+        if (!result.success) {
+            console.log("Erro ao validar schema de recorrência", result.error)
+            return {success: false}
+        }
+
+        return {success: true, data: result.data}
+
+    }
+
     return {
         validateSchemaAccount,
         validateSchemaCategorie,
@@ -168,7 +195,9 @@ export function useValidateSchemas() {
         validateSchemaMovements,
         validateSchemaMovementsCreditCard,
         validateSchemaTransfer,
-        validateSchemaRecurrence
+        validateSchemaRecurrence, 
+        validateSchemaGoals,
+        validateSchemaGoalsMovements
     }
 
 }

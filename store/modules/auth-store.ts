@@ -38,7 +38,17 @@ export const useAuthStore = defineStore('auth', () => {
                         7000
                         )
                         return
-                    } 
+                    }  
+                    else if (context.error.status === 429) {
+                        notifyInfo(
+                        "Limite de tentativas atingido",
+                        "Para proteger sua conta, aguarde 10 segundos antes de realizar uma nova tentativa",
+                        10000,
+                        false,
+                        false
+                        )
+                        return
+                    }  
                     else {
                         handleErrorApplication(context.error.status)
                         return
@@ -58,7 +68,7 @@ export const useAuthStore = defineStore('auth', () => {
             } 
 
         } catch (error) {
-            notifyError("Erro interno", "Ocorreu um erro inesperado. Tente novamente em alguns instantes.")
+            //notifyError("Erro interno", "Ocorreu um erro inesperado. Tente novamente em alguns instantes.")
         }
     }
 
