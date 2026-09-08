@@ -23,7 +23,6 @@
         goal_value: 0.00,
         start_date: new Date(),
         end_date: new Date(),
-        accounts_id: null,
         active: true
     })
 
@@ -53,15 +52,14 @@
     })
 
     function resetForm() {
-        goalsForm.value.accounts_id = null
-        goalsForm.value.active = true
-        goalsForm.value.end_date = new Date()
-        goalsForm.value.goal_value = 0.00
-        goalsForm.value.name_identifier = ""
-        goalsForm.value.start_date = new Date()
-        goalsForm.value.suggested_value = 0.00
-        modelAccounts.value = null
-        modelValue.value = false
+      goalsForm.value.active = true
+      goalsForm.value.end_date = new Date()
+      goalsForm.value.goal_value = 0.00
+      goalsForm.value.name_identifier = ""
+      goalsForm.value.start_date = new Date()
+      goalsForm.value.suggested_value = 0.00
+      modelAccounts.value = null
+      modelValue.value = false
     }
 
     async function submitForm() {
@@ -87,8 +85,6 @@
                 start_date: startDateFormated,
                 end_date: endDateFormated
             }
-
-            console.log("Valor sendo enviado ante da cair no boca do leao " + JSON.stringify(payload))
 
             const resultSchema = validateSchemaGoals(payload)
 
@@ -174,45 +170,6 @@
               >
                 <v-date-input prepend-inner-icon="mdi-calendar" prepend-icon="" :rules="dateRules" autocomplete="off" label="Data de término" variant="solo-filled" v-model="goalsForm.end_date"></v-date-input>
               </v-col>
-              
-            <v-col
-            cols="12" md="12" sm="12"
-            >
-              <v-select
-                v-model="modelAccounts"
-                v-model:menu="menuAccounts"
-                :items="accounts"
-                :rules="selectRules"
-                item-title="name_identifier"
-                item-value="id"
-                variant="solo-filled"
-                label="Conta"
-                hint="O valor será debitado desta conta"
-                persistent-hint
-                autocomplete="off"
-                prepend-inner-icon="mdi-bank"
-                :loading="isPendingAccounts"
-                >
-
-                  <template v-slot:selection="{item}">
-                    <v-avatar style="width: 25px; height: 24px; margin-right: 12px;"> 
-                      <v-img  :src="item.url_image" :alt="item.name_identifier"></v-img>
-                    </v-avatar>
-                    <span >{{ item.name_identifier }}</span>
-                  </template>
-
-                  <template v-slot:item="{props, item}">
-                    <v-list-item  v-bind="props">
-                      <template v-slot:prepend>
-                        <v-avatar>
-                          <v-img :src="item.url_image" :alt="item.name_identifier"></v-img>
-                        </v-avatar>
-                      </template>
-                    </v-list-item>
-                  </template>
-
-                </v-select>
-                </v-col>
             </v-row>
 
           </v-card-text>

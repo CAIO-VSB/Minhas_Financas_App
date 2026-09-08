@@ -1,12 +1,12 @@
 import { auth } from "~~/auth"
-import { movementsRespository } from "~~/server/repositories/moviments.repository"
+import { goalsRepository } from "~~/server/repositories/goals.repository"
 
 export default defineEventHandler( async (event) => {
 
     const session = await auth.api.getSession({
         headers: event.headers
     })
-
+    
     if (!session?.session.token) {
         throw createError({
             status: 401,
@@ -16,9 +16,10 @@ export default defineEventHandler( async (event) => {
         
     try {
 
-        return await movementsRespository.findCurrentBalance(session.session.userId)
+       return await goalsRepository.getBalanceForGoals(session.session.userId)
 
     } catch (error) {
+        console.log("Erro ao buscar total das metas", error)
         throw createError({
             status: 500,
             statusMessage: "Internal Server Error"

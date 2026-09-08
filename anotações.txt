@@ -17,4 +17,6 @@ edição deve buscar a entidade completa
 
 datetime(ano, mes, dia, hora, minuto, segundo)
 
-text-none
+:deep(.v-data-table-header__content) {
+  font-weight: bold;
+}

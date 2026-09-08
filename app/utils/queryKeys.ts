@@ -32,6 +32,14 @@ export const QUERY_KEYS = {
         allMovements: ['allMovements']
     },
     goals: {
-        all: ['allGoals']
+        all: ['allGoals'],
+        movements: (id: number) => ['movementsGoals', id],
+        balance_for_economy: ['balance']
+    },
+    dashboard: {
+        expenseByCategorie: ['expenseByCategorie'],
+        renevueByCategorie: ['renevueByCategorie'],
+        sumary: ['sumary'],
+        cards: ['credit-cards']
     }
 }

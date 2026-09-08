@@ -1,128 +1,319 @@
 <script setup lang="ts">
 
-definePageMeta({
-  title: "Visão Geral",
-  layout: "layout-dashboard"
-})
+    definePageMeta({
+        title: "Dashboard",
+        layout: "layout-dashboard"
+    })
 
-// Lista curta dos meses para mostrar no grid expandido
-const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
+    import AppCard from '~/components/ui/AppCard.vue'
+    import BaseCard from '~/components/ui/BaseCard.vue';
+    import DateInput from '~/components/ui/DateInput.vue'
+    import { useHttpDashboard } from "~/composables/useHttp/useHttpDashboard"
+    import { useHttpMovements } from '~/composables/useHttp/useHttpMovements'
+    import { useDonutChart } from "~/composables/useVueCharts/useDonuChart"
+    import { useBarChart, type BarDatum } from "~/composables/useVueCharts/useBarChart"
+    import type { TPeriod } from '~~/types/period/TPeriod';
 
-// Lista completa para mostrar no chip principal ex: "Maio 2026"
-const fullMonths = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
+    const { getExpenseByCategorie, getRenevueByCategorie, getAllSumary, getTotalByCards } = useHttpDashboard()
+    const { getCurrentBalance } = useHttpMovements()
 
-// Estado do período selecionado — mês e ano atual por padrão
-// getMonth() retorna 0-11 onde Janeiro = 0 e Dezembro = 11
-const period = ref({
-    month: new Date().getMonth(),
-    year: new Date().getFullYear(),
-})
+    const period = ref({
+        month: new Date().getMonth(),
+        year: new Date().getFullYear(),
+    })
 
-watch(period.value, (val) => {
-    console.log("O valor chegando", val)
-})
-// Ano visualizado no grid — pode ser diferente do selecionado
-// Ex: usuário navega para 2027 no grid mas ainda não selecionou nenhum mês
-const currentYear = ref(new Date().getFullYear())
+    const { data:expenseByCategorie, isPending:isPendingExpenseByCategorie, refetch:refetchByCategorieExpense } = useQuery({
+        queryKey: QUERY_KEYS.dashboard.expenseByCategorie,
+        queryFn: () => getExpenseByCategorie(period.value.month, period.value.year)
+    })
 
-// Controla se o grid de meses está aberto ou fechado
-const expanded = ref(false)
+    const { data:renevueByCategorie, isPending:isPendingByCategorieRenevue, refetch:refecthByCategorieRenevue } = useQuery({
+        queryKey: QUERY_KEYS.dashboard.renevueByCategorie,
+        queryFn: () => getRenevueByCategorie(period.value.month, period.value.year)
+    })
 
-// Navega o ano no grid expandido — não altera o período selecionado
-// +1 avança, -1 volta
-function changeYear(direction: number) {
-    currentYear.value += direction
-}
+    const { data:dataSumary, isPending:isPendingSumary, refetch:refecthSumary } = useQuery({
+        queryKey: QUERY_KEYS.dashboard.sumary,
+        queryFn: () => getAllSumary(period.value.month, period.value.year)
+    })
 
-// Navega para o mês anterior no modo padrão (seta esquerda)
-// Se for Janeiro, volta para Dezembro do ano anterior
-function prevMonth() {
-    if (period.value.month === 0) {
-        period.value.month = 11
-        period.value.year--
-        currentYear.value-- // mantém currentYear sincronizado com period
-    } else {
-        period.value.month--
+    const { data:currentBalance, isPending:isPendingCurrentBalance } = useQuery({
+        queryKey: QUERY_KEYS.movements.current_balance,
+        queryFn: getCurrentBalance
+    })
+
+    const { data:byCards, isPending:isPendingByCards, refetch:refecthByCards } = useQuery({
+        queryKey: QUERY_KEYS.dashboard.cards,
+        queryFn: () => getTotalByCards(period.value.month, period.value.year)
+    })
+
+    const balanceCurrent = computed(() => {        
+        const row = currentBalance.value?.[0]
+
+        return {
+            saldo_atual: Number(row?.saldo_atual ?? 0.00)
+        }
+        
+    })
+    
+    const balanceByCards = computed(() => {        
+        const row = byCards.value?.[0]
+
+        return {
+            total_cartoes: Number(row?.t_cartoes ?? 0.00)
+        }
+        
+    })
+
+    const summary = computed(() => {
+
+        const row = dataSumary.value?.[0]
+
+        return {
+            receitas: Number(row?.t_receitas ?? 0),
+            despesas: Number(row?.t_despesas ?? 0),
+            balancoMensal: Number(row?.balanco_mensal ?? 0)
+        }
+    })
+
+
+    const totalByRenevue = computed(() => {
+        const result = renevueByCategorie.value?.reduce((acc, item) => {
+            return acc + item.value 
+        }, 0)
+
+        return result
+    })
+
+    const totalByExpense = computed(() => {
+        const result = expenseByCategorie.value?.reduce((acc, item) => {
+            return acc + item.value 
+        }, 0)
+
+        return result
+    })
+
+    function handleGetPeriod(value: TPeriod) {
+        period.value = value
+        refecthByCategorieRenevue()
+        refetchByCategorieExpense()
+        refecthByCards()
+        refecthSumary()
     }
-}
 
-// Navega para o próximo mês no modo padrão (seta direita)
-// Se for Dezembro, avança para Janeiro do próximo ano
-function nextMonth() {
-    if (period.value.month === 11) {
-        period.value.month = 0
-        period.value.year++
-        currentYear.value++ // mantém currentYear sincronizado com period
-    } else {
-        period.value.month++
-    }
-}
+    const barData = computed<BarDatum[]>(() => [
+        { name: 'Receitas', value: summary.value.receitas, color: '#2BB673' },
+        { name: 'Despesas', value: summary.value.despesas, color: '#FF6B6B' },
+    ])
 
-// Seleciona um mês no grid e fecha o modo expandido
-// index = posição do mês no array (0 = Jan, 11 = Dez)
-function selectMonth(index: number) {
-    period.value.month = index
-    period.value.year = currentYear.value // usa o ano que estava sendo visualizado no grid
-    expanded.value = false
-}
+    const { option: expenseOption } = useDonutChart(computed(() => expenseByCategorie.value ?? []))
+    const { option: renevueOption } = useDonutChart(computed(() => renevueByCategorie.value ?? []))
+    const { option: balancoOption } = useBarChart(barData)
 
-// Verifica se o mês do grid é o período atualmente selecionado
-// Precisa checar mês E ano — para não marcar "Mai 2025" quando "Mai 2026" está selecionado
-function isActive(index: number) {
-    return index === period.value.month && currentYear.value === period.value.year
-}
-
-// Monta o texto do chip principal ex: "Maio 2026"
-// computed recalcula automaticamente quando period muda
-const monthLabel = computed(() => {
-    return `${fullMonths[period.value.month]} ${period.value.year}`
-})
 
 </script>
 
 <template>
+    <div class="dashboard-wrapper">
 
-
-    <div>
-        
-    </div>
-    <div>
-        <!-- Modo padrão: setas para navegar mês a mês + chip clicável para expandir -->
-        <div v-if="!expanded" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
-            <v-btn icon="mdi-chevron-left" variant="text" @click="prevMonth" />
-            <!-- Ao clicar no chip, abre o grid de meses -->
-            <span
-                @click="expanded = true"
-                style="cursor: pointer; font-size: 16px; font-weight: 500; text-transform: capitalize; border: 1.5px solid #7F77DD; color: #7F77DD; padding: 4px 16px; border-radius: 20px;"
-            >
-                {{ monthLabel }}
-            </span>
-            <v-btn icon="mdi-chevron-right" variant="text" @click="nextMonth" />
+        <div class="date-filter">
+            <DateInput  @apply-filter-month="handleGetPeriod"/>
         </div>
 
-        <!-- Modo expandido: navegação por ano + grid de meses -->
-        <div v-else>
-            <!-- Setas para navegar o ano sem fechar o grid -->
-            <div style="display: flex; align-items: center; justify-content: center; gap: 24px; margin-bottom: 1rem;">
-                <v-btn icon="mdi-chevron-left" variant="text" @click="changeYear(-1)" />
-                <span style="font-size: 16px; font-weight: 500;">{{ currentYear }}</span>
-                <v-btn icon="mdi-chevron-right" variant="text" @click="changeYear(1)" />
+        <div class="main-cards">
+            <div class="card-full">
+                <AppCard
+                    subtitle="Saldo atual"
+                    size="40"
+                    :value="balanceCurrent.saldo_atual"
+                    color="primary"
+                    icon="mdi-bank"
+                    text-tool-tip="Saldo atual: considera o saldo inicial das contas ativas e todas as movimentações efetivadas, independentemente do período."
+                    icon-tool-tip="mdi-information-outline"
+                    size-icon-tool-tip="20px"
+                    :loading="isPendingSumary"
+                />
             </div>
 
-            <!-- Grid de meses — ao clicar seleciona e fecha o grid -->
-            <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
-                <v-btn
-                    v-for="(month, index) in months"
-                    :key="index"
-                    :variant="isActive(index) ? 'outlined' : 'text'"
-                    :color="isActive(index) ? 'primary' : 'red'"
-                    rounded="xl"
-                    size="small"
-                    @click="selectMonth(index)"
-                >
-                    {{ month }}
-                </v-btn>
+            <div class="card-item">
+                <AppCard
+                    subtitle="Receitas"
+                    size="40"
+                    :value="summary.receitas"
+                    color="success"
+                    icon="mdi-arrow-down-thin-circle-outline"
+                    text-tool-tip="Valor total de suas receitas cadastradas, sejam elas recebidas ou pendentes"
+                    icon-tool-tip="mdi-information-outline"
+                    size-icon-tool-tip="20px"
+                    :loading="isPendingSumary"
+                />
+            </div>
+
+            <div class="card-item">
+                <AppCard
+                    subtitle="Despesas"
+                    size="40"
+                    :value="summary.despesas"
+                    color="error"
+                    icon="mdi-arrow-up-thin-circle-outline"
+                    text-tool-tip="Valor total de suas despesas cadastradas, pagas ou pendentes"
+                    icon-tool-tip="mdi-information-outline"
+                    size-icon-tool-tip="20px"
+                    :loading="isPendingSumary"
+                />
+            </div>
+
+            <div class="card-item">
+                <AppCard
+                    subtitle="Cartões de crédito"
+                    size="40"
+                    :value="balanceByCards.total_cartoes"
+                    color="primary"
+                    icon="mdi-credit-card"
+                    text-tool-tip="Valor total de suas faturas pagas ou a vencer no mês atual"
+                    icon-tool-tip="mdi-information-outline"
+                    size-icon-tool-tip="20px"
+                    :loading="isPendingSumary"
+                />
             </div>
         </div>
+
+        <div class="charts-row">
+            <BaseCard title="Receitas por categoria" subtitle="Visualize a origem das suas receitas">
+                <div class="pa-5">
+                    <VChart :option="renevueOption" autoresize style="height: 450px"/>
+                    <div class="d-flex justify-end pa-1">
+                        <v-sheet :width="200" :height="25" class="rounded-lg px-3" border>
+                            <span class="text-medium-emphasis">
+                                Total geral: 
+                            </span>
+                            <span class="font-weight-bold">
+                                {{ formatCurrency(totalByRenevue ?? 0.00) }}
+                            </span>
+                        </v-sheet>
+                    </div>
+                </div>
+            </BaseCard>
+
+            <BaseCard title="Despesas por categoria" subtitle="Visualize onde seus gastos estão concentrados">
+                <div class="pa-5">
+                    <VChart :option="expenseOption" autoresize style="height: 450px"/>
+                    <div class="d-flex justify-end pa-1">
+                        <v-sheet :width="200" :height="25" class="rounded-lg px-3" border>
+                            <span class="text-medium-emphasis">
+                                Total geral: 
+                            </span>
+                            <span class="font-weight-bold">
+                                {{ formatCurrency(totalByExpense ?? 0.00) }}
+                            </span>
+                        </v-sheet>
+                    </div>
+                </div>
+            </BaseCard>
+        </div>
+
+        <div class="charts-row charts-row-single">
+            <BaseCard title="Balanço mensal" subtitle="Compare suas receitas e despesas mensais">
+                <div class="pa-5 d-flex">
+                    <VChart :option="balancoOption" autoresize style="height: 350px"/>
+                    <div class="w-100 mt-4 d-flex flex-column ga-4">
+                        <div class="d-flex align-center">
+                            <span class="font-weight-bold">Receitas</span>
+                            <div class="d-flex justify-end w-100">
+                                <v-chip class="font-weight-bold" variant="text" color="success">{{ formatCurrency(summary.receitas) }}</v-chip>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-center">
+                            <span class="font-weight-bold">Despesas</span>
+                            <div class="d-flex justify-end w-100">
+                                <v-chip class="font-weight-bold" variant="text" color="red">{{ formatCurrency(summary.despesas) }}</v-chip>
+                            </div>
+                        </div>
+                       
+                        <v-divider></v-divider>
+                        
+                        <div class="d-flex align-center">
+                            <span class="font-weight-bold">Balanço</span>
+                            <div class="d-flex justify-end w-100">
+                                <v-chip class="font-weight-bold" variant="text" :color="(summary.balancoMensal <= 0) ? 'red' : 'success' ">{{ formatCurrency(summary.balancoMensal) }}</v-chip>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </BaseCard>
+
+            <BaseCard title="Minhas contas" subtitle="Visualize o saldo das suas contas ativas">
+                <div class="pa-5">
+                    teste
+                </div>
+            </BaseCard>
+        </div>
+
     </div>
 </template>
+
+<style scoped>
+
+.dashboard-wrapper {
+    width: 100%;
+    padding: 24px;
+}
+
+.date-filter {
+    margin-bottom: 32px;
+}
+
+.main-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    width: 100%;
+}
+
+.charts-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    width: 100%;
+    margin-top: 40px;
+}
+
+.charts-row-single {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+
+
+@media (max-width: 1450px) {
+    .main-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .charts-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 960px) {
+    .main-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .charts-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+@media (max-width: 600px) {
+    .dashboard-wrapper {
+        padding: 16px;
+    }
+
+    .main-cards {
+        grid-template-columns: 1fr;
+    }
+}
+
+</style>

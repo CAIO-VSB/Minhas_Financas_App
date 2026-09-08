@@ -1,5 +1,5 @@
 import { auth } from "~~/auth"
-import { movementsRespository } from "~~/server/repositories/moviments.repository"
+import { dashboardRepository } from "~~/server/repositories/dashboard.repository"
 
 export default defineEventHandler( async (event) => {
 
@@ -13,12 +13,20 @@ export default defineEventHandler( async (event) => {
             statusMessage: "Unauthorized"
         })
     }
-        
+
+    const { month, year } = getQuery(event)
+
+    const monthNumber = Number(month) + 1
+    const yearNumber = Number(year)
+
     try {
 
-        return await movementsRespository.findCurrentBalance(session.session.userId)
+        return await dashboardRepository.findAllCardSummary(session.session.userId, monthNumber, yearNumber)
 
     } catch (error) {
+
+        console.log("Erro ao dados para o dashboard", error)
+
         throw createError({
             status: 500,
             statusMessage: "Internal Server Error"

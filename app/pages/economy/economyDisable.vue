@@ -8,6 +8,7 @@
 
     import { useHttpGoals } from "~/composables/useHttp/useHttpGoals"
     import { useInvalidate } from "~/composables/useInvalidate"
+import type { TGoalsPayload } from "~~/schemas/goals.schema"
     import type { TGoals } from "~~/types/goals/TGoals"
   
     const { getAllGoals } = useHttpGoals()
@@ -67,7 +68,7 @@
         navigateTo("/economy")
     }
 
-    function restoreAccount(item: TGoals) {
+    function restoreAccount(item: TGoalsPayload) {
 
         loadingButton.value = true
 

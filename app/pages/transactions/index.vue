@@ -128,7 +128,7 @@
 
     const balanceCurrent = computed(() => {        
         const row = currentBalance.value?.[0]
-       
+
         return {
             saldo_atual: Number(row?.saldo_atual ?? 0.00)
         }

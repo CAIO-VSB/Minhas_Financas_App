@@ -143,7 +143,7 @@
   const totalForInvoice = computed(() => totalInvoice.value?.total ?? 0)
 
   const valueLimitedUsed = computed(() => {
-    return calcuteLimitedUsed(totalForInvoice.value, selectedCardData.value?.limit_card ?? 0)
+    return calcutePercentage(totalForInvoice.value, selectedCardData.value?.limit_card ?? 0)
   })
 
   const showAlertLimitedUsed = computed(() => valueLimitedUsed.value >= 85)

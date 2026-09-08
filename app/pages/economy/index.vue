@@ -12,10 +12,10 @@
   import type { TGoalsPayload } from '~~/schemas/goals.schema'
   import CardEditEconomy from '~/components/forms/CardEditEconomy.vue'
   import { useInvalidate } from "~/composables/useInvalidate"
+  import CardAddMovementSGoals from '~/components/forms/CardAddMovementSGoals.vue'
   
-
   const { getAllGoals } = useHttpGoals()
-  const { patchGoals, patchArchiveGoals } = useHttpGoals()
+  const { patchGoals, patchArchiveGoals, getBalanceForGoals } = useHttpGoals()
   const { invalidate } = useInvalidate()
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
 
@@ -23,11 +23,16 @@
 
   const modelAddEconomy = ref(false)
   const modelEditEconomy = ref(false)
-  const valor = ref(99)
+  const modelAddMovement = ref(false)
 
   const { data, isPending: isPendingGoals } = useQuery({
     queryKey: QUERY_KEYS.goals.all,
     queryFn: getAllGoals,
+  })
+
+  const { data: balanceForEconomy, isPending: isPendingBalance } = useQuery({
+    queryKey: QUERY_KEYS.goals.balance_for_economy,
+    queryFn: getBalanceForGoals
   })
 
   const onlyGoalsActive = computed(() => {
@@ -71,13 +76,28 @@
 
   })
 
+  function getSummaryForGoals(goalsId: number) {
+    const row = balanceForEconomy.value?.find(item => item.id === goalsId)
+
+    return {
+      total: Number(row?.total_lancado ?? 0),
+      percentual: Number(row?.percentual ?? 0.00),
+      meta: Number(row?.meta ?? 0.00)
+    }
+
+  }
+
+
+  function viewExtract(goals: TGoalsPayload) {
+    navigateTo(`/economy/${goals.id}`)
+  }
+
   function getOptionClick(option: string, item: TGoalsPayload) {
 
     const parseGoalsToEdit = {
       ...item,
       start_date: new Date(item.start_date),
-      end_date: new Date(item.end_date),
-      accounts_id: Number(item.accounts_id)
+      end_date: new Date(item.end_date)
     }
 
     if (option === 'edit') {
@@ -99,6 +119,7 @@
 <template>
     <CardAddEconomy v-model="modelAddEconomy"/>
     <CardEditEconomy :draft="editDraft" v-model="modelEditEconomy"/>
+    <CardAddMovementSGoals v-model="modelAddMovement" />
 
     <v-container class="economy-empty-state d-flex align-center justify-center mt-4" v-if="!isPending && !data?.length">
       <v-card
@@ -232,6 +253,7 @@
               variant="tonal"
               rounded="lg"
               @click="modelAddEconomy = true"
+              v-tooltip="'Nova meta'"
             >
             </v-btn>
 
@@ -331,7 +353,7 @@
 
                     <div class="d-flex align-center justify-center">
                         <v-progress-circular
-                          :model-value="valor"
+                          :model-value="getSummaryForGoals(value.id ?? 0).percentual"
                           :size="250"
                           :width="20"
                           bg-color="surface-light"
@@ -341,7 +363,7 @@
                           rounded
                         >
                           <div class="d-flex align-baseline">
-                            <span style="font-size: var(--text-lg);" class="font-weight-bold">{{ valor }}</span>
+                            <span style="font-size: var(--text-lg);" class="font-weight-bold">{{ getSummaryForGoals(value.id ?? 0).percentual }}</span>
                             <span style="font-size: var(--text-lg);" class="text-caption text-medium-emphasis">%</span>
                           </div>
                         </v-progress-circular>
@@ -384,6 +406,7 @@
                         text="Visualizar extrato"
                         variant="flat"
                         rounded="lg"
+                        @click="viewExtract(value)"
                         ></v-btn>
                     </div>
                       
@@ -405,6 +428,8 @@
                   color="primary"
                   icon="mdi-plus"
                   size="60"
+                  v-tooltip="'Novo lançamento'"
+                  @click="modelAddMovement = true"
                 />
               </template>
           </v-tooltip>

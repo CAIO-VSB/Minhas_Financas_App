@@ -14,7 +14,7 @@ export default defineNuxtConfig({
 
   toast: {composableName: 'useNotification'},
   
-  modules: [ 
+  modules: [
     '@peterbud/nuxt-query',
     '@nuxt/eslint',
     '@nuxt/fonts',
@@ -26,14 +26,21 @@ export default defineNuxtConfig({
     '@vee-validate/nuxt',
     'pinia-plugin-persistedstate/nuxt',
     'nuxt-toast',
+    'nuxt-echarts',
     "nuxt-api-shield",
-
     (_options, nuxt) => {
       nuxt.hooks.hook('vite:extendConfig', (config) => {
         config.plugins?.push(vuetify({ autoImport: true}))
       })
     },
   ],
+
+  echarts: {
+    renderer: ['svg', 'canvas'],
+    charts: ['BarChart', 'LineChart', 'PieChart'],
+    components: ['DatasetComponent', 'GridComponent', 'TooltipComponent', 'LegendComponent', 'TitleComponent'],
+    features: ['LabelLayout', 'UniversalTransition']
+  },
 
   nuxtApiShield: {
 

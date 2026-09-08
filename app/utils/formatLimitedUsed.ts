@@ -1,5 +1,5 @@
 
-export function calcuteLimitedUsed(amountUsed: number, totalLimit: number): number {
-    if (!totalLimit || totalLimit <= 0) return 0
-    return (amountUsed / totalLimit) *100
+export function calcutePercentage(amountUsed: number, total: number): number {
+    if (!total || total <= 0) return 0
+    return (amountUsed / total) *100
 }

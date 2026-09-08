@@ -73,7 +73,6 @@
 
             const payload = {
                 ...props.draft,
-                accounts_id: props.draft.accounts_id,
                 start_date: startDateFormated,
                 end_date: endDateFormated
             }
@@ -163,45 +162,6 @@
               >
                 <v-date-input prepend-inner-icon="mdi-calendar" prepend-icon="" :rules="dateRules" autocomplete="off" label="Data de término" variant="solo-filled" v-model="props.draft.end_date"></v-date-input>
               </v-col>
-              
-            <v-col
-            cols="12" md="12" sm="12"
-            >
-              <v-select
-                v-model="props.draft.accounts_id"
-                v-model:menu="menuAccounts"
-                :items="accounts"
-                :rules="selectRules"
-                item-title="name_identifier"
-                item-value="id"
-                variant="solo-filled"
-                label="Conta"
-                hint="O valor será debitado desta conta"
-                persistent-hint
-                autocomplete="off"
-                prepend-inner-icon="mdi-bank"
-                :loading="isPendingAccounts"
-                >
-
-                  <template v-slot:selection="{item}">
-                    <v-avatar style="width: 25px; height: 24px; margin-right: 12px;"> 
-                      <v-img  :src="item.url_image" :alt="item.name_identifier"></v-img>
-                    </v-avatar>
-                    <span >{{ item.name_identifier }}</span>
-                  </template>
-
-                  <template v-slot:item="{props, item}">
-                    <v-list-item  v-bind="props">
-                      <template v-slot:prepend>
-                        <v-avatar>
-                          <v-img :src="item.url_image" :alt="item.name_identifier"></v-img>
-                        </v-avatar>
-                      </template>
-                    </v-list-item>
-                  </template>
-
-                </v-select>
-                </v-col>
             </v-row>
 
           </v-card-text>

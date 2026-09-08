@@ -10,10 +10,10 @@
   const openedGroups = ref(['Visão geral'])
 
   const nav = [
-    { title: 'Visão geral', icon: 'mdi-home-analytics', value: 'Visão geral', to: '/home' },
+    { title: 'Visão geral', icon: 'mdi-home-analytics', value: 'Visão geral', to: '/dashboard' },
     { title: 'Transações', icon: 'mdi-swap-horizontal-bold', value: 'transacoes', to: '/transactions' },
     { title: 'Cartões de crédito', icon: 'mdi-credit-card-multiple-outline', value: 'cartoes', to: '/credit-card' },
-    { title: 'Economia', icon: 'mdi-piggy-bank-outline', value: 'economia', to: 'economy' },
+    { title: 'Economia', icon: 'mdi-piggy-bank-outline', value: 'economia', to: '/economy' },
   ]
 
 </script>

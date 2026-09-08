@@ -1,5 +1,5 @@
 import { auth } from "~~/auth"
-import { movementsRespository } from "~~/server/repositories/moviments.repository"
+import { goalsRepository } from "~~/server/repositories/goals.repository"
 
 export default defineEventHandler( async (event) => {
 
@@ -16,9 +16,12 @@ export default defineEventHandler( async (event) => {
         
     try {
 
-        return await movementsRespository.findCurrentBalance(session.session.userId)
+        return await goalsRepository.findAll(session.session.userId)
 
     } catch (error) {
+
+        console.log("Erro ao buscar as economias", error)
+
         throw createError({
             status: 500,
             statusMessage: "Internal Server Error"
