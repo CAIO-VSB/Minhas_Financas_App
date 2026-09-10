@@ -13,7 +13,7 @@
 
     import type { TMovements, TMovementsSummary } from "~~/types/movements/TMovements"
     import type { TMovementsPayload } from "~~/schemas/movements.schema"
-import { useHttpRecurrence } from "~/composables/useHttp/useHttpRecurrence"
+  import { useHttpRecurrence } from "~/composables/useHttp/useHttpRecurrence"
 
     const { notifyError, notifyInfo, notifySuccess } = useNotify()
     const { getCategoriesOnlyActive } = useHttpCategories()
@@ -206,7 +206,7 @@ import { useHttpRecurrence } from "~/composables/useHttp/useHttpRecurrence"
             }
 
         } catch (err) {
-            notifyInfo("Erro", "Algo deu errado. Tente novamente em instantes.", 7000)
+          notifyError("Erro", "Ocorreu um erro ao validar o formulário. Por favor, tente novamente.", 6000)
         } 
     }
 

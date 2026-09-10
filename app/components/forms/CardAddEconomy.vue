@@ -96,12 +96,10 @@
                 return
             }
 
-            console.log("Objeto sendo envidao " + JSON.stringify(payload))
-
             mutate(payload)
 
         } catch (error) {
-            console.log("Erro ao enviar form")
+          notifyError("Erro", "Ocorreu um erro ao validar o formulário. Por favor, tente novamente.", 6000)
         }
 
     }

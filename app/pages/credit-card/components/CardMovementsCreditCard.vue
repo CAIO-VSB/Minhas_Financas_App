@@ -340,4 +340,7 @@ import type { TCreditCard } from '~~/types/credit_card/TCredit-card';
 </template>
 
 <style scoped>
+:deep(.v-data-table-header__content) {
+  font-weight: bold;
+}
 </style>

@@ -6,7 +6,7 @@
     import type { TGoalsMovementsPayload } from '~~/schemas/goalsMovements.schema';
     import type { TGoalsPayload } from '~~/schemas/goals.schema';
     import CardEditMovementsGoals from '~/components/forms/CardEditMovementsGoals.vue';
-import CardDeleteMovementsGoals from '~/components/forms/CardDeleteMovementsGoals.vue';
+    import CardDeleteMovementsGoals from '~/components/forms/CardDeleteMovementsGoals.vue';
 
     const props = defineProps<{
         movementsGoals: TgoalsMovementsSumary[] | null,

@@ -3,12 +3,11 @@
     definePageMeta({
         title: "Metas arquivadas",
         layout: "layout-dashboard",
-        middleware: "session"
     })
 
     import { useHttpGoals } from "~/composables/useHttp/useHttpGoals"
     import { useInvalidate } from "~/composables/useInvalidate"
-import type { TGoalsPayload } from "~~/schemas/goals.schema"
+    import type { TGoalsPayload } from "~~/schemas/goals.schema"
     import type { TGoals } from "~~/types/goals/TGoals"
   
     const { getAllGoals } = useHttpGoals()

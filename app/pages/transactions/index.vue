@@ -788,6 +788,10 @@
     gap: 16px;
 }
 
+:deep(.v-data-table-header__content) {
+  font-weight: bold;
+}
+
 @media (max-width: 1400px) {
     .main-cards {
         display: grid;

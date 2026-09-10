@@ -92,7 +92,7 @@
            mutate(payload)
 
         } catch (error) {
-            console.log("Erro ao enviar de edita economy")
+          notifyError("Erro", "Ocorreu um erro ao validar o formulário. Por favor, tente novamente.", 6000)
         }
 
     }

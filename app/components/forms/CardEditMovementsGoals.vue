@@ -87,9 +87,10 @@
         const resultSchema =  validateSchemaGoalsMovements(payload)
 
         if (!resultSchema.success) {
-            notifyInfo(
-              "Dados inválidos",
-              "Verifique as informações preenchidas e tente novamente."
+            notifyError(
+              "Erro",
+              "Ocorreu um erro ao validar o formulário. Por favor, tente novamente.",
+              6000
             )
             return
         }
@@ -97,11 +98,7 @@
         mutate(payload)
 
     } catch (error) {
-        console.error("Erro ao montar/validar payload do lançamento:", error)
-        notifyError(
-            "Erro inesperado",
-            "Não foi possível processar o formulário. Tente novamente."
-        )
+      notifyError("Erro", "Ocorreu um erro ao validar o formulário. Por favor, tente novamente.", 6000)
     }
 
   }

@@ -128,12 +128,12 @@
     cardCredit.value.accounts_id = toRaw(modelAccounts.value ?? -1)
     cardCredit.value.url_logo = toRaw(modelLogos.value ?? "")
 
-    const formValid = await form.value.validate()
+    const { valid } = await form.value.validate()
     const resultSchema = validateShemaCrediCard(cardCredit.value)
 
     try {
       
-      if (formValid) {
+      if (valid) {
         if (!cardCredit.value.four_digits || cardCredit.value.four_digits?.length < 4 ) {
           notifyInfo("Atenção", "Digite os 4 últimos dígitos do cartão.", 5000)
         }
@@ -149,7 +149,7 @@
       }
 
     } catch (error) {
-      notifyInfo("Erro", "Erro ao criar cartão de crédito " + error)
+      notifyError("Erro", "Ocorreu um erro ao validar o formulário. Por favor, tente novamente.", 6000)
     }
   
 }

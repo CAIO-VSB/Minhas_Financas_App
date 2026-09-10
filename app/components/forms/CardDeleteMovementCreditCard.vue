@@ -61,8 +61,6 @@
             status_movement: "deletada"
         }
 
-        console.log("Valore sendo mandados para o back " + JSON.stringify(payload))
-
         mutate(payload)
         
     }

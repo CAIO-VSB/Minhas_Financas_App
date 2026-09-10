@@ -90,8 +90,6 @@
     try {
       const formValid = await form.value.validate()
       const resultSchema = validateSchemaCategorie(props.draft)
-
-      console.log("Objeto a ser envidado" + JSON.stringify(props.draft))
       
       if (formValid) {
         if (resultSchema.success) {  
@@ -99,7 +97,7 @@
         }
       }
     } catch (err) {
-      console.log("Erro ao criar conta" + err)
+      notifyError("Erro", "Ocorreu um erro ao validar o formulário. Por favor, tente novamente.", 6000)
     }
 
   }

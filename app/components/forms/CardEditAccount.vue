@@ -152,7 +152,7 @@
       }
 
     } catch (err) {
-      console.log("Erro ao criar conta" + err)
+      notifyError("Erro", "Ocorreu um erro ao validar o formulário. Por favor, tente novamente.", 6000)
     } finally {
       disableAccount.value = false
     }

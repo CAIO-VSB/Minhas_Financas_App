@@ -3,7 +3,6 @@
     definePageMeta({
         title: "Metas de economia / Extrato",
         layout: "layout-dashboard",
-        middleware: "session"
     })
 
     import metaLogo from "~/assets/Target With Dollar Sign.webp"

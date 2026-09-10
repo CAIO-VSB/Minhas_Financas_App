@@ -212,7 +212,7 @@
         }
 
     } catch (err) {
-      notifyInfo("Erro", "Algo deu errado. Tente novamente em instantes.", 7000)
+      notifyError("Erro", "Ocorreu um erro ao validar o formulário. Por favor, tente novamente.", 6000)
     } 
   }
 

@@ -110,16 +110,14 @@
   async function handleAddAccount() {
     
     try {
-      const formValid = await form.value.validate()
+      const { valid } = await form.value.validate()
       const resultSchema = validateSchemaAccount(accountForm.value)
       
-      if (formValid) {
-        if (resultSchema.success) {  
+      if (valid && resultSchema.success) {
           mutate(accountForm.value)
         }
-      }
     } catch (err) {
-      notifyInfo("Error", "Erro ao criar conta bancária" + err)
+      notifyError("Erro", "Ocorreu um erro ao validar o formulário. Por favor, tente novamente.", 6000)
     } 
   }
 

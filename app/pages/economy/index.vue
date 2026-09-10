@@ -292,26 +292,14 @@
             </v-menu>
         </div>
 
-        <v-row>
-            <v-col
-              cols="12"
-              sm="12"
-              lg="12"
-            >
-            </v-col>
-
-            <v-col
-                v-for="value in onlyGoalsActive"
-                :key="value.id"
-                cols="12"
-                sm="6"
-                lg="4"
-            >
+        <div class="main-cards">
                 <v-card
-                    height="auto"
-                    rounded="xl"
-                    elevation="2"
-                    :loading="isPendingGoals"
+                  v-for="value in onlyGoalsActive"
+                  :key="value.id"
+                  height="auto"
+                  rounded="xl"
+                  elevation="2"
+                  :loading="isPendingGoals"
                 >
                     <v-card-item class="pa-4 pb-0">
                         <v-card-title style="font-size: var(--text-base);" class="font-weight-bold">
@@ -414,8 +402,7 @@
                   </div>
                   
                 </v-card>
-            </v-col>
-        </v-row>
+          </div>
 
         <div class="fab-wrapper">
           <v-tooltip
@@ -445,7 +432,30 @@
   z-index: 10;
 }
 
+.main-cards {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(3, 3fr);
+}
+
 .text-disabled {
   text-decoration: line-through;
 }
+
+@media (max-width: 1400px) {
+  .main-cards {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .main-cards {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+
 </style>

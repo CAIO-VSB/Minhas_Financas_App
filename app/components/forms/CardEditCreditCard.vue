@@ -128,7 +128,7 @@
       }
 
     } catch (error) {
-      notifyInfo("Erro", "Erro ao criar cartão de crédito " + error)
+      notifyError("Erro", "Ocorreu um erro ao validar o formulário. Por favor, tente novamente.", 6000)
     }
   
 }

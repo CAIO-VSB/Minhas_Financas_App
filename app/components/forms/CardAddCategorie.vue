@@ -71,12 +71,11 @@
   async function handleAddAccount() {
 
     try {
-      const formValid = await form.value.validate()
-      const resultSchema = validateSchemaCategorie(categorieForm.value)
 
-      console.log("Objeto a ser envidado" + JSON.stringify(categorieForm.value))
-      
-      if (formValid) {
+      const { valid } = await form.value.validate()
+      const resultSchema = validateSchemaCategorie(categorieForm.value)
+    
+      if (valid) {
 
         if (categorieForm.value.url_icon === ""){
           return notifyInfo("Atenção", "Escolha um ícone que represente esta categoria", 7000)
@@ -87,7 +86,7 @@
         }
       }
     } catch (err) {
-      console.log("Erro ao criar conta" + err)
+      notifyError("Erro", "Ocorreu um erro ao validar o formulário. Por favor, tente novamente.", 6000)
     }
 
   }
