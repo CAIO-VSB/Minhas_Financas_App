@@ -210,6 +210,7 @@
       invalidate(QUERY_KEYS.accounts.getBalanceForAccount)
       invalidate(QUERY_KEYS.dashboard.expenseByCategorie)
       invalidate(QUERY_KEYS.dashboard.renevueByCategorie)
+      invalidate(QUERY_KEYS.dashboard.sumary)
       notifySuccess("Sucesso", "Receita lançada com sucesso", 6000)
       resetForm()
       emit("success")
@@ -267,6 +268,10 @@
           await recurrenceStore.movementsFormated(movementsForm.value, recurrencePayload)
           invalidate(QUERY_KEYS.movements.all)
           invalidate(QUERY_KEYS.movements.only_revenues)
+          invalidate(QUERY_KEYS.accounts.getBalanceForAccount)
+          invalidate(QUERY_KEYS.dashboard.expenseByCategorie)
+          invalidate(QUERY_KEYS.dashboard.renevueByCategorie)
+          invalidate(QUERY_KEYS.dashboard.sumary)
           notifySuccess("Sucesso", "Receita lançada com sucesso", 6000)
           emit("success")
         } else {

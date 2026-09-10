@@ -2,8 +2,7 @@
 
   definePageMeta({
     title: "Contas bancárias",
-    layout: "layout-dashboard",
-    middleware: "session"
+    layout: "layout-dashboard"
   })
 
   import CardAddAccount from "~/components/forms/CardAddAccount.vue"
@@ -61,6 +60,7 @@
     resetColor()
     resetBank()
   }
+
 
   const totalForAccountsActive = computed(() => {
 

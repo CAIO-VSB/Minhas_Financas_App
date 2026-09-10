@@ -23,7 +23,7 @@ export function useDonutChart(data: MaybeRefOrGetter<DonutDatum[]>) {
             {
                 type: 'pie',
                 radius: ['45%', '70%'],
-                center: ['60%', '40%'],
+                center: ['50%', '45%'],
                 avoidLabelOverlap: true,
                 itemStyle: {borderRadius: 10, borderColor: '#fff', borderWidth: 7},
                 label: { formatter: '{b}\n{d}%' },

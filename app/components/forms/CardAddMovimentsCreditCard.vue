@@ -276,6 +276,10 @@
       onSuccess: () => {
         invalidate(QUERY_KEYS.movementsCreditCard.byCreditCard)
         invalidate(QUERY_KEYS.movementsCreditCard.totalInvoice)
+        invalidate(QUERY_KEYS.accounts.getBalanceForAccount)
+        invalidate(QUERY_KEYS.dashboard.expenseByCategorie)
+        invalidate(QUERY_KEYS.dashboard.renevueByCategorie)
+        invalidate(QUERY_KEYS.dashboard.sumary)
         notifySuccess("Sucesso", "Operação realizada com sucesso", 6000)
         resetForm()
         emit("success")
@@ -348,6 +352,10 @@
           await recurrenceStore.movementsCreditCardFormated(movementCreditCardFormated, recurrencePayload)
           invalidate(QUERY_KEYS.movementsCreditCard.byCreditCard)
           invalidate(QUERY_KEYS.movementsCreditCard.totalInvoice)
+          invalidate(QUERY_KEYS.accounts.getBalanceForAccount)
+          invalidate(QUERY_KEYS.dashboard.expenseByCategorie)
+          invalidate(QUERY_KEYS.dashboard.renevueByCategorie)
+          invalidate(QUERY_KEYS.dashboard.sumary)
           notifySuccess("Sucesso", "Operação realizada com sucesso", 6000)
           emit("success")
         } else {

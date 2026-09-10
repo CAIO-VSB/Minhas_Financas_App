@@ -7,7 +7,7 @@
     subtitle?: string,
     loading?: boolean,
     width?: number,
-    heiht?: number
+    heiht?: number | string
   }>()
 
 
@@ -32,7 +32,6 @@
             {{ props.subtitle }}
         </v-card-subtitle>
     </v-card-item>
-
     
     <div>
         <slot></slot>

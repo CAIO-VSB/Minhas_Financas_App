@@ -1,8 +1,7 @@
 <script setup lang="ts">
   definePageMeta({
     title: "Cartões de Crédito",
-    layout: "layout-dashboard",
-    middleware: "session"
+    layout: "layout-dashboard"
   })
 
   import alertImg from "~/assets/img-credit-card-alert.png"

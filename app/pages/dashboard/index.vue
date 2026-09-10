@@ -2,7 +2,7 @@
 
     definePageMeta({
         title: "Dashboard",
-        layout: "layout-dashboard"
+        layout: "layout-dashboard",
     })
 
     import AppCard from '~/components/ui/AppCard.vue'
@@ -10,12 +10,15 @@
     import DateInput from '~/components/ui/DateInput.vue'
     import { useHttpDashboard } from "~/composables/useHttp/useHttpDashboard"
     import { useHttpMovements } from '~/composables/useHttp/useHttpMovements'
+    import { useHttpAccounts } from "~/composables/useHttp/useHttpAccounts"
+    
     import { useDonutChart } from "~/composables/useVueCharts/useDonuChart"
     import { useBarChart, type BarDatum } from "~/composables/useVueCharts/useBarChart"
     import type { TPeriod } from '~~/types/period/TPeriod';
 
-    const { getExpenseByCategorie, getRenevueByCategorie, getAllSumary, getTotalByCards } = useHttpDashboard()
-    const { getCurrentBalance } = useHttpMovements()
+    const { getExpenseByCategorie, getRenevueByCategorie, getAllSumary, getTotalByCards, getLastMovements } = useHttpDashboard()
+    const { getCurrentBalance, getMoviments } = useHttpMovements()
+    const { getAllAccounts } = useHttpAccounts()
 
     const period = ref({
         month: new Date().getMonth(),
@@ -47,6 +50,25 @@
         queryFn: () => getTotalByCards(period.value.month, period.value.year)
     })
 
+    const { data:allAccounts, isPending: isPendingAccounts } = useQuery({
+        queryKey: QUERY_KEYS.accounts.all,
+        queryFn: getAllAccounts,
+    })
+
+    const { data: allMovements, isPending: isPendingMovements, refetch: refetchMovements } = useQuery({
+        queryKey: QUERY_KEYS.movements.all,
+        queryFn: () => getMoviments(period.value.month, period.value.year)
+    })
+
+    const { data: allLastMovements, isPending: isPendingLastMovements, refetch: refetchLastMovements } = useQuery({
+        queryKey: QUERY_KEYS.dashboard.lastMovements,
+        queryFn: () => getLastMovements(period.value.month, period.value.year)
+    })
+
+    const onlyAccountsActive = computed(() => {
+        return allAccounts.value?.filter(item => item.active === true) 
+    })
+
     const balanceCurrent = computed(() => {        
         const row = currentBalance.value?.[0]
 
@@ -76,6 +98,22 @@
         }
     })
 
+    const totalExpensesPending = computed(() => {
+        const result = allMovements.value
+        ?.filter(item => (item.status_transaction === 'pendente' && item.type_transaction === 'despesa'))
+        .reduce((acc, item) => acc + Number(item.value_transaction), 0) ?? 0.00
+
+        return result
+    })
+
+    const totalRenevuePending = computed(() => {
+        const result = allMovements.value
+        ?.filter(item => (item.status_transaction === 'pendente' && item.type_transaction === 'receita'))
+        .reduce((acc, item) => acc + Number(item.value_transaction), 0) ?? 0.00
+
+        return result
+    })
+
 
     const totalByRenevue = computed(() => {
         const result = renevueByCategorie.value?.reduce((acc, item) => {
@@ -93,12 +131,18 @@
         return result
     })
 
+    function navigateToTransaction() {
+        navigateTo("/transactions")
+    }
+
     function handleGetPeriod(value: TPeriod) {
         period.value = value
         refecthByCategorieRenevue()
         refetchByCategorieExpense()
         refecthByCards()
         refecthSumary()
+        refetchLastMovements()
+        refetchMovements()
     }
 
     const barData = computed<BarDatum[]>(() => [
@@ -111,11 +155,11 @@
     const { option: balancoOption } = useBarChart(barData)
 
 
+
 </script>
 
 <template>
     <div class="dashboard-wrapper">
-
         <div class="date-filter">
             <DateInput  @apply-filter-month="handleGetPeriod"/>
         </div>
@@ -179,11 +223,91 @@
         </div>
 
         <div class="charts-row">
-            <BaseCard title="Receitas por categoria" subtitle="Visualize a origem das suas receitas">
+            <BaseCard title="Resumo de pendências" subtitle="Veja o que precisa da sua atenção">
                 <div class="pa-5">
-                    <VChart :option="renevueOption" autoresize style="height: 450px"/>
+                    <div class="d-flex align-center ga-4">
+                        <span class="text-no-wrap font-weight-bold">Total de despesas pendentes</span>
+                        <div class="d-flex justify-end w-100">
+                            <v-chip class="font-weight-bold" variant="text" color="red"><span class="d-flex justify-end mr-5">{{ formatCurrency(totalExpensesPending) }}</span></v-chip>
+                        </div>
+                    </div>
+                    <v-divider style="margin-top: 10px; margin-bottom: 10px;"></v-divider>
+                    <div class="d-flex align-center ga-4">
+                        <span class="text-no-wrap font-weight-bold">Total de receitas pendentes</span>
+                        <div class="d-flex justify-end w-100">
+                            <v-chip class="font-weight-bold" variant="text" color="green"><span class="d-flex justify-end mr-5">{{ formatCurrency(totalRenevuePending) }}</span></v-chip>
+                        </div>
+                    </div>
+                    <v-divider style="margin-top: 80px; margin-bottom: 10px; color: black;"></v-divider>
+                    <div class="d-flex align-center justify-center" style="margin-bottom: -10px;">
+                        <v-btn v-tooltip="'Ir para a tela de transações'" @click="navigateToTransaction" color="primary" variant="text">
+                        VER MAIS    
+                        </v-btn>
+                    </div>
+                </div>
+            </BaseCard>
+            
+            <BaseCard :loading="isPendingMovements" title="Últimos lançamentos" subtitle="Confira suas movimentações recentes">
+                <v-empty-state
+                    v-if="!allMovements?.length"
+                    icon="mdi-alert-box"
+                    color="primary"
+                    title="Opa! Você ainda não possui lançamentos este mês."
+                    >
+                    <template #text>
+                        <span class="text-no-wrap">Adicione seus ganhos no mês atual através do botão (+), para ver seus gráficos.</span>
+                    </template>
+                </v-empty-state>
+                <div class="pa-5" v-else>
+                    <v-table height="200px">
+                        <thead>
+                            <tr>
+                                <th class="text-left font-weight-bold">
+                                Data
+                                </th>
+                                <th class="text-left font-weight-bold">
+                                Descrição
+                                </th>
+                                <th class="text-left font-weight-bold">
+                                valor
+                                </th>
+                                <th class="text-left font-weight-bold">
+                                Situação
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr
+                                v-for="item in allLastMovements"
+                                :key="item.id"
+                            >
+                                <td>{{ formatDate(item.date_transaction) }}</td>
+                                <td>{{ item.description_transaction }}</td>
+                                <td><v-chip :color="(item.type_transaction === 'receita') ? 'success' : 'error'">{{ formatCurrency(item.value_transaction)}}</v-chip></td>
+                                <td><v-icon :color="item.status_transaction === 'recebido' || item.status_transaction === 'entrada' || item.status_transaction === 'saida' || item.status_transaction === 'pago' ? 'green' : 'red'" :icon="item.status_transaction === 'recebido' || item.status_transaction === 'saida' || item.status_transaction === 'entrada' || item.status_transaction === 'pago' ? 'mdi-check-circle' : 'mdi-alert-circle'"></v-icon></td>
+                            </tr>
+                        </tbody>
+                    </v-table>
+                </div>
+                
+            </BaseCard>
+
+            <BaseCard :loading="isPendingByCategorieRenevue" title="Receitas por categoria" subtitle="Visualize a origem das suas receitas">
+                <div class="d-flex align-center justify-center"  v-if="!allMovements?.length" style="height: 510px;">
+                    <v-empty-state
+                        icon="mdi-alert-box"
+                        color="green"
+                        title="Opa! Você ainda não possui receitas este mês."
+                        >
+                        <template #text>
+                            <span class="text-no-wrap">Adicione suas receitas no mês atual através do botão (+), para ver seus gráficos.</span>
+                        </template>
+                    </v-empty-state>
+                </div>
+                <div class="pa-5" v-else>
+                    <VChart class="mt-5" :option="renevueOption" autoresize style="height: 430px"/>
                     <div class="d-flex justify-end pa-1">
-                        <v-sheet :width="200" :height="25" class="rounded-lg px-3" border>
+                        <v-sheet :width="220" :height="25" class="rounded-lg px-3" border>
                             <span class="text-medium-emphasis">
                                 Total geral: 
                             </span>
@@ -195,11 +319,22 @@
                 </div>
             </BaseCard>
 
-            <BaseCard title="Despesas por categoria" subtitle="Visualize onde seus gastos estão concentrados">
-                <div class="pa-5">
-                    <VChart :option="expenseOption" autoresize style="height: 450px"/>
+            <BaseCard :loading="isPendingExpenseByCategorie" title="Despesas por categoria" subtitle="Visualize onde seus gastos estão concentrados">
+                <div class="d-flex align-center justify-center"  v-if="!allMovements?.length" style="height: 510px;">
+                    <v-empty-state
+                        icon="mdi-alert-box"
+                        color="error"
+                        title="Opa! Você ainda não possui despesas este mês."
+                        >
+                        <template #text>
+                            <span class="text-no-wrap">Adicione suas despesas no mês atual através do botão (+), para ver seus gráficos.</span>
+                        </template>
+                    </v-empty-state>
+                </div>
+                <div class="pa-4" v-else>
+                    <VChart class="mt-5" :option="expenseOption" autoresize style="height: 430px"/>
                     <div class="d-flex justify-end pa-1">
-                        <v-sheet :width="200" :height="25" class="rounded-lg px-3" border>
+                        <v-sheet :width="220" :height="25" class="rounded-lg px-3" border>
                             <span class="text-medium-emphasis">
                                 Total geral: 
                             </span>
@@ -213,10 +348,21 @@
         </div>
 
         <div class="charts-row charts-row-single">
-            <BaseCard title="Balanço mensal" subtitle="Compare suas receitas e despesas mensais">
-                <div class="pa-5 d-flex">
-                    <VChart :option="balancoOption" autoresize style="height: 350px"/>
-                    <div class="w-100 mt-4 d-flex flex-column ga-4">
+            <BaseCard :loading="isPendingCurrentBalance" title="Balanço mensal" subtitle="Compare suas receitas e despesas mensais">
+                <div class="d-flex align-center justify-center"  v-if="!allMovements?.length" style="height: 510px;">
+                    <v-empty-state
+                        icon="mdi-alert-box"
+                        color="primary"
+                        title="Opa! Você ainda não possui lançamentos este mês."
+                        >
+                        <template #text>
+                            <span class="text-no-wrap">Adicione seus ganhos no mês atual através do botão (+), para ver seus gráficos.</span>
+                        </template>
+                    </v-empty-state>
+                </div>
+                <div class="pa-5 d-flex justify-center charts-balanco" v-else>
+                    <VChart class="mt-4" :option="balancoOption" autoresize style="height: 430px"/>
+                    <div class="w-100 mt-8 d-flex flex-column ga-4">
                         <div class="d-flex align-center">
                             <span class="font-weight-bold">Receitas</span>
                             <div class="d-flex justify-end w-100">
@@ -243,9 +389,28 @@
                 </div>
             </BaseCard>
 
-            <BaseCard title="Minhas contas" subtitle="Visualize o saldo das suas contas ativas">
-                <div class="pa-5">
-                    teste
+            <BaseCard :loading="isPendingAccounts" title="Minhas contas" subtitle="Visualize o saldo das suas contas ativas">
+                <div class="pa-5" v-for="value in onlyAccountsActive" :key="value.id">
+                    <div class="d-flex align-center ga-4">
+                        <div>
+                            <v-img
+                            :width="40"
+                            rounded="lg"
+                            :src="value.url_image"
+                            ></v-img>
+                        </div>
+                        <span class="font-weight-bold">{{ value.name_identifier }}</span>
+                        
+                    </div>
+                    <div class="mt-3">
+                        <div class="d-flex justify-end align-center ">
+                            <div class="d-flex justify-start w-100">
+                                <span class="text-medium-emphasis text-no-wrap mr-3">Saldo atual</span>
+                            </div>
+                             <v-chip class="font-weight-bold" variant="text" :color="(value.saldo_atual! <= 0) ? 'red' : 'green'"><span class="font-weight-bold mr-4">{{ formatCurrency(value.saldo_atual ?? 0.00) }}</span></v-chip>
+                        </div>
+                        <v-divider></v-divider>
+                    </div>
                 </div>
             </BaseCard>
         </div>
@@ -303,6 +468,11 @@
     .charts-row {
         grid-template-columns: 1fr;
     }
+
+    .charts-balanco {
+        display: flex;
+        flex-direction: column;
+    }
 }
 
 
@@ -313,6 +483,11 @@
 
     .main-cards {
         grid-template-columns: 1fr;
+    }
+
+    .charts-balanco {
+        display: flex;
+        flex-direction: column;
     }
 }
 

@@ -47,5 +47,15 @@ export const dashboardRepository = {
         const result = client.query(text, [userId, month, year])
 
         return (await result).rows
+    },
+
+    async findLastMovements(userId: string, month: number, year: number) {
+        
+        const text = 
+        `SELECT * FROM fn_last_movements($1, $2, $3)`
+
+        const result = client.query(text, [userId, month, year])
+
+        return (await result).rows
     }
 }

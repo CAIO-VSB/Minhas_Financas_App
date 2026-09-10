@@ -1,11 +1,12 @@
-
 export default defineNuxtRouteMiddleware(async (to, from) => {
 	const { $authClient } = useNuxtApp()
+	const { data: session } = await $authClient.getSession()
 
-	const { data: session } = await $authClient.useSession(useFetch)
-	if (!session.value) {
-		if (to.path === "/dashboard") {
-			return navigateTo("/unauthorized");
-		}
+	const isAutenticated = !!session?.session.token
+
+	const publicRoutes = ['/login-page', '/register-page', '/recover-password-page', '/reset-password-page', '/unauthorized']
+
+	if (!isAutenticated && !publicRoutes.includes(to.path)) {
+		return navigateTo('/unauthorized')
 	}
 });

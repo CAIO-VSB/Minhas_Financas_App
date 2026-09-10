@@ -2,8 +2,7 @@
 
   definePageMeta({
     title: "Contas bancárias",
-    layout: "layout-dashboard",
-    middleware: "session"
+    layout: "layout-dashboard"
   })
 
   import { useHttpAccounts } from "~/composables/useHttp/useHttpAccounts"

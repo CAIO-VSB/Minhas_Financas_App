@@ -40,6 +40,7 @@ export const QUERY_KEYS = {
         expenseByCategorie: ['expenseByCategorie'],
         renevueByCategorie: ['renevueByCategorie'],
         sumary: ['sumary'],
-        cards: ['credit-cards']
+        cards: ['credit-cards'],
+        lastMovements: ['last-movements']
     }
 }

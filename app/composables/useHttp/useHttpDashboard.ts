@@ -16,11 +16,16 @@ export function useHttpDashboard() {
         return $fetch("/api/dashboard/byCreditCard", {method: "GET", query: {month: month, year: year}})
     }
 
+    const getLastMovements = (month: number, year: number) => {
+        return $fetch("/api/dashboard/lastMovements", {method: "GET", query: {month: month, year: year}})
+    }
+
     return {
         getExpenseByCategorie,
         getRenevueByCategorie,
         getAllSumary,
-        getTotalByCards
+        getTotalByCards,
+        getLastMovements
     }
 
 }
