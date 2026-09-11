@@ -13,10 +13,11 @@
     import { useHttpAccounts } from "~/composables/useHttp/useHttpAccounts"
     
     import { useDonutChart } from "~/composables/useVueCharts/useDonuChart"
+    import { useLineChart } from "~/composables/useVueCharts/useLineChart"
     import { useBarChart, type BarDatum } from "~/composables/useVueCharts/useBarChart"
     import type { TPeriod } from '~~/types/period/TPeriod';
 
-    const { getExpenseByCategorie, getRenevueByCategorie, getAllSumary, getTotalByCards, getLastMovements } = useHttpDashboard()
+    const { getExpenseByCategorie, getRenevueByCategorie, getAllSumary, getTotalByCards, getLastMovements, getExpensesByThreeMonths, getBalanceEvolution } = useHttpDashboard()
     const { getCurrentBalance, getMoviments } = useHttpMovements()
     const { getAllAccounts } = useHttpAccounts()
 
@@ -65,6 +66,20 @@
         queryFn: () => getLastMovements(period.value.month, period.value.year)
     })
 
+    const { data: allExpenseThreeMonths, isPending: isPendingExpenseThreeMonths, refetch: refetchExpenseThreeMonths } = useQuery({
+        queryKey: QUERY_KEYS.dashboard.expenseByThreeMonths,
+        queryFn: () => getExpensesByThreeMonths(period.value.month, period.value.year)
+    })
+
+    const { data: allBalanceEvolution, isPending: isPendingBalanceEvolution, refetch: refetchBalanceEvolution } = useQuery({
+        queryKey: QUERY_KEYS.dashboard.balanceEvolution,
+        queryFn: () => getBalanceEvolution(period.value.month, period.value.year)
+    })
+
+    watch(() => allBalanceEvolution.value, (val) => {
+        console.log("Valores dos 3 meses " + JSON.stringify(val))
+    })
+
     const onlyAccountsActive = computed(() => {
         return allAccounts.value?.filter(item => item.active === true) 
     })
@@ -97,6 +112,8 @@
             balancoMensal: Number(row?.balanco_mensal ?? 0)
         }
     })
+
+
 
     const totalExpensesPending = computed(() => {
         const result = allMovements.value
@@ -143,6 +160,8 @@
         refecthSumary()
         refetchLastMovements()
         refetchMovements()
+        refetchExpenseThreeMonths()
+        refetchBalanceEvolution()
     }
 
     const barData = computed<BarDatum[]>(() => [
@@ -153,6 +172,8 @@
     const { option: expenseOption } = useDonutChart(computed(() => expenseByCategorie.value ?? []))
     const { option: renevueOption } = useDonutChart(computed(() => renevueByCategorie.value ?? []))
     const { option: balancoOption } = useBarChart(barData)
+    const { option: balanceExpenseThreeMonths } = useBarChart(computed(() => allExpenseThreeMonths.value ?? []))
+    const { option: balanceEvolution } = useLineChart(computed(() => allBalanceEvolution.value ?? []))
 
 
 
@@ -249,7 +270,7 @@
             
             <BaseCard :loading="isPendingMovements" title="Últimos lançamentos" subtitle="Confira suas movimentações recentes">
                 <v-empty-state
-                    v-if="!allMovements?.length"
+                    v-if="!allLastMovements?.length"
                     icon="mdi-alert-box"
                     color="primary"
                     title="Opa! Você ainda não possui lançamentos este mês."
@@ -272,7 +293,7 @@
                                 valor
                                 </th>
                                 <th class="text-left font-weight-bold">
-                                Situação
+                                Conta bancária
                                 </th>
                             </tr>
                         </thead>
@@ -284,12 +305,45 @@
                                 <td>{{ formatDate(item.date_transaction) }}</td>
                                 <td>{{ item.description_transaction }}</td>
                                 <td><v-chip :color="(item.type_transaction === 'receita') ? 'success' : 'error'">{{ formatCurrency(item.value_transaction)}}</v-chip></td>
-                                <td><v-icon :color="item.status_transaction === 'recebido' || item.status_transaction === 'entrada' || item.status_transaction === 'saida' || item.status_transaction === 'pago' ? 'green' : 'red'" :icon="item.status_transaction === 'recebido' || item.status_transaction === 'saida' || item.status_transaction === 'entrada' || item.status_transaction === 'pago' ? 'mdi-check-circle' : 'mdi-alert-circle'"></v-icon></td>
+                                <td>{{ item.name_accounts }}</td>
                             </tr>
                         </tbody>
                     </v-table>
                 </div>
                 
+            </BaseCard>
+
+            <BaseCard :loading="isPendingByCategorieRenevue" title="Frequência de gastos" subtitle="Identifique os períodos com mais gastos">
+                <div class="d-flex align-center justify-center"  v-if="!allMovements?.length" style="height: 510px;">
+                    <v-empty-state
+                        icon="mdi-alert-box"
+                        color="green"
+                        title="Opa! Você ainda não possui lançamentos este mês."
+                        >
+                        <template #text>
+                            <span class="text-no-wrap">Adicione suas receitas no mês atual através do botão (+), para ver seus gráficos.</span>
+                        </template>
+                    </v-empty-state>
+                </div>
+                <div class="pa-5" v-else>
+                    <VChart class="mt-4" :option="balanceExpenseThreeMonths" autoresize style="height: 430px"/>
+                </div>
+            </BaseCard>
+            <BaseCard :loading="isPendingByCategorieRenevue" title="Evolução do saldo" subtitle="Veja como seu saldo evolui ao longo do tempo">
+                <div class="d-flex align-center justify-center"  v-if="!allMovements?.length" style="height: 510px;">
+                    <v-empty-state
+                        icon="mdi-alert-box"
+                        color="green"
+                        title="Opa! Você ainda não possui receitas este mês."
+                        >
+                        <template #text>
+                            <span class="text-no-wrap">Adicione suas receitas no mês atual através do botão (+), para ver seus gráficos.</span>
+                        </template>
+                    </v-empty-state>
+                </div>
+                <div class="pa-5" v-else>
+                    <VChart class="mt-5" :option="balanceEvolution" autoresize style="height: 430px"/>
+                </div>
             </BaseCard>
 
             <BaseCard :loading="isPendingByCategorieRenevue" title="Receitas por categoria" subtitle="Visualize a origem das suas receitas">

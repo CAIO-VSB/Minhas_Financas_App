@@ -91,6 +91,9 @@ export default defineNuxtConfig({
     }
   },
 
+  ignore: [
+    'pages/**/types/**'
+  ],
 
   app: {
     head: {

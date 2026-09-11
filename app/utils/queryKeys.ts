@@ -41,6 +41,8 @@ export const QUERY_KEYS = {
         renevueByCategorie: ['renevueByCategorie'],
         sumary: ['sumary'],
         cards: ['credit-cards'],
-        lastMovements: ['last-movements']
+        lastMovements: ['last-movements'],
+        expenseByThreeMonths: ['expense-by-three-months'],
+        balanceEvolution: ['balanceEvolution']
     }
 }

@@ -20,12 +20,22 @@ export function useHttpDashboard() {
         return $fetch("/api/dashboard/lastMovements", {method: "GET", query: {month: month, year: year}})
     }
 
+    const getExpensesByThreeMonths = (month: number, year: number) => {
+        return $fetch("/api/dashboard/expensesByThreeMonths", {method: "GET", query: {month: month, year: year}})
+    }
+
+    const getBalanceEvolution = (month: number, year: number) => {
+        return $fetch("/api/dashboard/balanceEvolution", {method: "GET", query: {month: month, year: year}})
+    }
+
     return {
         getExpenseByCategorie,
         getRenevueByCategorie,
         getAllSumary,
         getTotalByCards,
-        getLastMovements
+        getLastMovements,
+        getExpensesByThreeMonths,
+        getBalanceEvolution
     }
 
 }

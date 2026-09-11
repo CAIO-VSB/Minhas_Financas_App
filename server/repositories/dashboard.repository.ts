@@ -57,5 +57,41 @@ export const dashboardRepository = {
         const result = client.query(text, [userId, month, year])
 
         return (await result).rows
+    },
+
+    async findExpensesByThreeMonths(userId: string, month: number, year: number) {
+        
+        const text = 
+        `SELECT * FROM fn_gastos_3_meses($1, $2, $3)`
+
+        const result = await client.query(text, [userId, month, year])
+
+        return result.rows.map((r) => {
+            const ano = r.mes_referencia.getFullYear()
+            const mes = String(r.mes_referencia.getMonth() + 1).padStart(2, '0')
+
+            return {
+                name: `${mes}/${ano}`,
+                value: Number(r.total),
+            }
+        })
+    },
+
+    async findBalanceEvolution(userId: string, month: number, year: number) {
+        
+        const text = 
+        `SELECT * FROM fn_evolucao_saldo($1, $2, $3)`
+
+        const result = await client.query(text, [userId, month, year])
+
+        return result.rows.map((r) => {
+            const ano = r.mes_referencia.getFullYear()
+            const mes = String(r.mes_referencia.getMonth() + 1).padStart(2, '0')
+
+            return {
+                name: `${mes}/${ano}`,
+                value: Number(r.saldo_acumulado),
+            }
+        })
     }
 }

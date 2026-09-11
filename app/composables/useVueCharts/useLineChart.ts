@@ -1,13 +1,13 @@
 import type  { EChartsOption as ECOption  } from "echarts"
 import { useChartTheme } from "./useChartTheme"
 
-export type BarDatum = {
+export type LineDatum = {
     name: string | number,
     value: number,
     color?: string
 }
 
-export function useBarChart(data: MaybeRefOrGetter<BarDatum[]>) {
+export function useLineChart(data: MaybeRefOrGetter<LineDatum[]>) {
     const {colors, textStyle } = useChartTheme()
 
     const option = computed<ECOption>(() => {
@@ -19,19 +19,15 @@ export function useBarChart(data: MaybeRefOrGetter<BarDatum[]>) {
             dataset: {
                 source: toValue(data)
             },
+            yAxis: {type: 'value'},
             xAxis: {
                 type: 'category'
             },
-            yAxis: {type: 'value'},
             series: [
                 {
                     name: 'total',
                     stack: 'total',
-                    type: 'bar',
-                    label: {
-                        show: true,
-                        position: 'inside'
-                    },
+                    type: 'line',
                     barMaxWidth: 48,
                     itemStyle: { 
                         borderRadius: [6, 6, 0, 0],
