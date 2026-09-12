@@ -131,21 +131,19 @@
     const { valid } = await form.value.validate()
     const resultSchema = validateShemaCrediCard(cardCredit.value)
 
+    if (!cardCredit.value.four_digits || cardCredit.value.four_digits?.length < 4 ) {
+      notifyInfo("Atenção", "Digite os 4 últimos dígitos do cartão.", 5000)
+    }
+
+    if (cardCredit.value.due_day === cardCredit.value.closing_day) {
+      showAlertDueDayDffClosingDay.value = true
+      return
+    }
+
     try {
       
-      if (valid) {
-        if (!cardCredit.value.four_digits || cardCredit.value.four_digits?.length < 4 ) {
-          notifyInfo("Atenção", "Digite os 4 últimos dígitos do cartão.", 5000)
-        }
-
-        if (cardCredit.value.due_day === cardCredit.value.closing_day) {
-          showAlertDueDayDffClosingDay.value = true
-          return
-        }
-
-        if (resultSchema.success) {  
-          mutate(cardCredit.value)
-        }
+      if (valid && resultSchema.success) {
+        mutate(cardCredit.value)
       }
 
     } catch (error) {

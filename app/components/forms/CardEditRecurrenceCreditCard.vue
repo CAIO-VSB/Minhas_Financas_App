@@ -161,7 +161,7 @@
           return
         } 
 
-        const formValid = await form.value.validate()
+        const { valid } = await form.value.validate()
 
         const raw = structuredClone(toRaw(props.draft))
 
@@ -187,7 +187,7 @@
         
         const resultSchema = validateSchemaMovementsCreditCard(movementsCrediCardPayload)
         
-        if (formValid) {
+        if (valid) {
           if (resultSchema.success) {
             mutate(resultSchema.data)
           }

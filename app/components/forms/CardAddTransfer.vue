@@ -69,6 +69,12 @@
     invalidate(QUERY_KEYS.movements.only_revenues)
     invalidate(QUERY_KEYS.movements.current_balance)
     invalidate(QUERY_KEYS.accounts.getBalanceForAccount)
+    invalidate(QUERY_KEYS.dashboard.expenseByCategorie)
+    invalidate(QUERY_KEYS.dashboard.renevueByCategorie)
+    invalidate(QUERY_KEYS.dashboard.sumary)
+    invalidate(QUERY_KEYS.dashboard.balanceEvolution)
+    invalidate(QUERY_KEYS.dashboard.lastMovements)
+    invalidate(QUERY_KEYS.dashboard.cards)
     notifySuccess("Sucesso", "Tranferência lançada com sucesso", 6000)
     modelValue.value = false
     resetForm()
@@ -91,10 +97,13 @@
     }
 
     try {
-      const formValid = await form.value.validate()
+      
+      const { valid } = await form.value.validate()
+
       const dateFormated = dateToDateOnly(transferForm.value.date_transfer)
       
-      if (formValid) {
+      if (valid) {
+        
         const transferPayload = {
           ...transferForm.value,
           date_transfer: dateFormated

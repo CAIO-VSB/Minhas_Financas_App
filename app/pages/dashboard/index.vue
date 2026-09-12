@@ -76,12 +76,13 @@
         queryFn: () => getBalanceEvolution(period.value.month, period.value.year)
     })
 
-    watch(() => allBalanceEvolution.value, (val) => {
-        console.log("Valores dos 3 meses " + JSON.stringify(val))
-    })
 
     const onlyAccountsActive = computed(() => {
         return allAccounts.value?.filter(item => item.active === true) 
+    })
+
+    const onlyExpenseActive = computed(() => {
+        return allMovements.value?.filter(item => item.type_transaction === 'despesa') 
     })
 
     const balanceCurrent = computed(() => {        
@@ -244,8 +245,21 @@
         </div>
 
         <div class="charts-row">
-            <BaseCard title="Resumo de pendências" subtitle="Veja o que precisa da sua atenção">
-                <div class="pa-5">
+            <BaseCard  title="Resumo de pendências" subtitle="Veja o que precisa da sua atenção">
+                <div v-if="!totalExpensesPending && !totalRenevuePending">
+                    <v-empty-state
+                        icon="mdi-calendar-check-outline"
+                        color="primary"
+                        title="Opa! Você não possui pendências no momento."
+                    >
+                        <template #text>
+                            <span>
+                                Suas contas e movimentações estão em dia.
+                            </span>
+                        </template>
+                    </v-empty-state>
+                </div>
+                <div class="pa-5" v-else>
                     <div class="d-flex align-center ga-4">
                         <span class="text-no-wrap font-weight-bold">Total de despesas pendentes</span>
                         <div class="d-flex justify-end w-100">
@@ -271,12 +285,14 @@
             <BaseCard :loading="isPendingMovements" title="Últimos lançamentos" subtitle="Confira suas movimentações recentes">
                 <v-empty-state
                     v-if="!allLastMovements?.length"
-                    icon="mdi-alert-box"
+                    icon="mdi-history"
                     color="primary"
                     title="Opa! Você ainda não possui lançamentos este mês."
-                    >
+                >
                     <template #text>
-                        <span class="text-no-wrap">Adicione seus ganhos no mês atual através do botão (+), para ver seus gráficos.</span>
+                        <span>
+                            Adicione uma receita ou despesa para visualizar seus últimos lançamentos.
+                        </span>
                     </template>
                 </v-empty-state>
                 <div class="pa-5" v-else>
@@ -304,7 +320,7 @@
                             >
                                 <td>{{ formatDate(item.date_transaction) }}</td>
                                 <td>{{ item.description_transaction }}</td>
-                                <td><v-chip :color="(item.type_transaction === 'receita') ? 'success' : 'error'">{{ formatCurrency(item.value_transaction)}}</v-chip></td>
+                                <td><v-chip :color="(item.type_transaction === 'receita') ? 'success' : 'red'">{{ formatCurrency(item.value_transaction)}}</v-chip></td>
                                 <td>{{ item.name_accounts }}</td>
                             </tr>
                         </tbody>
@@ -314,14 +330,14 @@
             </BaseCard>
 
             <BaseCard :loading="isPendingByCategorieRenevue" title="Frequência de gastos" subtitle="Identifique os períodos com mais gastos">
-                <div class="d-flex align-center justify-center"  v-if="!allMovements?.length" style="height: 510px;">
+                <div class="d-flex align-center justify-center"  v-if="!onlyExpenseActive?.length" style="height: 510px;">
                     <v-empty-state
-                        icon="mdi-alert-box"
+                        icon="mdi-chart-timeline-variant"
                         color="green"
-                        title="Opa! Você ainda não possui lançamentos este mês."
+                        title="Ainda não há dados de gastos"
                         >
                         <template #text>
-                            <span class="text-no-wrap">Adicione suas receitas no mês atual através do botão (+), para ver seus gráficos.</span>
+                            <span>Registre suas despesas para identificar seus hábitos de consumo.</span>
                         </template>
                     </v-empty-state>
                 </div>
@@ -332,12 +348,12 @@
             <BaseCard :loading="isPendingByCategorieRenevue" title="Evolução do saldo" subtitle="Veja como seu saldo evolui ao longo do tempo">
                 <div class="d-flex align-center justify-center"  v-if="!allMovements?.length" style="height: 510px;">
                     <v-empty-state
-                        icon="mdi-alert-box"
+                        icon="mdi-chart-line"
                         color="green"
-                        title="Opa! Você ainda não possui receitas este mês."
+                        title="Sua evolução começa aqui"
                         >
                         <template #text>
-                            <span class="text-no-wrap">Adicione suas receitas no mês atual através do botão (+), para ver seus gráficos.</span>
+                            <span>Adicione movimentações para acompanhar a evolução do seu saldo ao longo do tempo.</span>
                         </template>
                     </v-empty-state>
                 </div>
@@ -349,12 +365,12 @@
             <BaseCard :loading="isPendingByCategorieRenevue" title="Receitas por categoria" subtitle="Visualize a origem das suas receitas">
                 <div class="d-flex align-center justify-center"  v-if="!allMovements?.length" style="height: 510px;">
                     <v-empty-state
-                        icon="mdi-alert-box"
+                        icon="mdi-chart-pie-outline"
                         color="green"
-                        title="Opa! Você ainda não possui receitas este mês."
+                        title="Nenhuma receita registrada"
                         >
                         <template #text>
-                            <span class="text-no-wrap">Adicione suas receitas no mês atual através do botão (+), para ver seus gráficos.</span>
+                            <span>Registre suas receitas para acompanhar a origem dos seus ganhos.</span>
                         </template>
                     </v-empty-state>
                 </div>
@@ -376,12 +392,12 @@
             <BaseCard :loading="isPendingExpenseByCategorie" title="Despesas por categoria" subtitle="Visualize onde seus gastos estão concentrados">
                 <div class="d-flex align-center justify-center"  v-if="!allMovements?.length" style="height: 510px;">
                     <v-empty-state
-                        icon="mdi-alert-box"
+                        icon="mdi-chart-donut"
                         color="error"
-                        title="Opa! Você ainda não possui despesas este mês."
+                        title="Nenhuma despesa registrada"
                         >
                         <template #text>
-                            <span class="text-no-wrap">Adicione suas despesas no mês atual através do botão (+), para ver seus gráficos.</span>
+                            <span>Registre suas despesas para visualizar onde seu dinheiro está sendo gasto.</span>
                         </template>
                     </v-empty-state>
                 </div>
@@ -405,12 +421,12 @@
             <BaseCard :loading="isPendingCurrentBalance" title="Balanço mensal" subtitle="Compare suas receitas e despesas mensais">
                 <div class="d-flex align-center justify-center"  v-if="!allMovements?.length" style="height: 510px;">
                     <v-empty-state
-                        icon="mdi-alert-box"
+                        icon="mdi-scale-balance"
                         color="primary"
-                        title="Opa! Você ainda não possui lançamentos este mês."
+                        title="Sem dados para o balanço"
                         >
                         <template #text>
-                            <span class="text-no-wrap">Adicione seus ganhos no mês atual através do botão (+), para ver seus gráficos.</span>
+                            <span>Adicione receitas e despesas para acompanhar seu balanço mensal.</span>
                         </template>
                     </v-empty-state>
                 </div>
@@ -444,7 +460,24 @@
             </BaseCard>
 
             <BaseCard :loading="isPendingAccounts" title="Minhas contas" subtitle="Visualize o saldo das suas contas ativas">
-                <div class="pa-5" v-for="value in onlyAccountsActive" :key="value.id">
+                <div
+                    class="d-flex align-center justify-center"
+                    v-if="!onlyAccountsActive?.length"
+                    style="height: 510px;"
+                >
+                    <v-empty-state
+                        icon="mdi-bank-outline"
+                        color="primary"
+                        title="Você ainda não possui contas."
+                    >
+                        <template #text>
+                            <span>
+                                Adicione uma conta bancária para começar a controlar seu saldo e suas movimentações.
+                            </span>
+                        </template>
+                    </v-empty-state>
+                </div>
+                <div class="pa-5" v-for="value in onlyAccountsActive" :key="value.id" v-else>
                     <div class="d-flex align-center ga-4">
                         <div>
                             <v-img

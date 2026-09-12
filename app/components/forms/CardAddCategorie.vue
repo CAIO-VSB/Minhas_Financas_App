@@ -74,17 +74,15 @@
 
       const { valid } = await form.value.validate()
       const resultSchema = validateSchemaCategorie(categorieForm.value)
-    
-      if (valid) {
 
-        if (categorieForm.value.url_icon === ""){
-          return notifyInfo("Atenção", "Escolha um ícone que represente esta categoria", 7000)
-        }
-
-        if (resultSchema.success) {  
-          mutate(categorieForm.value)
-        }
+      if (categorieForm.value.url_icon === ""){
+        return notifyInfo("Atenção", "Escolha um ícone que represente esta categoria", 7000)
       }
+  
+      if (valid && resultSchema.success) {
+        mutate(categorieForm.value)
+      }
+      
     } catch (err) {
       notifyError("Erro", "Ocorreu um erro ao validar o formulário. Por favor, tente novamente.", 6000)
     }

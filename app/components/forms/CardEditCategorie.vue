@@ -88,10 +88,10 @@
     }
 
     try {
-      const formValid = await form.value.validate()
+      const { valid } = await form.value.validate()
       const resultSchema = validateSchemaCategorie(props.draft)
       
-      if (formValid) {
+      if (valid) {
         if (resultSchema.success) {  
           mutate(props.draft)
         }

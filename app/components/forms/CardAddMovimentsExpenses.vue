@@ -222,6 +222,9 @@
       invalidate(QUERY_KEYS.dashboard.expenseByCategorie)
       invalidate(QUERY_KEYS.dashboard.renevueByCategorie)
       invalidate(QUERY_KEYS.dashboard.sumary)
+      invalidate(QUERY_KEYS.dashboard.balanceEvolution)
+      invalidate(QUERY_KEYS.dashboard.lastMovements)
+      invalidate(QUERY_KEYS.dashboard.cards)
       notifySuccess("Sucesso", "Despesa lançada com sucesso", 6000)
       resetForm()
       emit("success")
@@ -259,19 +262,23 @@
     const dateFormated = dateToDateOnly(movementsForm.value.date_transaction)
 
     try {
-      const formValid = await form.value.validate()
 
-      if (formValid) {
+      const { valid } = await form.value.validate()
+
+      if (valid) {
+
         const movementsPayload = {
           ...movementsForm.value,
           date_transaction: dateFormated
         }
+
         const recurrencePayload = {
           ...recorrenceForm.value,
           day_maturity: movementsForm.value.date_transaction
         }
 
         const resultSchema = validateSchemaMovements(movementsPayload)
+        
         if (!resultSchema.success) return
 
         if (showInputFixa.value || showInputParcelado.value) {
@@ -282,6 +289,9 @@
           invalidate(QUERY_KEYS.dashboard.expenseByCategorie)
           invalidate(QUERY_KEYS.dashboard.renevueByCategorie)
           invalidate(QUERY_KEYS.dashboard.sumary)
+          invalidate(QUERY_KEYS.dashboard.balanceEvolution)
+          invalidate(QUERY_KEYS.dashboard.lastMovements)
+          invalidate(QUERY_KEYS.dashboard.cards)
           notifySuccess("Sucesso", "Despesa lançada com sucesso", 6000)
           emit("success")
         } else {

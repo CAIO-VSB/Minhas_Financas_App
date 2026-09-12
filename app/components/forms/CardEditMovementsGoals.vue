@@ -95,7 +95,9 @@
             return
         }
 
-        mutate(payload)
+        if (valid) {
+          mutate(payload)
+        }
 
     } catch (error) {
       notifyError("Erro", "Ocorreu um erro ao validar o formulário. Por favor, tente novamente.", 6000)

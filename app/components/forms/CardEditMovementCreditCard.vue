@@ -159,9 +159,9 @@
     const [year, month] = date.value.split("-").map(Number)
 
     try {
-      const formValid = await form.value.validate()
+      const { valid } = await form.value.validate()
 
-      if (formValid) {
+      if (valid) {
 
         const movementsCrediCardPayload = {
           ...props.draft,

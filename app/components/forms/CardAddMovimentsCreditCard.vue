@@ -280,6 +280,9 @@
         invalidate(QUERY_KEYS.dashboard.expenseByCategorie)
         invalidate(QUERY_KEYS.dashboard.renevueByCategorie)
         invalidate(QUERY_KEYS.dashboard.sumary)
+        invalidate(QUERY_KEYS.dashboard.balanceEvolution)
+        invalidate(QUERY_KEYS.dashboard.lastMovements)
+        invalidate(QUERY_KEYS.dashboard.cards)
         notifySuccess("Sucesso", "Operação realizada com sucesso", 6000)
         resetForm()
         emit("success")
@@ -297,6 +300,15 @@
       notifyError(
         "Data inválida",
         "Não foi possível concluir a ação porque a data informada é inválida ou está ausente.",
+      )
+      return
+    }
+
+    if (!movementCreditCardForm.value.credit_card_id ) {
+      notifyInfo(
+        "Cartão de crédito inválido",
+        "Não foi possível concluir a ação porque o cartão de crédito informado é inválido ou está ausente.",
+        6000
       )
       return
     }
@@ -319,9 +331,9 @@
     const [year, month] = date.value.split("-").map(Number)
 
     try {
-      const { formValid } = await form.value.validate()
+      const { valid } = await form.value.validate()
 
-      if (formValid) {
+      if (valid) {
 
         const movementsCrediCardPayload = {
           ...movementCreditCardForm.value,
@@ -356,6 +368,9 @@
           invalidate(QUERY_KEYS.dashboard.expenseByCategorie)
           invalidate(QUERY_KEYS.dashboard.renevueByCategorie)
           invalidate(QUERY_KEYS.dashboard.sumary)
+          invalidate(QUERY_KEYS.dashboard.balanceEvolution)
+          invalidate(QUERY_KEYS.dashboard.lastMovements)
+          invalidate(QUERY_KEYS.dashboard.cards)
           notifySuccess("Sucesso", "Operação realizada com sucesso", 6000)
           emit("success")
         } else {

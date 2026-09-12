@@ -77,8 +77,6 @@
                 end_date: endDateFormated
             }
 
-            console.log("Valor sendo enviado ante da cair no boca do leao " + JSON.stringify(payload))
-
             const resultSchema = validateSchemaGoals(payload)
 
             if (!resultSchema.success) {
@@ -89,7 +87,9 @@
                 return
             }
 
-           mutate(payload)
+            if (valid) {
+              mutate(payload)
+            }
 
         } catch (error) {
           notifyError("Erro", "Ocorreu um erro ao validar o formulário. Por favor, tente novamente.", 6000)

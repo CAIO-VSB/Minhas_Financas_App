@@ -138,10 +138,10 @@
         return
       }
 
-      const formValid = await form.value.validate()
+      const { valid } = await form.value.validate()
       const resultSchema = validateSchemaAccount(props.draft)
 
-      if (formValid && resultSchema.success) {
+      if (valid && resultSchema.success) {
         const payload = {...toRaw(props.draft)}
 
         if (Number(payload.initial_balance === Number(newInitialBalance.value))) {

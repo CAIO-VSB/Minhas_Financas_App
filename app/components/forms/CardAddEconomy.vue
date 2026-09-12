@@ -64,43 +64,37 @@
 
     async function submitForm() {
 
-        const { valid } = await formRef.value.validate()
+      const { valid } = await formRef.value.validate()
 
-        if (!valid) {
-            notifyInfo(
-                "Dados incompletos",
-                "Preencha os campos obrigatórios para continuar."
-            )
-            return
+      const startDateFormated = dateToDateOnly(goalsForm.value.start_date)
+      const endDateFormated = dateToDateOnly(goalsForm.value.end_date)
+
+      try {
+
+        const payload = {
+          ...goalsForm.value,
+          accounts_id: modelAccounts.value,
+          start_date: startDateFormated,
+          end_date: endDateFormated
         }
 
-        const startDateFormated = dateToDateOnly(goalsForm.value.start_date)
-        const endDateFormated = dateToDateOnly(goalsForm.value.end_date)
+        const resultSchema = validateSchemaGoals(payload)
 
-        try {
-
-            const payload = {
-                ...goalsForm.value,
-                accounts_id: modelAccounts.value,
-                start_date: startDateFormated,
-                end_date: endDateFormated
-            }
-
-            const resultSchema = validateSchemaGoals(payload)
-
-            if (!resultSchema.success) {
-                notifyInfo(
-                    "Dados inválidos",
-                    "Verifique as informações preenchidas e tente novamente."
-                )
-                return
-            }
-
-            mutate(payload)
-
-        } catch (error) {
-          notifyError("Erro", "Ocorreu um erro ao validar o formulário. Por favor, tente novamente.", 6000)
+        if (!resultSchema.success) {
+          notifyInfo(
+            "Dados inválidos",
+            "Verifique as informações preenchidas e tente novamente."
+          )
+          return
         }
+
+        if (valid && resultSchema.success) {
+          mutate(payload)
+        }
+
+      } catch (error) {
+        notifyError("Erro", "Ocorreu um erro ao validar o formulário. Por favor, tente novamente.", 6000)
+      }
 
     }
 

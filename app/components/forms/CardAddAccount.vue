@@ -110,12 +110,14 @@
   async function handleAddAccount() {
     
     try {
-      const { valid } = await form.value.validate()
-      const resultSchema = validateSchemaAccount(accountForm.value)
+        
+        const { valid } = await form.value.validate()
+        const resultSchema = validateSchemaAccount(accountForm.value)
       
-      if (valid && resultSchema.success) {
+        if (valid && resultSchema.success) {
           mutate(accountForm.value)
         }
+
     } catch (err) {
       notifyError("Erro", "Ocorreu um erro ao validar o formulário. Por favor, tente novamente.", 6000)
     } 

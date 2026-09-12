@@ -115,10 +115,10 @@
         return
       }
 
-      const formValid = await form.value.validate()
+      const { valid } = await form.value.validate()
       const resultSchema = validateShemaCrediCard(props.draft)
 
-      if (formValid) {
+      if (valid) {
         if (!props.draft.four_digits || props.draft.four_digits.length < 4) {
           notifyInfo("Atenção", "Digite os 4 últimos dígitos do cartão.", 5000)
         }

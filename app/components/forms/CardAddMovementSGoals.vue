@@ -71,27 +71,19 @@
   })
 
   function resetForm() {
-      movementGoalsForm.value.value_paid = 0.00
-      movementGoalsForm.value.goals_id = null
-      movementGoalsForm.value.description = ""
-      movementGoalsForm.value.date_movement = new Date()
-      movementGoalsForm.value.accounts_id = null
-      modelGoals.value = null
-      modelAccounts.value = null
-      modelValue.value = false
+    movementGoalsForm.value.value_paid = 0.00
+    movementGoalsForm.value.goals_id = null
+    movementGoalsForm.value.description = ""
+    movementGoalsForm.value.date_movement = new Date()
+    movementGoalsForm.value.accounts_id = null
+    modelGoals.value = null
+    modelAccounts.value = null
+    modelValue.value = false
   }
 
   async function submitForm() {
 
     const { valid } = await formRef.value.validate()
-
-    if (!valid) {
-      notifyInfo(
-        "Dados incompletos",
-        "Preencha os campos obrigatórios para continuar."
-      )
-      return
-    }
 
     const dateMovementFormated = dateToDateOnly(movementGoalsForm.value.date_movement)
 
@@ -104,18 +96,19 @@
           date_movement: dateMovementFormated
         }
 
-
         const resultSchema =  validateSchemaGoalsMovements(payload)
 
         if (!resultSchema.success) {
-            notifyInfo(
-              "Dados inválidos",
-              "Verifique as informações preenchidas e tente novamente."
-            )
-            return
+          notifyInfo(
+            "Dados inválidos",
+            "Verifique as informações preenchidas e tente novamente."
+          )
+          return
         }
 
-        mutate(payload)
+        if (valid && resultSchema.success) {
+          mutate(payload)
+        }
 
     } catch (error) {
       notifyError("Erro", "Ocorreu um erro ao validar o formulário. Por favor, tente novamente.", 6000)

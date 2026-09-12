@@ -106,7 +106,7 @@ import type { TTransferPayload } from "~~/schemas/transfer.schema"
         return
       } 
   
-      const formValid = await form.value.validate()
+      const { valid } = await form.value.validate()
       const raw = structuredClone(toRaw(props.draft))
     
       if (!raw.date_transfer) {
@@ -119,7 +119,7 @@ import type { TTransferPayload } from "~~/schemas/transfer.schema"
 
       const dateFormated = dateToDateOnly(raw.date_transfer)
 
-      if (formValid) {
+      if (valid) {
         const transferPayload = {
           ...raw,
           date_transfer: dateFormated

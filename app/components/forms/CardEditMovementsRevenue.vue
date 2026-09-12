@@ -137,7 +137,7 @@ async function handleEditMovementRevenue() {
       return
     } 
 
-    const formValid = await form.value.validate()
+    const { valid } = await form.value.validate()
 
     const raw = structuredClone(toRaw(props.draft))
 
@@ -158,7 +158,7 @@ async function handleEditMovementRevenue() {
 
     const resultSchema = validateSchemaMovements(payload)
 
-    if (formValid) {
+    if (valid) {
       if (resultSchema.success) {  
         mutate(resultSchema.data)
       }

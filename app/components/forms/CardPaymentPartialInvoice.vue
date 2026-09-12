@@ -188,8 +188,6 @@
       totalPaid: form.value.totalPaid
     }
 
-    console.log("Objeto antes de ir para o back " + JSON.stringify(payload))
-
     mutate(payload)
 
   }
