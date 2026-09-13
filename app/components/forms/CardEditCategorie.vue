@@ -93,6 +93,7 @@
       
       if (valid) {
         if (resultSchema.success) {  
+          console.log('Sendo enviado parao bankc ' + JSON.stringify(props.draft))
           mutate(props.draft)
         }
       }

@@ -6,8 +6,8 @@ export const categoriesRepository = {
     async findAll(userId: string, active?: boolean) {
 
     const text = active !== undefined
-        ? `SELECT * FROM categories WHERE categories.id NOT IN (83, 84) AND (user_id IS NULL OR user_id = $1) AND active = $2 ORDER BY type_categorie DESC`
-        : `SELECT * FROM categories WHERE categories.id NOT IN (83, 84) AND (user_id IS NULL OR user_id = $1) ORDER BY type_categorie DESC`
+        ? `SELECT * FROM categories WHERE categories.id NOT IN (15, 16, 17, 18, 19, 40) AND (user_id IS NULL OR user_id = $1) AND active = $2 ORDER BY type_categorie DESC`
+        : `SELECT * FROM categories WHERE categories.id NOT IN (15, 16, 17, 18, 19, 40) AND (user_id IS NULL OR user_id = $1) ORDER BY type_categorie DESC`
 
         const params = active !== undefined ? [userId, active === true] : [userId]
 
@@ -32,7 +32,7 @@ export const categoriesRepository = {
         
     },
 
-    async update(id:number, data: TCategorie) {
+    async update(userId:string, id:number, data: TCategorie) {
 
         const text = `
             UPDATE categories
@@ -40,10 +40,11 @@ export const categoriesRepository = {
                 name_identifier = $1,
                 url_icon = $2,
                 active = $3,
-                type_categorie = $4
-            WHERE id = $5
+                type_categorie = $4,
+                user_id = $5
+            WHERE id = $6
         ` 
-        const values = [data.name_identifier, data.url_icon, data.active, data.type_categorie, id]
+        const values = [data.name_identifier, data.url_icon, data.active, data.type_categorie, userId, id]
 
         const newCategorie = client.query(text, values)
 

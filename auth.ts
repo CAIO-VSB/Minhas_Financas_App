@@ -3,7 +3,7 @@ import { sendUserEmail } from "~~/server/api/auth/send-verification-email"
 import { sendForgotPassword } from "~~/server/api/auth/send-reset-password"
 import { Pool } from "pg"
 import { sendChangeEmail } from "~~/server/api/auth/send-change-email-confirmation"
-
+import client from "~/utils/db" 
 
 export const auth = betterAuth({
 

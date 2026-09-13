@@ -1,16 +1,5 @@
-import nodemailer from "nodemailer";
-
-export const transporter = nodemailer.createTransport({
-    service: "gmail",
-    host: "smtp.gmail.com",
-    auth: {
-      user: "financevelto@gmail.com", 
-      pass: process.env.SMTP_PASSWORD
-    },
-    secure: false,
-    port: 587
-});
-
+import { Resend } from 'resend'
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 type User = {
   email: string,
@@ -111,19 +100,24 @@ export const sendChangeEmail = async (user: User, url: string) => {
     </table>
     </div>
 `
-
   try {
-    const info = await transporter.sendMail({
-      from: "Confirmação de alteração de e-mail <financevelto@gmail.com>", 
-      to: user.email, 
-      subject: "Confirme a alteração do seu e-mail",
-      text: "Recebemos uma solicitação para alterar o e-mail da sua conta. Confirme a alteração acessando o link enviado nesta mensagem.", 
-      html: htmlTemplate
+
+    const { data, error } = await resend.emails.send({
+        from: "Confirmação de alteração de e-mail <time@veltofinance.bid>",
+        to: user.email,
+        subject: "Confirme a alteração do seu e-mail",
+        text: "Recebemos uma solicitação para alterar o e-mail da sua conta. Confirme a alteração acessando o link enviado nesta mensagem.",
+        html: htmlTemplate
     });
 
-    console.log("E-mail enviado com sucesso", info.response)
-    return info.messageId
+    if (error) {
+        return console.error({ error });
+    }
+
+  console.log({ data });
+
   } catch (error) {
+
     console.error("Falha ao enviar o email:", error)
   }
 }

@@ -20,3 +20,5 @@ datetime(ano, mes, dia, hora, minuto, segundo)
 :deep(.v-data-table-header__content) {
   font-weight: bold;
 }
+
+28, 

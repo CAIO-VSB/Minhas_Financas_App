@@ -48,6 +48,7 @@
     categorieForm.value.name_identifier = ""
     categorieForm.value.type_categorie = ""
     categorieForm.value.url_icon = ""
+    modalAddIconCategorie.value = false
     modelValue.value = false
   }
 
@@ -82,7 +83,7 @@
       if (valid && resultSchema.success) {
         mutate(categorieForm.value)
       }
-      
+        
     } catch (err) {
       notifyError("Erro", "Ocorreu um erro ao validar o formulário. Por favor, tente novamente.", 6000)
     }
@@ -119,8 +120,8 @@
                 :rules="nameRules"
                 hint="Adicione uma identificação clicando no ícone ao lado"
                 persistent-hint
-                :counter="30" 
-                maxlength="30"
+                :counter="45" 
+                maxlength="45"
                 prepend-inner-icon="mdi-rename"
                 class="mb-4"
               >

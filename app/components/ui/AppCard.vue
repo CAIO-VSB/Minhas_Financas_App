@@ -43,17 +43,6 @@
                     </div>
                 </div>
 
-                <v-tooltip :text="propsCards.textToolTip">
-                    <template #activator="{ props }">
-                        <v-btn
-                            v-bind="props"
-                            icon="mdi-information-outline"
-                            variant="text"
-                            density="comfortable"
-                            :size="propsCards.sizeIconToolTip"
-                        />
-                    </template>
-                </v-tooltip>
             </div>
         </v-card-text>
     </v-card>

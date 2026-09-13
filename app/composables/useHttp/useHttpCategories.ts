@@ -16,6 +16,7 @@ export function useHttpCategories() {
     }
 
     const patchCategorieById = async (id: number, data: TCategorie) => {
+        console.log("Valores aqui no envio " + JSON.stringify(data))
         return $fetch<TCategorie>(`/api/categories/${id}`, {method: "PATCH", body: data})
     }
 

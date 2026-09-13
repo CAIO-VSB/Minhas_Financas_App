@@ -408,7 +408,7 @@
                       v-bind="props"
                       color="primary"
                       icon="mdi-plus"
-                      size="60"
+                      size="50"
                       @click="modalAddCategorie = true"
                   />
               </template>
@@ -428,8 +428,8 @@
 <style scoped>
 .fab-wrapper {
     position: fixed;
-    right: 24px;
-    bottom: 24px;
+    right: 16px;
+    bottom: 10px;
     z-index: 10;
 }
 

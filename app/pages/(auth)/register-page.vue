@@ -268,7 +268,23 @@
                   base-color="blue-grey-lighten-3"
                   bg-color="blue-grey-lighten-5"
                   @keyup.enter="handleRegisterUser"
-                />
+                >
+                  <template #append-inner>
+                    <v-tooltip location="top" max-width="280">
+                      <template #activator="{ props }">
+                        <v-icon
+                          icon="mdi-information-outline"
+                          size="20"
+                          v-bind="props"
+                        />
+                      </template>
+                      <span>
+                        Não recebeu o email de confirmação? Confira também a caixa de spam —
+                        às vezes ele acaba caindo lá por engano.
+                      </span>
+                    </v-tooltip>
+                  </template>
+                </v-text-field>
               </div>
 
               <div>

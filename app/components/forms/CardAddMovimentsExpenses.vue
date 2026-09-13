@@ -223,6 +223,7 @@
       invalidate(QUERY_KEYS.dashboard.renevueByCategorie)
       invalidate(QUERY_KEYS.dashboard.sumary)
       invalidate(QUERY_KEYS.dashboard.balanceEvolution)
+      invalidate(QUERY_KEYS.dashboard.expenseByThreeMonths)
       invalidate(QUERY_KEYS.dashboard.lastMovements)
       invalidate(QUERY_KEYS.dashboard.cards)
       notifySuccess("Sucesso", "Despesa lançada com sucesso", 6000)
@@ -292,6 +293,7 @@
           invalidate(QUERY_KEYS.dashboard.balanceEvolution)
           invalidate(QUERY_KEYS.dashboard.lastMovements)
           invalidate(QUERY_KEYS.dashboard.cards)
+          invalidate(QUERY_KEYS.dashboard.expenseByThreeMonths)
           notifySuccess("Sucesso", "Despesa lançada com sucesso", 6000)
           emit("success")
         } else {

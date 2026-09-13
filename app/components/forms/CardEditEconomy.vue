@@ -142,6 +142,12 @@
               <v-col
               cols="12" md="12" sm="12"
               >
+                <CurrencyInput variant="solo-filled" prepend-inner-icon="mdi-cash" :rules="currencyRules" text-color="primary" autocomplete="off" label="Valor inicial" hint="Quanto você já tem guardado para esta meta" v-model="props.draft.value_initial"/>
+              </v-col>
+
+              <v-col
+              cols="12" md="12" sm="12"
+              >
                 <CurrencyInput variant="solo-filled" prepend-inner-icon="mdi-cash" :rules="currencyRules" text-color="primary" autocomplete="off" label="Valor total da meta" hint="Valor que você deseja alcançar" v-model="props.draft.goal_value"/>
               </v-col>
 

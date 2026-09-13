@@ -35,6 +35,7 @@
     queryFn: getBalanceForGoals
   })
 
+
   const onlyGoalsActive = computed(() => {
     return data.value?.filter(item => item.active === true)
   })
@@ -380,10 +381,17 @@
                         </div>
                       </div>
                       <v-divider></v-divider>
-                      <div class="d-flex jutify-center align-center mt-3 text-no-wrap text-body-2 text-medium-emphasis">                
+                      <div class="d-flex jutify-center align-center mt-3 mb-3 text-no-wrap text-body-2 text-medium-emphasis">                
                         Aplicação mensal ideal: 
                         <div class="w-100 d-flex justify-end text-body-2 font-weight-bold text-blue-grey-darken-4">
                           <v-chip color="primary">{{ formatCurrency(value.suggested_value ?? 0.00) }}</v-chip>
+                        </div>
+                      </div>
+                      <v-divider></v-divider>
+                      <div class="d-flex jutify-center align-center mt-3 mb-3 text-no-wrap text-body-2 text-medium-emphasis">                
+                        Meta alcançada: 
+                        <div class="w-100 d-flex justify-end text-body-2 font-weight-bold text-blue-grey-darken-4">
+                          <v-chip color="green">{{ formatCurrency(getSummaryForGoals(value.id ?? 0).total) }}</v-chip>
                         </div>
                       </div>
 

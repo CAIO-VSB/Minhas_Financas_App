@@ -150,32 +150,6 @@
           </v-list-item>
         </v-list-group>
 
-
-        <v-list-item
-          prepend-icon="mdi-file-chart-outline"
-          title="Relatórios"
-          value="relatorios"
-          rounded="lg"
-          class="mb-1 text-medium-emphasis"
-        >
-          <template #title>
-            <div class="d-flex align-center justify-space-between w-100">
-              <span class="size-item-title">
-                Relatórios
-              </span>
-
-              <v-chip
-                size="x-small"
-                variant="tonal"
-                color="primary"
-                class="mr-2"
-              >
-                Em breve
-              </v-chip>
-            </div>
-          </template>
-        </v-list-item>
-
         <v-list-subheader
           v-if="!rail"
           class="text-uppercase text-caption font-weight-bold px-3 mt-4 mb-1"
@@ -188,22 +162,13 @@
           title="Relatórios"
           value="relatorios"
           rounded="lg"
-          class="mb-1 text-medium-emphasis"
+          to="/news"
         >
           <template #title>
             <div class="d-flex align-center justify-space-between w-100">
               <span class="size-item-title">
                 Novidades
               </span>
-
-              <v-chip
-                size="x-small"
-                variant="tonal"
-                color="primary"
-                class="mr-2"
-              >
-                Em breve
-              </v-chip>
             </div>
           </template>
         </v-list-item>

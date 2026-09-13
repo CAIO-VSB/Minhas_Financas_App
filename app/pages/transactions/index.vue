@@ -499,9 +499,6 @@
                 :value="balanceCurrent.saldo_atual"
                 color="primary"
                 icon="mdi-bank"
-                text-tool-tip="O cálculo do saldo atual é independente do período selecionado, considerando o saldo inicial das contas ativas juntamente com todas as movimentações efetivadas de entrada e saída"
-                icon-tool-tip="mdi-information-outline"
-                size-icon-tool-tip="20px"
                 />
             </v-col>
 
@@ -517,9 +514,6 @@
                     :value="summary.receitas"
                     color="success"
                     icon="mdi-arrow-down-thin-circle-outline"
-                    text-tool-tip="O valor apresentado corresponde à soma de todas as receitas efetivadas registradas nas contas ativas"
-                    icon-tool-tip="mdi-information-outline"
-                    size-icon-tool-tip="20px"
                 />
             </v-col>
 
@@ -535,9 +529,6 @@
                     :value="summary.despesas"
                     color="error"
                     icon="mdi-arrow-up-thin-circle-outline"
-                    text-tool-tip="O valor apresentado corresponde à soma de todas as despesas efetivadas registradas nas contas ativas"
-                    icon-tool-tip="mdi-information-outline"
-                    size-icon-tool-tip="20px"
                 />
             </v-col>
 
@@ -553,9 +544,6 @@
                     :value="summary.balancoMensal"
                     color="primary"
                     icon="mdi-scale-balance"
-                    text-tool-tip="O balanço mensal é calculado com base na soma de todas as receitas efetivadas menos todas as despesas efetivadas do período selecionado"
-                    icon-tool-tip="mdi-information-outline"
-                    size-icon-tool-tip="20px"
                 />
             </v-col>
             </div>

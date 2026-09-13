@@ -47,27 +47,27 @@
 
         try {
 
-            const formValid = await form.value.validate()
+          const formValid = await form.value.validate()
 
-            if (formValid) {
-                const resultValidatePassword = await postVerifyPassword(password.value)
+          if (formValid) {
+              const resultValidatePassword = await postVerifyPassword(password.value)
 
-                if (resultValidatePassword.valid) {
-                    await authStore.alterEmail(newEmail.value)
-                } else {
-                    notifyInfo(
-                    "Atenção",
-                    "Não foi possível confirmar sua identidade. Verifique sua senha atual e tente novamente.",
-                    6000
-                    )
-                }
-            }
+              if (resultValidatePassword.valid) {
+                  await authStore.alterEmail(newEmail.value)
+              } else {
+                  notifyInfo(
+                  "Atenção",
+                  "Não foi possível confirmar sua identidade. Verifique sua senha atual e tente novamente.",
+                  6000
+                  )
+              }
+          }
 
         } catch (e) {
-            console.log("Erro ao enviar solicitação" + e)
-            notifyInfo("Erro", "Algo deu errado. Tente novamente em instantes.", 7000)
+          console.log("Erro ao enviar solicitação" + e)
+          notifyInfo("Erro", "Algo deu errado. Tente novamente em instantes.", 7000)
         } finally {
-            loading.value = false
+          loading.value = false
         }
 
     }

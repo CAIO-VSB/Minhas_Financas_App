@@ -35,7 +35,7 @@ export default defineEventHandler( async (event) => {
     
     try {
 
-        return await categoriesRepository.update(id, result.data)
+        return await categoriesRepository.update(session.session.userId, id, result.data)
 
     } catch (error) {
 

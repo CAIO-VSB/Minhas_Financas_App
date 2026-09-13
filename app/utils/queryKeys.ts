@@ -40,7 +40,7 @@ export const QUERY_KEYS = {
         expenseByCategorie: ['expenseByCategorie'],
         renevueByCategorie: ['renevueByCategorie'],
         sumary: ['sumary'],
-        cards: ['credit-cards'],
+        cards: ['by-cards'],
         lastMovements: ['last-movements'],
         expenseByThreeMonths: ['expense-by-three-months'],
         balanceEvolution: ['balanceEvolution']

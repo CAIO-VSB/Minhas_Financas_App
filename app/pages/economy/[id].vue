@@ -66,21 +66,6 @@
         navigateTo("/economy")
     }
 
-    // const  { mutate } = useMutation({
-
-    //     mutationFn: (payload: TCreditCard) => patchCreditCardById(payload.id!, payload),
-
-    //     onSuccess: () => {
-    //         invalidate(QUERY_KEYS.creditCards.all)
-    //         invalidate(QUERY_KEYS.creditCards.disable)
-    //     },
-
-    //     onError: (error) => {
-    //         handleErrorApplication(error.data)
-    //     },
-
-    // })
-
     /**
      * Watch responsável por escutar as mudanças nos dados vindo do banco de dados
      * Sempre que mudar algum dado e existir valor, buscamos pelo id e setamos o novos valores

@@ -55,7 +55,7 @@
     type_transaction: "receita",
     value_transaction: null,
     date_transaction: new Date(),
-    description_transaction: "teste",
+    description_transaction: "",
     categorie_id: null,
     accounts_id: null,
     status_transaction: "recebido"

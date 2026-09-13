@@ -17,8 +17,8 @@
   const showPassword = ref(false);
   const form = ref();
   const loginForm = ref<TLoginForm>({
-    email: "caiob7517@gmail.com",
-    password: "Caio#2005",
+    email: "",
+    password: "",
   });
 
   const authStore = useAuthStore();

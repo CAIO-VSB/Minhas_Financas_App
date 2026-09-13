@@ -25,7 +25,7 @@ export const invoiceRepository = {
                 `INSERT INTO movements(user_id, type_transaction, value_transaction, date_transaction, description_transaction, categorie_id, accounts_id, observation, url_recibo, status_transaction, is_deleted, invoice_id) 
                 VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
                 RETURNING id`,
-                [userId, 'pagamento_fatura', totalInvoice, dataPayment, 'Pagamento da fatura', 6, accountsId, 'Pagamento da fatura', null, 'pago', false, invoiceId]
+                [userId, 'pagamento_fatura', totalInvoice, dataPayment, 'Pagamento da fatura', 19, accountsId, 'Pagamento da fatura', null, 'pago', false, invoiceId]
             )
           
             await conn.query('COMMIT')
@@ -66,7 +66,7 @@ export const invoiceRepository = {
                 `INSERT INTO movements(user_id, type_transaction, value_transaction, date_transaction, description_transaction, categorie_id, accounts_id, observation, url_recibo, status_transaction, is_deleted, invoice_id) 
                 VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
                 RETURNING id`,
-                [userId, 'pagamento_fatura', totalPaid, dataPayment, 'Pagamento da fatura', 6, accountsId, 'Pagamento da fatura', null, 'pago', false, invoiceId]
+                [userId, 'pagamento_fatura', totalPaid, dataPayment, 'Pagamento da fatura', 19, accountsId, 'Pagamento da fatura', null, 'pago', false, invoiceId]
             )
           
             const currentInvoice = await conn.query(`
@@ -87,7 +87,7 @@ export const invoiceRepository = {
                     VALUES($1, $2, $3, $4, $5, $6, $7, $8)
                 RETURNING id
                 `
-            , [userId, credit_card_id, invoiceId, 'Pagamento parcial*', totalPaid, dataPayment, 'parcial', 8])
+            , [userId, credit_card_id, invoiceId, 'Pagamento parcial*', totalPaid, dataPayment, 'parcial', 18])
 
             let nextInvoiceId: number
 
@@ -114,7 +114,7 @@ export const invoiceRepository = {
                     VALUES($1, $2, $3, $4, $5, $6, $7, $8)
                 RETURNING id
                 `
-            , [userId, credit_card_id, nextInvoiceId, 'Saldo restante da fatura anterior', remainingValue, dataPayment, 'ativa', 5])
+            , [userId, credit_card_id, nextInvoiceId, 'Saldo restante da fatura anterior', remainingValue, dataPayment, 'ativa', 18])
 
             await conn.query('COMMIT')
 
@@ -167,7 +167,7 @@ export const invoiceRepository = {
                     VALUES($1, $2, $3, $4, $5, $6, $7, $8)
                 RETURNING id
                 `
-            , [userId, creditCardId, nextInvoiceId, 'Pagamento adiantado*', totalPaid, dataPayment, 'adiantado', 7])
+            , [userId, creditCardId, nextInvoiceId, 'Pagamento adiantado*', totalPaid, dataPayment, 'adiantado', 17])
 
             await conn.query('COMMIT')
 
@@ -249,6 +249,11 @@ export const invoiceRepository = {
         conn.release()
        } 
  
+    },
+
+    async sendEmailByInvoice() {
+        const result = await client.query(`SELECT * FROM fn_info_invoice_by_email()`)
+        return result.rows
     }
 
 

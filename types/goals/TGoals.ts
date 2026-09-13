@@ -5,5 +5,6 @@ export interface TGoals {
   goal_value?: number
   start_date: Date
   end_date: Date
-  active: boolean
+  active: boolean,
+  value_initial: number | null
 }

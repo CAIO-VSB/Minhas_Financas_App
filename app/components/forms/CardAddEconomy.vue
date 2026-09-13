@@ -18,12 +18,13 @@
     const { notifyError, notifyInfo, notifySuccess } = useNotify()
     
     const goalsForm = ref<TGoals>({
-        name_identifier: "",
-        suggested_value: 0.00,
-        goal_value: 0.00,
-        start_date: new Date(),
-        end_date: new Date(),
-        active: true
+      name_identifier: "",
+      suggested_value: 0.00,
+      goal_value: 0.00,
+      start_date: new Date(),
+      end_date: new Date(),
+      active: true,
+      value_initial: null
     })
 
     const menuAccounts = ref(false)
@@ -31,8 +32,8 @@
     const formRef = ref()
 
     const { data:accounts, isPending: isPendingAccounts } = useQuery({
-        queryKey: QUERY_KEYS.accounts.active,
-        queryFn: getAccountsOnlyActive,
+      queryKey: QUERY_KEYS.accounts.active,
+      queryFn: getAccountsOnlyActive,
     })
 
     const { mutate, isPending  } = useMutation({
@@ -41,6 +42,7 @@
 
       onSuccess: () => {
         invalidate(QUERY_KEYS.goals.all)
+        invalidate(QUERY_KEYS.goals.balance_for_economy)
         notifySuccess("Sucesso", "Operação realizada com sucesso", 6000)
         resetForm()
       },
@@ -52,6 +54,7 @@
     })
 
     function resetForm() {
+      goalsForm.value.value_initial = null
       goalsForm.value.active = true
       goalsForm.value.end_date = new Date()
       goalsForm.value.goal_value = 0.00
@@ -138,6 +141,12 @@
               >
               <v-text-field prepend-inner-icon="mdi-pencil"  prepend-icon="" :rules="nameRules" :counter="45" maxlength="45"  autocomplete="name" name="name" label="Nome da meta" variant="solo-filled" v-model="goalsForm.name_identifier"></v-text-field>
             </v-col>
+
+              <v-col
+              cols="12" md="12" sm="12"
+              >
+                <CurrencyInput variant="solo-filled" prepend-inner-icon="mdi-cash" text-color="primary" autocomplete="off" label="Valor inicial" hint="Quanto você já tem guardado para esta meta" v-model="goalsForm.value_initial"/>
+              </v-col>
 
               <v-col
               cols="12" md="12" sm="12"

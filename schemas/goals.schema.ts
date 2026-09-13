@@ -7,7 +7,8 @@ export const schemaGoals = z.object({
     goal_value: z.number("Valor total da meta ausente").min(0.1).optional(),
     start_date: z.string("Data de inicio ausente"),
     end_date: z.string("Data de inicio ausente"),
-    active: z.boolean().default(true)
+    active: z.boolean().default(true),
+    value_initial: z.number().nullish()
 });
 
 export const schemaGoalsArchive = z.object({

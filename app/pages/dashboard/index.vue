@@ -239,13 +239,13 @@
                     text-tool-tip="Valor total de suas faturas pagas ou a vencer no mês atual"
                     icon-tool-tip="mdi-information-outline"
                     size-icon-tool-tip="20px"
-                    :loading="isPendingSumary"
+                    :loading="isPendingByCards"
                 />
             </div>
         </div>
 
         <div class="charts-row">
-            <BaseCard  title="Resumo de pendências" subtitle="Veja o que precisa da sua atenção">
+            <BaseCard  title="Resumo de pendências" subtitle="Veja o que precisa da sua atenção" :loading="isPendingMovements">
                 <div v-if="!totalExpensesPending && !totalRenevuePending">
                     <v-empty-state
                         icon="mdi-calendar-check-outline"
@@ -282,7 +282,7 @@
                 </div>
             </BaseCard>
             
-            <BaseCard :loading="isPendingMovements" title="Últimos lançamentos" subtitle="Confira suas movimentações recentes">
+            <BaseCard :loading="isPendingMovements" title="Últimos lançamentos" subtitle="Confira suas movimentações recentes" >
                 <v-empty-state
                     v-if="!allLastMovements?.length"
                     icon="mdi-history"
@@ -329,7 +329,7 @@
                 
             </BaseCard>
 
-            <BaseCard :loading="isPendingByCategorieRenevue" title="Frequência de gastos" subtitle="Identifique os períodos com mais gastos">
+            <BaseCard :loading="isPendingByCategorieRenevue" title="Frequência de gastos" subtitle="Identifique os períodos com mais gastos" >
                 <div class="d-flex align-center justify-center"  v-if="!onlyExpenseActive?.length" style="height: 510px;">
                     <v-empty-state
                         icon="mdi-chart-timeline-variant"

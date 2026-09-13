@@ -26,7 +26,6 @@ export function useValidateSchemas() {
         const result = singUp.safeParse(data)
 
         if (!result.success) {
-            console.log("Erro ao validar e criar usuário", result.error)
             return {success: false}
         } 
 
@@ -39,7 +38,6 @@ export function useValidateSchemas() {
         const result = singIn.safeParse(data)
 
         if (!result.success) {
-            console.log("Erro ao tentar fazer login (objeto inválido)", result.error)
             return {success: false}
         } 
 
@@ -52,7 +50,6 @@ export function useValidateSchemas() {
         const result = passwordValidate.safeParse(data)
 
         if (!result.success) {
-            console.log("Erro ao validar as senhas")
             return { success: false }
         } 
 
@@ -65,7 +62,6 @@ export function useValidateSchemas() {
         const result = emailValidate.safeParse(data)
 
         if (!result.success) {
-            console.log("Erro ao validar o formato do email", result.error.message)
             return { success: false }
         }
         
@@ -78,7 +74,6 @@ export function useValidateSchemas() {
         const result = schemaAccount.safeParse(data)
 
         if (!result.success) {
-            console.log("Erro ao validar o formato da conta", result.error.message)
             return { success: false }
         }
 
@@ -90,7 +85,6 @@ export function useValidateSchemas() {
         const result = schemaCategories.safeParse(data)
 
         if (!result.success) {
-            console.log("Erro ao validar o formato da categoria", result.error.message)
             return { success: false }
         }
 
@@ -102,7 +96,6 @@ export function useValidateSchemas() {
         const result = schemaCreditCard.safeParse(data)
 
         if (!result.success) {
-            console.log("Erro validar o formato cartao de credito", result.error)
             return {success: false}
         }
 
@@ -114,7 +107,6 @@ export function useValidateSchemas() {
         const result = schemaMovements.safeParse(data)
 
         if (!result.success) {
-            console.log("Erro ao validar o formato de movimentaçãos", result.error)
             return {success: false}
         }
 
@@ -126,7 +118,6 @@ export function useValidateSchemas() {
         const result = schemaMovementCreditCard.safeParse(data)
 
         if (!result.success) {
-            console.log("Erro ao validar o formato de movimentaçãos do cartao de credito", result.error)
             return {success: false}
         }
 
@@ -138,7 +129,6 @@ export function useValidateSchemas() {
         const result = schemaTransfer.safeParse(data)
 
         if (!result.success) {
-            console.log("Erro ao validar schema de tranferências", result.error)
             return {success: false}
         }
 
@@ -150,7 +140,6 @@ export function useValidateSchemas() {
         const result = schemaRecurrence.safeParse(data)
 
         if (!result.success) {
-            console.log("Erro ao validar schema de recorrência", result.error)
             return {success: false}
         }
 
@@ -163,7 +152,6 @@ export function useValidateSchemas() {
         const result = schemaGoals.safeParse(data)
 
         if (!result.success) {
-            console.log("Erro ao validar schema de recorrência", result.error)
             return {success: false}
         }
 
@@ -176,7 +164,6 @@ export function useValidateSchemas() {
         const result = schemaGoalsMovements.safeParse(data)
 
         if (!result.success) {
-            console.log("Erro ao validar schema de recorrência", result.error)
             return {success: false}
         }
 

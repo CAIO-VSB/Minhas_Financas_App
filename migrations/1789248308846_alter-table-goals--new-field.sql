@@ -1,0 +1,3 @@
+ALTER TABLE goals
+ADD COLUMN value_initial NUMERIC(10, 2) DEFAULT NULL;
+

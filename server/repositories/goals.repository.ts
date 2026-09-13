@@ -12,11 +12,21 @@ export const goalsRepository = {
             
             await conn.query('BEGIN')
 
-            await conn.query(`
-                INSERT INTO goals(user_id, name_identifier, suggested_value, goal_value, start_date, end_date, active) 
-                VALUES($1, $2, $3, $4, $5, $6, $7) 
-                RETURNING id`,[userId, data.name_identifier, data.suggested_value, data.goal_value, data.start_date, data.end_date, data.active]
+            const result = await conn.query(`
+                INSERT INTO goals(user_id, name_identifier, suggested_value, goal_value, start_date, end_date, active, value_initial) 
+                VALUES($1, $2, $3, $4, $5, $6, $7, $8) 
+                RETURNING id`,[userId, data.name_identifier, data.suggested_value, data.goal_value, data.start_date, data.end_date, data.active, data.value_initial]
             )
+
+            const idGoals = result.rows[0].id
+
+            if (data.value_initial) {
+                await conn.query(`
+                    INSERT INTO goals_movements(goals_id, description, value_paid, date_movement, accounts_id) 
+                    VALUES($1, $2, $3, $4, $5) 
+                    RETURNING id`,[idGoals, 'Saldo inicial', data.value_initial, data.start_date, null]
+                )
+            }
 
             await conn.query('COMMIT')
 
@@ -63,16 +73,44 @@ export const goalsRepository = {
 
         try {
             
+            await conn.query('BEGIN')
+
             await conn.query(`
                 UPDATE goals
                     SET name_identifier = $1,
                         suggested_value = $2,
                         goal_value = $3,
                         start_date = $4,
-                        end_date = $5
-                    WHERE id = $6 AND user_id = $7
-                `,[data.name_identifier, data.suggested_value, data.goal_value, data.start_date, data.end_date, id, userId]
+                        end_date = $5,
+                        value_initial = $6
+                    WHERE id = $7 AND user_id = $8
+                `,[data.name_identifier, data.suggested_value, data.goal_value, data.start_date, data.end_date, data.value_initial, id, userId]
             )
+
+            const existing = await conn.query(`
+                SELECT id FROM goals_movements
+                WHERE goals_id = $1 AND description = 'Saldo inicial' AND accounts_id IS NULL
+            `, [id])
+
+            if (data.value_initial) {
+                if (existing.rows.length > 0) {
+                    // já existia -> atualiza valor e data
+                    await conn.query(`
+                        UPDATE goals_movements
+                            SET value_paid = $1, date_movement = $2
+                            WHERE id = $3
+                    `, [data.value_initial, data.start_date, existing.rows[0].id])
+                } else {
+                    // não existia -> cria agora
+                    await conn.query(`
+                        INSERT INTO goals_movements(goals_id, description, value_paid, date_movement, accounts_id) 
+                        VALUES($1, $2, $3, $4, $5)
+                    `, [id, 'Saldo inicial', data.value_initial, data.start_date, null])
+                }
+            } else if (existing.rows.length > 0) {
+                // valor inicial foi zerado -> remove a movimentação
+                await conn.query(`DELETE FROM goals_movements WHERE id = $1`, [existing.rows[0].id])
+            }
 
             await conn.query('COMMIT')
 

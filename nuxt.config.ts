@@ -76,6 +76,10 @@ export default defineNuxtConfig({
         "driver": "memory"
       }
     },
+    experimental: {tasks: true},
+    scheduledTasks: {
+      '0 1 * * *': ['alertInvoices']
+    },
   },
 
   nuxtQuery: {

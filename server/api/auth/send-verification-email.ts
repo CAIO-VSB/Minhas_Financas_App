@@ -1,16 +1,5 @@
-import nodemailer from "nodemailer";
-
-export const transporter = nodemailer.createTransport({
-    service: "gmail",
-    host: "smtp.gmail.com",
-    auth: {
-      user: "financevelto@gmail.com", 
-      pass: process.env.SMTP_PASSWORD
-    },
-    secure: false,
-    port: 587
-});
-
+import { Resend } from 'resend'
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 type User = {
   email: string
@@ -100,16 +89,20 @@ export const sendUserEmail = async (user: User, url: string) => {
 `
 
   try {
-    const info = await transporter.sendMail({
-      from: "Confirmação de e-mail <financevelto@gmail.com>", 
-      to: user.email, 
+
+    const { data, error } = await resend.emails.send({
+      from: "Confirmação de e-mail <time@veltofinance.bid>",
+      to: user.email,
       subject: "Verifique seu e-mail",
-      text: "Siga as intruções para fazer a verificação do seu e-mail", 
-      html: htmlTemplate
+      text: "Siga as intruções para fazer a verificação do seu e-mail",
+      html: htmlTemplate,
     });
 
-    console.log("E-mail enviado com sucesso", info.response)
-    return info.messageId
+    if (error) {
+      return console.error({ error });
+    }
+
+    console.log({ data });
   } catch (error) {
     console.error("Falha ao enviar o email:", error)
   }

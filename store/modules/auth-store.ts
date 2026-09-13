@@ -35,7 +35,7 @@ export const useAuthStore = defineStore('auth', () => {
                         notifyInfo(
                         "E-mail não verificado",
                         "Enviamos um novo e-mail de verificação. Acesse sua caixa de entrada e confirme seu e-mail para continuar.",
-                        7000
+                        8000
                         )
                         return
                     }  
@@ -100,12 +100,12 @@ export const useAuthStore = defineStore('auth', () => {
             await $authClient.signUp.email(data, {
                 onError(context) {
                     if (context.error.status === 422) {
-                        notifyError("E-mail já cadastrado", "Este endereço de e-mail já está em uso. Utilize outro e-mail ou faça login.")
+                        notifyError("E-mail já cadastrado", "Este endereço de e-mail já está em uso. Utilize outro e-mail ou faça login.", 8000)
                     }
                 },
 
                 onSuccess() {
-                    notifySuccess("E-mail enviado", "Enviamos um e-mail de verificação para sua caixa de entrada. Caso não o encontre, verifique a pasta de spam.")
+                    notifySuccess("E-mail enviado", "Enviamos um e-mail de verificação para sua caixa de entrada. Caso não o encontre, verifique a pasta de spam.", 9000)
                 }
             })
 
