@@ -5,6 +5,7 @@
         layout: "layout-dashboard",
     })
 
+    import BaseFab from "~/components/ui/BaseFab.vue";
     import AppCard from '~/components/ui/AppCard.vue'
     import BaseCard from '~/components/ui/BaseCard.vue';
     import DateInput from '~/components/ui/DateInput.vue'
@@ -16,6 +17,7 @@
     import { useLineChart } from "~/composables/useVueCharts/useLineChart"
     import { useBarChart, type BarDatum } from "~/composables/useVueCharts/useBarChart"
     import type { TPeriod } from '~~/types/period/TPeriod';
+import DialogHelpDashboard from "./components/DialogHelpDashboard.vue";
 
     const { getExpenseByCategorie, getRenevueByCategorie, getAllSumary, getTotalByCards, getLastMovements, getExpensesByThreeMonths, getBalanceEvolution } = useHttpDashboard()
     const { getCurrentBalance, getMoviments } = useHttpMovements()
@@ -25,6 +27,8 @@
         month: new Date().getMonth(),
         year: new Date().getFullYear(),
     })
+
+    const showDialogHelpDashboard = ref(false)
 
     const { data:expenseByCategorie, isPending:isPendingExpenseByCategorie, refetch:refetchByCategorieExpense } = useQuery({
         queryKey: QUERY_KEYS.dashboard.expenseByCategorie,
@@ -153,6 +157,11 @@
         navigateTo("/transactions")
     }
 
+    function closeModalHelpDashboard() {
+        showDialogHelpDashboard.value = false
+    }
+
+
     function handleGetPeriod(value: TPeriod) {
         period.value = value
         refecthByCategorieRenevue()
@@ -181,6 +190,12 @@
 </script>
 
 <template>
+
+    <DialogHelpDashboard 
+    v-model="showDialogHelpDashboard"
+    @close-modal="closeModalHelpDashboard"
+    />
+    
     <div class="dashboard-wrapper">
         <div class="date-filter">
             <DateInput  @apply-filter-month="handleGetPeriod"/>
@@ -501,8 +516,25 @@
                 </div>
             </BaseCard>
         </div>
-
     </div>
+
+    <div class="fab-wrapper">
+        <v-tooltip
+            text="Entenda o dashboard"
+            location="left"
+        >
+            <template #activator="{ props }">
+                <BaseFab
+                    v-bind="props"
+                    color="primary"
+                    icon="mdi-help"
+                    size="50"
+                    @click="showDialogHelpDashboard = true"
+                />
+            </template>
+        </v-tooltip>
+    </div>
+
 </template>
 
 <style scoped>
@@ -533,6 +565,16 @@
 
 .charts-row-single {
     grid-template-columns: repeat(2, 1fr);
+}
+
+.fab-wrapper {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 

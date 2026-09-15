@@ -120,6 +120,20 @@ export default defineNuxtConfig({
         transformAssetUrls
       }
     },
+  },
 
-  }
+  // Define variáveis que só estarão disponíveis no lado do servidor (Server-side)
+  runtimeConfig: {
+  // Mapeia a variável de ambiente DATABASE_URL que o Docker vai injetar
+    databaseUrl: process.env.DATABASE_URL
+  },
+
+  // Ativa os recursos e a estrutura de pastas do Nuxt 4
+  future: {
+    compatibilityVersion: 4,
+  },
+
+  // Trava os recursos do framework com base em uma data estável de compatibilidade
+  compatibilityDate: '2024-04-03'
+  
 })

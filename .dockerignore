@@ -1,0 +1,20 @@
+# Ignora a pasta de dependências locais (o Docker vai instalar as dele dentro do container)
+node_modules
+
+
+# Ignora as pastas temporárias e de build geradas localmente pelo Nuxt
+.nuxt
+.output
+dist
+
+
+# Ignora seu arquivo de variáveis de ambiente local para não vazar senhas no container
+.env
+
+# Ignora arquivos de documentação que não servem para o sistema rodar
+README.md
+
+
+# Ignora os próprios arquivos do Docker para que eles não fiquem passeando dentro do container
+Dockerfile
+docker-compose.yml
