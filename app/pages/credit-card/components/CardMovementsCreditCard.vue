@@ -254,7 +254,7 @@ import type { TCreditCard } from '~~/types/credit_card/TCredit-card';
 
             <template #item.actions="{ item }">
                 <div
-                    v-if="item.status_invoice === 'fechada'"
+                    v-if="item.status_invoice === 'paga'"
                     class="d-flex align-center"
                 >
                     <v-btn

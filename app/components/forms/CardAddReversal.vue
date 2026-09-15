@@ -127,7 +127,7 @@
                         </v-card-title>
 
                         <v-card-subtitle class="mt-1">
-                        Registre uma nova saída para acompanhar sua vida financeira.
+                        Reverta este lançamento para corrigir sua movimentação financeira.
                         </v-card-subtitle>
 
                         <template #prepend>

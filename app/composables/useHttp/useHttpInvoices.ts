@@ -20,12 +20,16 @@ export function useHttpInvoices() {
         return $fetch<{month: number, year: number}>(`/api/creditCard/nextOpenPeriod/${creditCardId}`, {method: "GET"})
     }
 
+    const getRefreshStatusInvoice = async () => {
+        return $fetch("/api/creditCardInvoices/refreshInvoiceStatus", {method: "GET"})
+    }
 
     return {
         patchPaymentTotal,
         patchPaymentPartial,
         patchPaymentAdvance,
         patchReopenInvoice,
-        getNextOpenPeriod
+        getNextOpenPeriod,
+        getRefreshStatusInvoice
     }
 }

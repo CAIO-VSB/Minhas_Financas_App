@@ -1,13 +1,13 @@
 export const invoiceClosingTemplate = (fatura: {
   user_email: string
-  bank_name: string
+  card_name: string
   closing_day: number
   due_day: number
   tipo: 'fechamento' | 'vencimento'
 }) => {
   const mensagemPrincipal = fatura.tipo === 'fechamento'
-    ? `Sua fatura do cartão <strong style="color:#111827;">${fatura.bank_name}</strong> fecha hoje.`
-    : `Sua fatura do cartão <strong style="color:#111827;">${fatura.bank_name}</strong> vence hoje.`
+    ? `Sua fatura do cartão <strong style="color:#111827;">${fatura.card_name}</strong> fecha hoje.`
+    : `Sua fatura do cartão <strong style="color:#111827;">${fatura.card_name}</strong> vence hoje.`
 
   const mensagemDestaque = fatura.tipo === 'fechamento'
     ? `<strong style="color:#111827;">Vencimento: dia ${fatura.due_day}.</strong> Confira os lançamentos da fatura e organize o pagamento dentro do prazo pra evitar juros.`

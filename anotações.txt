@@ -8,17 +8,8 @@ npm run migrate create -- create_table_ banks_accounts --migration-file-linguage
 import { useInvalidate } from "~/composables/useInvalidate"
 const { invalidate } = useInvalidate()
 
-Lista de coisas a ser fazer (para não cair no esquecimento)
-
--- Tentar componetizar a sideBar - Prioridade baixa
-
-listagem pode trazer dados resumidos
-edição deve buscar a entidade completa
-
 datetime(ano, mes, dia, hora, minuto, segundo)
 
 :deep(.v-data-table-header__content) {
   font-weight: bold;
 }
-
-28, 

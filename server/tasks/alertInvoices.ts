@@ -14,6 +14,8 @@ export default defineTask({
 
         const invoices = await invoiceRepository.sendEmailByInvoice()
 
+        console.log("Valores aqui na taks " + JSON.stringify(invoices))
+
         if (invoices.length === 0) {
             return {result: `Nenhuma fatura para hoje`}
         }
@@ -21,7 +23,7 @@ export default defineTask({
         const emailBatch = invoices.map((invoice) => ({
             from: 'Velto Finance <time@veltofinance.bid>',
             to: [invoice.user_email],
-            subject: `Sua fatura do ${invoice.bank_name} fecha hoje`,
+            subject: `Sua fatura do ${invoice.card_name} fecha hoje`,
             html: invoiceClosingTemplate({...invoice, tipo: 'fechamento'})
         }))
 

@@ -19,7 +19,7 @@ export const invoiceRepository = {
                         total_paid = $4,
                         accounts_id = $5
                     WHERE id = $6
-            `, [dataPayment, 'fechada', totalInvoice, totalInvoice, accountsId, invoiceId])
+            `, [dataPayment, 'paga', totalInvoice, totalInvoice, accountsId, invoiceId])
 
             await conn.query(
                 `INSERT INTO movements(user_id, type_transaction, value_transaction, date_transaction, description_transaction, categorie_id, accounts_id, observation, url_recibo, status_transaction, is_deleted, invoice_id) 
@@ -223,7 +223,7 @@ export const invoiceRepository = {
         const result = await conn.query(`
             SELECT invoice_month, invoice_year
             FROM credit_card_invoices
-            WHERE credit_card_id = $1 AND status_invoice = 'fechada'
+            WHERE credit_card_id = $1 AND status_invoice = 'paga'
             ORDER BY invoice_year DESC, invoice_month DESC
             LIMIT 1
         `, [creditCardId])
@@ -253,6 +253,11 @@ export const invoiceRepository = {
 
     async sendEmailByInvoice() {
         const result = await client.query(`SELECT * FROM fn_info_invoice_by_email()`)
+        return result.rows
+    },
+
+    async refreshInvoiceStatus() {
+        const result = await client.query(`SELECT * FROM fn_refresh_invoice_status()`)
         return result.rows
     }
 

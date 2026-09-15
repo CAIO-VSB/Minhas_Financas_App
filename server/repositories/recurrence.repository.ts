@@ -116,7 +116,7 @@ export const recurrenceRepository = {
                             `INSERT INTO credit_card_invoices(credit_card_id, invoice_month, invoice_year, status_invoice, closing_date, total_value)
                             VALUES($1, $2, $3, $4, $5, $6)
                             RETURNING id`,
-                            [creditCardId, resultInvoice.month, resultInvoice.year, 'aberta', closingDate, 0]
+                            [creditCardId, resultInvoice.month, resultInvoice.year, 'parcial', closingDate, 0]
                         )
                         
                         invoiceId = newInvoice.rows[0].id
@@ -173,7 +173,7 @@ export const recurrenceRepository = {
                             `INSERT INTO credit_card_invoices(credit_card_id, invoice_month, invoice_year, status_invoice, closing_date, total_value)
                             VALUES($1, $2, $3, $4, $5, $6)
                             RETURNING id`,
-                            [creditCardId, resultInvoice.month, resultInvoice.year, 'aberta', closingDate, 0]
+                            [creditCardId, resultInvoice.month, resultInvoice.year, 'parcial', closingDate, 0]
                         )
                         
                         invoiceId = newInvoice.rows[0].id
@@ -344,7 +344,7 @@ export const recurrenceRepository = {
                     `INSERT INTO credit_card_invoices(credit_card_id, invoice_month, invoice_year, status_invoice, closing_date, total_value)
                     VALUES($1, $2, $3, $4, $5, $6)
                     RETURNING id`,
-                    [data.credit_card_id, invoiceMonth, invoiceYear, 'aberta', closingDate, null]
+                    [data.credit_card_id, invoiceMonth, invoiceYear, 'parcial', closingDate, null]
                 )
                 
                 invoiceId = newInvoice.rows[0].id
@@ -418,7 +418,7 @@ export const recurrenceRepository = {
                             `INSERT INTO credit_card_invoices(credit_card_id, invoice_month, invoice_year, status_invoice, closing_date, total_value)
                             VALUES($1, $2, $3, $4, $5, $6)
                             RETURNING id`,
-                            [data.credit_card_id, rowMonth, rowYear, 'aberta', rowClosingDate, null]
+                            [data.credit_card_id, rowMonth, rowYear, 'parcial', rowClosingDate, null]
                         )
 
                         rowInvoiceId = newRowInvoice.rows[0].id

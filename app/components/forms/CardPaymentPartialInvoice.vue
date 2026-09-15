@@ -10,7 +10,7 @@
   
   const { notifyError, notifyInfo, notifySuccess } = useNotify()
   const { getAccountsOnlyActive } = useHttpAccounts()
-  const { patchPaymentPartial } = useHttpInvoices()
+  const { patchPaymentPartial, getRefreshStatusInvoice } = useHttpInvoices()
 
   const { invalidate } = useInvalidate()
   const { selectRules, dateRules, currencyRules } = useValidateFields()
@@ -127,6 +127,7 @@
       invalidate(QUERY_KEYS.movementsCreditCard.totalInvoice)
       invalidate(QUERY_KEYS.creditCards.nextOpenPeriod)
       modelValue.value = false
+      getRefreshStatusInvoice()
       emit("success")
     },
 

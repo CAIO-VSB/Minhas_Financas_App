@@ -1,69 +1,77 @@
 <script setup lang="ts">
-  definePageMeta({
-    title: "Cartões de Crédito",
-    layout: "layout-dashboard"
-  })
+    definePageMeta({
+        title: "Cartões de Crédito",
+        layout: "layout-dashboard"
+    })
 
-  import alertImg from "~/assets/img-credit-card-alert.png"
-  import CardAddCartao from "~/components/forms/CardAddCreditCard.vue"
-  import { useHttpCreditsCards } from "~/composables/useHttp/useHttpCreditCard"
-  import { useHttpMovementCreditCard } from "~/composables/useHttp/useHttpMovementCreditCard"
-  import BaseFab from "~/components/ui/BaseFab.vue";
-  import type { TCreditCard } from "~~/types/credit_card/TCredit-card"
-  import CardEditCard from "~/components/forms/CardEditCreditCard.vue";
-  import { useInvalidate } from "~/composables/useInvalidate"
-  import CardInfoCreditCard from "~/pages/credit-card/components/CardInfoCreditCard.vue";
-  import CardMovementsCreditCard from "~/pages/credit-card/components/CardMovementsCreditCard.vue";
-  import DateInput from '~/components/ui/DateInput.vue'
-  import CardAddMovimentsCreditCard from "~/components/forms/CardAddMovimentsCreditCard.vue";
-  import type { TPeriod } from "~~/types/period/TPeriod"
-  import DialogHelpInvoice from "./components/DialogHelpInvoice.vue"
-  import type { TMovementCreditCard } from "~~/types/credit_card/TMovementCreditCard.js"
-  import { useHttpInvoices } from "~/composables/useHttp/useHttpInvoices.js"
+    import alertImg from "~/assets/img-credit-card-alert.png"
+    import CardAddCartao from "~/components/forms/CardAddCreditCard.vue"
+    import { useHttpCreditsCards } from "~/composables/useHttp/useHttpCreditCard"
+    import { useHttpMovementCreditCard } from "~/composables/useHttp/useHttpMovementCreditCard"
+    import BaseFab from "~/components/ui/BaseFab.vue";
+    import type { TCreditCard } from "~~/types/credit_card/TCredit-card"
+    import CardEditCard from "~/components/forms/CardEditCreditCard.vue";
+    import { useInvalidate } from "~/composables/useInvalidate"
+    import CardInfoCreditCard from "~/pages/credit-card/components/CardInfoCreditCard.vue";
+    import CardMovementsCreditCard from "~/pages/credit-card/components/CardMovementsCreditCard.vue";
+    import DateInput from '~/components/ui/DateInput.vue'
+    import CardAddMovimentsCreditCard from "~/components/forms/CardAddMovimentsCreditCard.vue";
+    import type { TPeriod } from "~~/types/period/TPeriod"
+    import DialogHelpInvoice from "./components/DialogHelpInvoice.vue"
+    import type { TMovementCreditCard } from "~~/types/credit_card/TMovementCreditCard.js"
+    import { useHttpInvoices } from "~/composables/useHttp/useHttpInvoices.js"
 
-  const { getCreditCardOnlyActive, patchCreditCardById, getCreditCardOnlyDisable } = useHttpCreditsCards()
-  const { getByCreditCard, getTotalInvoice } = useHttpMovementCreditCard()
-  const { getNextOpenPeriod } = useHttpInvoices()
-  const { notifyError, notifyInfo, notifySuccess } = useNotify()
-  const { invalidate } = useInvalidate()
+    const { getCreditCardOnlyActive, patchCreditCardById, getCreditCardOnlyDisable } = useHttpCreditsCards()
+    const { getByCreditCard, getTotalInvoice } = useHttpMovementCreditCard()
+    const { getNextOpenPeriod, getRefreshStatusInvoice } = useHttpInvoices()
+    const { notifyError, notifyInfo, notifySuccess } = useNotify()
+    const { invalidate } = useInvalidate()
 
-  const { data:allCreditCard, isPending } = useQuery({
-    queryKey: QUERY_KEYS.creditCards.all,
-    queryFn: getCreditCardOnlyActive,
-  })
+    const { data:allCreditCard, isPending } = useQuery({
+        queryKey: QUERY_KEYS.creditCards.all,
+        queryFn: getCreditCardOnlyActive,
+    })
 
-  const { data:allDeactivatedCrediCard, isPending: isPendingDisable } = useQuery({
-    queryKey: QUERY_KEYS.creditCards.disable,
-    queryFn: getCreditCardOnlyDisable,
-  })
+    const { data:allDeactivatedCrediCard, isPending: isPendingDisable } = useQuery({
+        queryKey: QUERY_KEYS.creditCards.disable,
+        queryFn: getCreditCardOnlyDisable,
+    })
 
+    export type TOptionActionGetOptions = {
+        title: string,
+        icon: string,
+        value: string | boolean
+    }
 
-  export type TOptionActionGetOptions = {
-    title: string,
-    icon: string,
-    value: string | boolean
-  }
+    const showDialogHelpInvoice = ref(false)
+    const menu = ref(false)
+    const modalAddCard = ref(false)
+    const modalEditCard = ref(false)
+    const modalAddMovementCreditCard = ref(false)
+    const editDraft = ref<TCreditCard | null>(null)
+    const selectedCardData = ref<TCreditCard | null>(null)
+    const selectedCard = ref("")
+    const selectdLogo = ref("")
+    const disabeldButtonAddExpense = ref(false)
+    const invoiceId = ref<number | null>(null)
+    const statusInvoice = ref<string | null>(null)
 
-  const showDialogHelpInvoice = ref(false)
-  const menu = ref(false)
-  const modalAddCard = ref(false)
-  const modalEditCard = ref(false)
-  const modalAddMovementCreditCard = ref(false)
-  const editDraft = ref<TCreditCard | null>(null)
-  const selectedCardData = ref<TCreditCard | null>(null)
-  const selectedCard = ref("")
-  const selectdLogo = ref("")
-  const disabeldButtonAddExpense = ref(false)
-  const invoiceId = ref<number | null>(null)
-  const statusInvoice = ref<string | null>(null)
+    const period = ref({
+        month: new Date().getMonth(),
+        year: new Date().getFullYear(),
+    })
 
-  const period = ref({
-    month: new Date().getMonth(),
-    year: new Date().getFullYear(),
-  })
-
+    onMounted(() => {
+        getRefreshStatusInvoice()
+    })
+    
     const { data:dataByCreditCard, isPending: isPendingByCreditCard, refetch  } = useQuery({
-    queryKey: QUERY_KEYS.movementsCreditCard.byCreditCard,
+    queryKey: computed(() => [
+        ...QUERY_KEYS.movementsCreditCard.byCreditCard,
+        selectedCardData.value?.id,
+        period.value.month,
+        period.value.year
+    ]),
     queryFn: () => getByCreditCard(period.value.month, period.value.year, selectedCardData.value?.id ?? 0),
     enabled: computed(() => !!selectedCardData.value?.id)
     })
@@ -86,129 +94,124 @@
     })
 
 
-  const  { mutate } = useMutation({
+    const  { mutate } = useMutation({
 
-  mutationFn: (payload: TCreditCard) => patchCreditCardById(payload.id!, payload),
+    mutationFn: (payload: TCreditCard) => patchCreditCardById(payload.id!, payload),
 
-  onSuccess: () => {
-    invalidate(QUERY_KEYS.creditCards.all)
-    invalidate(QUERY_KEYS.creditCards.disable)
-  },
+    onSuccess: () => {
+        invalidate(QUERY_KEYS.creditCards.all)
+        invalidate(QUERY_KEYS.creditCards.disable)
+    },
 
-  onError: (error) => {
-    handleErrorApplication(error.data)
-  },
+    onError: (error) => {
+        handleErrorApplication(error.data)
+    },
 
-  })
+    })
 
-  watch(dataByCreditCard, (newVal: TMovementCreditCard[] | undefined) => {
+    watch(dataByCreditCard, (newVal: TMovementCreditCard[] | undefined) => {
+        
+        if (!newVal || newVal?.length === 0) {
+        disabeldButtonAddExpense.value = false
+        invoiceId.value = null
+        statusInvoice.value = null
+        return
+        }
+
+        const status = newVal[0]?.status_invoice ?? null
+
+        disabeldButtonAddExpense.value = status !== 'aberta'
+        invoiceId.value = newVal[0]?.invoice_id ?? null
+        statusInvoice.value = status
+
+    }, {immediate: true})
+
+    /**
+     * Watch responsável por escutar as mudanças nos dados vindo do banco de dados
+     * Sempre que mudar algum dado e existir valor, buscamos pelo id e setamos o novos valores
+     */
+    watch(allCreditCard, (val) => {
+        if (val?.length) {
+        //Sempre atualizar o selectedCardData com os dados mais recentes
+        const current = val.find(item => item.id === selectedCardData.value?.id) ?? val[0]
+        selectedCard.value = current?.name_identifier ?? ""
+        selectdLogo.value = current?.url_logo ?? ""
+        selectedCardData.value = current ?? null
+        editDraft.value = current ?? null
+        }
+    }, {immediate: true})
+
+
+    const totalForInvoice = computed(() => totalInvoice.value?.total ?? 0)
+
+    const valueLimitedUsed = computed(() => {
+        return calcutePercentage(totalForInvoice.value, selectedCardData.value?.limit_card ?? 0)
+    })
+
+    const showAlertLimitedUsed = computed(() => valueLimitedUsed.value >= 85)
+
+    function getOptions(creditCard: TCreditCard): TOptionActionGetOptions [] {
+        return [
+        {title: "Editar", icon: "mdi-lead-pencil", value: "edit"},
+        {
+            title: creditCard.active ? "Inativar" : "Ativar",
+            icon: creditCard.active ? "mdi-minus-circle-off" : "mdi-check-circle",
+            value: creditCard.active ? false : true
+        },
+        { title: 'Adicionar novo cartão', icon: 'mdi-plus-circle', value: "new" }
+        ]
+    }
+
+    function handleGetPeriod(value: TPeriod) {
+        period.value = value
+        refetch()
+        refetchTotalInvoice()
+    }
+
+    function handleSelectedCard(card: TCreditCard) {
+        selectedCard.value = card.name_identifier ?? ""
+        selectdLogo.value = card.url_logo ?? ""
+        selectedCardData.value = card 
+        menu.value = false
+        editDraft.value = structuredClone(toRaw(card))
+        handleGetPeriod(period.value)
+    }
+
+    function handleOpenModalEditCardCredit(creditCard: TCreditCard) {
+        modalEditCard.value = true
+        editDraft.value = structuredClone(toRaw(creditCard))
+    }
+
+    function handleAddCarton() {
+        modalAddCard.value = true
+    }
+
+    function closeModalHelpInvoice() {
+        showDialogHelpInvoice.value = false
+    }
+
+    function handleOptionClick(option:TOptionActionGetOptions, data: TCreditCard) {
+
+        if (option.value === "edit") {
+            handleOpenModalEditCardCredit(data)
+            return
+        }
+
+        if (option.value === "new") {
+            handleAddCarton()
+            return
+        }
+
+        const payload = structuredClone(toRaw(data))
+
+        if (typeof option.value === "boolean") {
+            payload.active = option.value
+            notifySuccess("Sucesso", "Operação realizada com sucesso", 6000)
+        }
+
+        mutate(payload)
     
-    if (!newVal || newVal?.length === 0) {
-      disabeldButtonAddExpense.value = false
-      invoiceId.value = null
-      statusInvoice.value = null
-      return
     }
-
-    if (newVal[0]?.status_invoice === "fechada") {
-      disabeldButtonAddExpense.value = true
-      statusInvoice.value = "Fatura fechada"
-    } else {
-      disabeldButtonAddExpense.value = false
-      statusInvoice.value = "Fatura aberta"
-    }
-
-    invoiceId.value = newVal[0]?.invoice_id ?? null
-    statusInvoice.value = newVal[0]?.status_invoice ?? null
-
-  }, {immediate: true})
-
-  /**
-   * Watch responsável por escutar as mudanças nos dados vindo do banco de dados
-   * Sempre que mudar algum dado e existir valor, buscamos pelo id e setamos o novos valores
-   */
-  watch(allCreditCard, (val) => {
-    if (val?.length) {
-      //Sempre atualizar o selectedCardData com os dados mais recentes
-      const current = val.find(item => item.id === selectedCardData.value?.id) ?? val[0]
-      selectedCard.value = current?.name_identifier ?? ""
-      selectdLogo.value = current?.url_logo ?? ""
-      selectedCardData.value = current ?? null
-      editDraft.value = current ?? null
-    }
-  }, {immediate: true})
-
-
-  const totalForInvoice = computed(() => totalInvoice.value?.total ?? 0)
-
-  const valueLimitedUsed = computed(() => {
-    return calcutePercentage(totalForInvoice.value, selectedCardData.value?.limit_card ?? 0)
-  })
-
-  const showAlertLimitedUsed = computed(() => valueLimitedUsed.value >= 85)
-
-  function getOptions(creditCard: TCreditCard): TOptionActionGetOptions [] {
-    return [
-      {title: "Editar", icon: "mdi-lead-pencil", value: "edit"},
-      {
-        title: creditCard.active ? "Inativar" : "Ativar",
-        icon: creditCard.active ? "mdi-minus-circle-off" : "mdi-check-circle",
-        value: creditCard.active ? false : true
-      },
-      { title: 'Adicionar novo cartão', icon: 'mdi-plus-circle', value: "new" }
-    ]
-  }
-
-  function handleGetPeriod(value: TPeriod) {
-    period.value = value
-    refetch()
-    refetchTotalInvoice()
-  }
-
-  function handleSelectedCard(card: TCreditCard) {
-    selectedCard.value = card.name_identifier ?? ""
-    selectdLogo.value = card.url_logo ?? ""
-    selectedCardData.value = card 
-    menu.value = false
-    editDraft.value = structuredClone(toRaw(card))
-    handleGetPeriod(period.value)
-  }
-
-  function handleOpenModalEditCardCredit(creditCard: TCreditCard) {
-    modalEditCard.value = true
-    editDraft.value = structuredClone(toRaw(creditCard))
-  }
-
-  function handleAddCarton() {
-    modalAddCard.value = true
-  }
-
-  function closeModalHelpInvoice() {
-    showDialogHelpInvoice.value = false
-  }
-
-  function handleOptionClick(option:TOptionActionGetOptions, data: TCreditCard) {
-
-    if (option.value === "edit") {
-      handleOpenModalEditCardCredit(data)
-      return
-    }
-
-    if (option.value === "new") {
-      handleAddCarton()
-      return
-    }
-
-    const payload = structuredClone(toRaw(data))
-
-    if (typeof option.value === "boolean") {
-      payload.active = option.value
-      notifySuccess("Sucesso", "Operação realizada com sucesso", 6000)
-    }
-
-    mutate(payload)
-   
-  }
 
 </script>
 

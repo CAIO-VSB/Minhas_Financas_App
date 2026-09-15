@@ -45,10 +45,10 @@ import CardReopenInvoice from "~/components/forms/CardReopenInvoice.vue";
   function getOptions(): TOptionAction [] {
 
     const options = [
-      props.statusInvoices !== 'fechada' ? { title: 'Pagamento total', icon: 'mdi-check-circle-outline', value: 'pag_total' } : null,
-      props.statusInvoices !== 'fechada' ? { title: 'Pagamento parcial', icon: 'mdi-circle-half-full', value: 'pag_parcial' } : null,
-      props.statusInvoices !== 'fechada' ? { title: 'Pagamento adiantado', icon: 'mdi-clock-fast', value: 'pag_adiantado' } : null,
-      props.statusInvoices === 'fechada' ? { title: 'Reabrir fatura', icon: 'mdi-lock-open-variant', value: 'reabrir_fatu' } : null,
+      props.statusInvoices !== 'paga' ? { title: 'Pagamento total', icon: 'mdi-check-circle-outline', value: 'pag_total' } : null,
+      props.statusInvoices !== 'paga' ? { title: 'Pagamento parcial', icon: 'mdi-circle-half-full', value: 'pag_parcial' } : null,
+      props.statusInvoices !== 'paga' ? { title: 'Pagamento adiantado', icon: 'mdi-clock-fast', value: 'pag_adiantado' } : null,
+      props.statusInvoices === 'paga' ? { title: 'Reabrir fatura', icon: 'mdi-lock-open-variant', value: 'reabrir_fatu' } : null,
     ]
 
     return options.filter(Boolean) as TOptionAction[]
@@ -182,7 +182,8 @@ import CardReopenInvoice from "~/components/forms/CardReopenInvoice.vue";
                         color="primary"
                         variant="tonal"
                     >
-                        {{ `Fatura ${statusInvoices ?? 'zerada'}` }}
+                        <span v-if="props.totalInvoice === 0">{{ "Fatura zerada" }}</span>
+                        <span v-else>{{ `Fatura ${statusInvoices ?? 'parcial'}` }}</span>
                     </v-chip>
                 </div>
 

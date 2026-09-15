@@ -9,7 +9,7 @@
     
     const { notifyError, notifyInfo, notifySuccess } = useNotify()
     const { getAccountsOnlyActive } = useHttpAccounts()
-    const { patchPaymentTotal } = useHttpInvoices()
+    const { patchPaymentTotal, getRefreshStatusInvoice } = useHttpInvoices()
 
     const { invalidate } = useInvalidate()
     const { selectRules, dateRules } = useValidateFields()
@@ -119,6 +119,7 @@
           invalidate(QUERY_KEYS.creditCards.nextOpenPeriod)
           modelValue.value = false
           emit("success")
+          getRefreshStatusInvoice()
       },
 
       onError: (error) => {
@@ -212,7 +213,7 @@
               <v-col
               cols="12" md="12" sm="12"
               >
-              <v-date-input prepend-inner-icon="mdi-calendar" prepend-icon="" :rules="dateRules" autocomplete="off" name="date" label="Data do pagamento" variant="solo-filled"" v-model="form.datePayment"></v-date-input>
+              <v-date-input prepend-inner-icon="mdi-calendar" prepend-icon="" :rules="dateRules" autocomplete="off" name="date" label="Data do pagamento" variant="solo-filled" v-model="form.datePayment"></v-date-input>
               </v-col>
               
             <v-col

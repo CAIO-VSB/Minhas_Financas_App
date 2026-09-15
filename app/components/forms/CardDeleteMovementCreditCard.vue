@@ -29,7 +29,7 @@
 
     const { mutate, isPending:isPendingMovements  } = useMutation({
 
-      mutationFn: (payload: TMovementCreditCardPayload) => patchMovementCardById(payload.id!, payload, null),
+      mutationFn: (payload: TMovementCreditCardPayload) => patchMovementCardById(payload.id!, payload, 'deletada'),
 
       onSuccess: () => {
         invalidate(QUERY_KEYS.movementsCreditCard.byCreditCard)

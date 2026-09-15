@@ -113,6 +113,8 @@ export const movementsCreditCardRespository = {
 
     async update(id: number, userId: string, data: TMovementCreditCardPayload, choice: string) {
 
+        console.log("Choice chegando aqui " + choice)
+
         const conn = await client.connect()  // fixa uma conexão dedicada
 
         try {
@@ -198,9 +200,10 @@ export const movementsCreditCardRespository = {
                         observation = $6,
                         invoice_id = $7,
                         status_movement = $8
-                    WHERE id = $9 AND user_id = $10
-                    `, [data.credit_card_id, data.categorie_id, data.description_credit, data.value_transaction, data.purchase_date, data.observation, invoiceId, data.status_movement, id, userId])
-                }
+                WHERE id = $9 AND user_id = $10
+                `, [data.credit_card_id, data.categorie_id, data.description_credit, data.value_transaction, data.purchase_date, data.observation, invoiceId, data.status_movement, id, userId])
+            }
+
 
             await conn.query('COMMIT')
 
