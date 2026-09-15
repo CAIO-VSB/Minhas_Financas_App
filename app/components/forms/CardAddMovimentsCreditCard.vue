@@ -255,7 +255,6 @@
       })
     }
 
-    console.log(calculateInvoiceMonth(new Date(), 10))
     
     watch(() => movementCreditCardForm.value.purchase_date, () => {
       updateSuggestedInvoice()

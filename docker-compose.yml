@@ -4,15 +4,13 @@ services:
     image: postgres:18-alpine
     container_name: nuxt4_postgres
     environment: 
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: amstopams
-      POSTGRES_DB: nuxt-app
-      PGDATA: /var/lib/postgresql/data/pgdata 
+      POSTGRES_USER: ${USER_DATABASE}
+      POSTGRES_PASSWORD: ${PASSWORD_DATABASE}
+      POSTGRES_DB: ${DATABASE}
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data 
-      - ./backup.sql:/docker-entrypoint-initdb.d/backup.sql 
+      - postgres_data:/var/lib/postgresql
     networks:
       - nuxt_network
 
@@ -26,7 +24,7 @@ services:
     ports: 
       - "3000:3000"
     environment:
-      DATABASE_URL: postgres://postgres:amstopams@postgres_db:5432/nuxt-app 
+      DATABASE_URL: ${DATABASE_URL}
       NODE_ENV: development
     command: npx nuxt dev --host 0.0.0.0 --port 3000
     volumes: 

@@ -88,7 +88,6 @@
   }, {immediate: true}) 
 
   watch(showInputFixa, (newVal) => {
-    console.log(newVal)
     if (newVal === 'fixa') {
       showInputParcelado.value = ""
       labelSwitch.value = "Receita pendente"
@@ -103,7 +102,6 @@
   })
 
   watch(showInputParcelado, (newVal) => {
-    console.log(newVal)
     if (newVal === 'parcelada') {
       showInputFixa.value = ""
       labelSwitch.value = "Receita pendente"

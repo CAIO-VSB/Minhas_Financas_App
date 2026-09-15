@@ -48,7 +48,14 @@ export const useAuthStore = defineStore('auth', () => {
                         false
                         )
                         return
-                    }  
+                    } 
+                    else if (context.error.status === 500) {
+                        notifyError(
+                            "Não foi possível realizar o login",
+                            "Ocorreu um erro interno ao tentar acessar sua conta. Tente novamente em alguns instantes.",
+                            7000
+                        )
+                    }
                     else {
                         handleErrorApplication(context.error.status)
                         return
@@ -77,6 +84,18 @@ export const useAuthStore = defineStore('auth', () => {
         const data = await $authClient.signIn.social({
             provider: "google",
             callbackURL: "http://localhost:3000/dashboard"
+        }, {
+            onError(context) {
+                if (context.error.status === 500) {
+                    notifyError(
+                        "Não foi possível realizar o login",
+                        "Ocorreu um erro interno ao tentar acessar sua conta. Tente novamente em alguns instantes.",
+                        7000
+                    )
+
+                    return
+                }
+            },
         })
 
         return data
@@ -88,6 +107,18 @@ export const useAuthStore = defineStore('auth', () => {
         const data = await $authClient.signIn.social({
             provider: "discord",
             callbackURL: "http://localhost:3000/dashboard"
+        }, {
+            onError(context) {
+                if (context.error.status === 500) {
+                    notifyError(
+                        "Não foi possível realizar o login",
+                        "Ocorreu um erro interno ao tentar acessar sua conta. Tente novamente em alguns instantes.",
+                        7000
+                    )
+
+                    return
+                }
+            },   
         })
 
         return data
@@ -101,6 +132,13 @@ export const useAuthStore = defineStore('auth', () => {
                 onError(context) {
                     if (context.error.status === 422) {
                         notifyError("E-mail já cadastrado", "Este endereço de e-mail já está em uso. Utilize outro e-mail ou faça login.", 8000)
+                        return
+                    } else if (context.error.status === 500) {
+                        notifyError(
+                            "Não foi possível realizar o cadastro",
+                            "Ocorreu um erro interno ao tentar criar sua conta. Tente novamente em alguns instantes.",
+                            7000
+                        )
                     }
                 },
 

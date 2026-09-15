@@ -44,7 +44,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=3000
-ENV HOST=127.0.0.1
+ENV HOST=0.0.0.0
 
 # Copia o resultado final do estágio de build correto (app_builder)
 COPY --from=app_builder /app/.output ./.output

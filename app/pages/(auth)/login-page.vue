@@ -13,7 +13,7 @@
 
   const loadingEmail = ref(false);
   const loadingGoogle = ref(false);
-  const loadingFacebook = ref(false)
+  const loadingDiscord = ref(false)
   const showPassword = ref(false);
   const form = ref();
   const loginForm = ref<TLoginForm>({
@@ -45,7 +45,11 @@
         }
       }
     } catch (error) {
-      console.log("Erro ao tentar fazer login (geral no catch)" + error)
+    notifyError(
+      "Não foi possível realizar o login",
+      "Ocorreu um erro interno ao tentar acessar sua conta. Tente novamente em alguns instantes.",
+      7000
+    )
     } finally {
       loadingEmail.value = false
     }
@@ -58,7 +62,11 @@
       await authStore.loginGoogle()
       
     } catch (error) {
-      console.log("Erro ao autenteicar com o google" + error);
+      notifyError(
+      "Não foi possível realizar o login",
+      "Ocorreu um erro interno ao tentar acessar sua conta. Tente novamente em alguns instantes.",
+      7000
+    )
     } finally {
       loadingGoogle.value = true;
     }
@@ -66,14 +74,18 @@
 
   async function handleWidthDiscord() {
     try {
-      loadingFacebook.value = true
+      loadingDiscord.value = true
 
       await authStore.loginDiscord()
 
     } catch (error) {
-      console.log("Erro ao autenteicar com o google" + error);
+      notifyError(
+      "Não foi possível realizar o login",
+      "Ocorreu um erro interno ao tentar acessar sua conta. Tente novamente em alguns instantes.",
+      7000
+    )
     } finally {
-      loadingFacebook.value = false
+      loadingDiscord.value = false
     }
   }
 

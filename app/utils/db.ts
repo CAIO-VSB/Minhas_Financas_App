@@ -5,7 +5,7 @@ const client = new Pool({
     host: process.env.HOST_DATABASE,
     database: process.env.DATABASE,
     password: process.env.PASSWORD_DATABASE,
-    port: 5433
+    port: 5432
 })
 
 

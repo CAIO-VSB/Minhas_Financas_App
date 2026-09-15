@@ -20,9 +20,6 @@ import type { TTransferPayload } from "~~/schemas/transfer.schema"
     draft: TTransfer | null
   }>()
 
-  watch(props, (newVal) => {
-    console.log("Valor para editar vindo do modal", newVal)
-  })
 
   const form = ref()
   const modelValue = defineModel<boolean>()
