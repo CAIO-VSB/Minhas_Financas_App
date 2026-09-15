@@ -166,7 +166,7 @@
                   v-model="loginForm.email"
                   variant="outlined"
                   density="comfortable"
-                  placeholder="seu@email.com"
+                  placeholder="Seu@email.com"
                   prepend-inner-icon="mdi-email-outline"
                   :rules="emailRules"
                   autocomplete="email"
