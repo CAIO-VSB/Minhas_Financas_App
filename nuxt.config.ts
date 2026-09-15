@@ -29,7 +29,10 @@ export default defineNuxtConfig({
     'nuxt-echarts',
     "nuxt-api-shield",
     (_options, nuxt) => {
-      nuxt.hooks.hook('vite:extendConfig', (config) => {
+      nuxt.hooks.hook('vite:extendConfig', (config, { isClient }) => {
+        if (!isClient) return
+
+        config.plugins ??=[]
         config.plugins?.push(vuetify({ autoImport: true}))
       })
     },
@@ -133,7 +136,5 @@ export default defineNuxtConfig({
     compatibilityVersion: 4,
   },
 
-  // Trava os recursos do framework com base em uma data estável de compatibilidade
-  compatibilityDate: '2024-04-03'
   
 })

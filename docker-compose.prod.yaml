@@ -1,0 +1,41 @@
+services:
+  postgres_db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${USER_DATABASE}
+      POSTGRES_PASSWORD: ${PASSWORD_DATABASE}
+      POSTGRES_DB: ${DATABASE}
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - nuxt_network
+
+  nuxt_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      NODE_ENV: production
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+    networks:
+      - nuxt_network
+
+volumes:
+  postgres_data:
+
+networks:
+  nuxt_network:
+    driver: bridge

@@ -1,4 +1,4 @@
-import type { TOptionConfig } from "../types/TOptionConfig"
+import type { TOptionConfig } from "../../../../types/transactions/TOptionConfig"
 import type { TTypeTransaction } from "~~/types/movements/TMovements"
 
 type TOptions = {

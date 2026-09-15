@@ -25,8 +25,7 @@
     import CardEditRecurrenceExpense from '~/components/forms/CardEditRecurrenceExpense.vue'
     import useOptions from '~/pages/transactions/composable/useOptions'
     import CardDeleteMovementRecurrence from '~/components/forms/CardDeleteMovementRecurrence.vue'
-    import { useHttpMovementCreditCard } from "~/composables/useHttp/useHttpMovementCreditCard"
-    import { useHttpCreditsCards } from "~/composables/useHttp/useHttpCreditCard"
+
 
     type option = {
         title: string,
