@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-  import InfoUser from '~/layouts/components/MyAccount.vue'
+  import InfoUser from './myAccount.vue'
 
   const emits = defineEmits(['drawer'])
 

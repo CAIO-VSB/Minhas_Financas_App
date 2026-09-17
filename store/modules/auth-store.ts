@@ -75,7 +75,7 @@ export const useAuthStore = defineStore('auth', () => {
             } 
 
         } catch (error) {
-            //notifyError("Erro interno", "Ocorreu um erro inesperado. Tente novamente em alguns instantes.")
+            notifyError("Erro interno", "Ocorreu um erro inesperado. Tente novamente em alguns instantes.")
         }
     }
 

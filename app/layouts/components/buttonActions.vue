@@ -5,7 +5,7 @@
   import CardAddMovimentsRevenue  from '~/components/forms/CardAddMovimentsRevenue.vue'
   import CardAddMovimentsExpenses from '~/components/forms/CardAddMovimentsExpenses.vue'
   import CardAddTransfer from '~/components/forms/CardAddTransfer.vue';
-import CardAddMovimentsCreditCard from '~/components/forms/CardAddMovimentsCreditCard.vue';
+  import CardAddMovimentsCreditCard from '~/components/forms/CardAddMovimentsCreditCard.vue';
 
   const props = defineProps<{
     rail: boolean
