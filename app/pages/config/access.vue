@@ -19,7 +19,8 @@
     const authStore = useAuthStore()
     const {nameRules} = useValidateFields()
     const { notifyError, notifyInfo, notifySuccess } = useNotify()
-    const { getAllAuthAccounts } = useHttpAuth()
+    const { getAllAuthAccounts, patchImageUser } = useHttpAuth()
+    const config = useRuntimeConfig()
 
     const { data: session } = await $authClient.getSession()
     const fakePassword = ref("***********")
@@ -33,9 +34,13 @@
     const hidePencilEditName = ref(false)
     const showCardChangeEmail = ref(false)
     const showCardChangePassword = ref(false)
+    const showModalAlterImage = ref(false)
+    const isUploading = ref(false)
+    const modelImage = ref([])
     const userForm = ref<Partial<TUser>>({
-        name: session?.user.name,
-        email: session?.user.email
+      name: session?.user.name,
+      email: session?.user.email,
+      image: modelImage.value[0]
     })
 
     const { data } = useQuery({
@@ -69,13 +74,53 @@
         }
     ])
 
-    function emDevImage() {
+    async function onFileChange() {
+      const file = modelImage.value[0]
+
+      if (!file) {
         notifyInfo(
-        "Em desenvolvimento",
-        "Esta funcionalidade ainda está em desenvolvimento e estará disponível em breve.",
-        6000,
-        true
+          "Atenção",
+          "Selecione uma imagem para continuar.",
+          5000
         )
+        return
+      }
+
+      isUploading.value = true
+
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('upload_preset', 'ml_default')
+
+      try {
+        const res = await fetch( `https://api.cloudinary.com/v1_1/${config.public.cloudinaryCloudName}/image/upload`,
+          {method: "POST", body: formData}
+        )
+        
+        const data = await res.json()
+
+        if (!res.ok) {
+        console.error("Cloudinary error:", data)
+        notifyError("Erro", "O serviço está sobrecarregado no momento. Tente novamente em alguns instantes.", 8000)
+        return
+      }
+
+        userForm.value.image = data.secure_url
+
+        await patchImageUser(data.secure_url) 
+
+        notifySuccess("Sucesso", "Foto atualizada com sucesso", 5000)
+
+        reloadNuxtApp({
+          path: "/config/access"
+        })
+
+        showModalAlterImage.value = false
+      } catch (e) {
+        notifyError("Erro", "Não foi possível enviar a imagem.", 7000)
+      } finally {
+        isUploading.value = false
+      }
     }
 
     function enableNameEditing() {
@@ -131,7 +176,7 @@
   <v-container fluid class="mt-6 pa-4">
     <v-row>
       <v-col cols="12" lg="4">
-        <v-card rounded="lg" elevation="2">
+        <v-card rounded="lg" elevation="2" >
           <v-card-item class="pa-4 pb-2">
             <v-card-title class="text-h6 font-weight-bold text-blue-grey-darken-4">
               Meu perfil
@@ -142,12 +187,13 @@
             </v-card-subtitle>
           </v-card-item>
 
+  
           <v-divider />
 
           <v-card-text class="pa-6 text-center">
             <v-avatar
               :image="session?.user.image || defaultUser"
-              size="144"
+              size="200"
               class="user-avatar elevation-2 mb-4"
             />
 
@@ -159,20 +205,42 @@
               {{ session?.user.email }}
             </div>
 
-            <v-btn
-              prepend-icon="mdi-camera"
-              color="primary"
-              variant="tonal"
-              rounded="lg"
-              class="text-none mt-6"
-              @click="emDevImage"
-            >
-              Alterar foto
-            </v-btn>
+            <div>
+              <v-dialog max-width="500" v-model="showModalAlterImage">
+                <template v-slot:activator="{ props: activatorProps }">
+                  <v-btn
+                  v-bind="activatorProps"
+                  prepend-icon="mdi-camera"
+                  color="primary"
+                  variant="tonal"
+                  rounded="lg"
+                  class="text-none mt-6"
+                  >
+                  alterar foto
+                  </v-btn> 
+                </template>
+
+                <template v-slot:default="{ isActive }">
+                  <v-card class="pa-4">
+                    <v-file-upload :disabled="isUploading" :loading="isUploading" accept="image/*" show-size clearable v-model="modelImage"  variant="comfortable"></v-file-upload>
+                    <v-btn
+                    color="primary"
+                    variant="flat"
+                    rounded="lg"  
+                    @click="onFileChange"
+                    prepend-icon="mdi-content-save-check"
+                    :disabled="isUploading"
+                    >
+                      Salvar
+                    </v-btn>
+                  </v-card>
+                </template>
+              </v-dialog>
+            </div>       
+
           </v-card-text>
         </v-card>
       </v-col>
-
       <v-col cols="12" lg="8" class="d-flex flex-column ga-4">
         <v-card rounded="lg" elevation="2">
           <v-card-item class="pa-4 pb-2">
