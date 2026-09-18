@@ -265,6 +265,7 @@
 
                 <v-btn
                   :disabled="authStore.disableButton"
+                  :loading="loadingDiscord"
                   variant="outlined"
                   color="blue-grey-darken-2"
                   size="large"

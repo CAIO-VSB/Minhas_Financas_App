@@ -41,7 +41,7 @@
           height="48"
         >
           <template #prepend>
-            <v-avatar size="34">
+            <v-avatar size="45">
               <v-img
                 :src="session?.user.image || defaultUser"
                 alt="Avatar do usuário"

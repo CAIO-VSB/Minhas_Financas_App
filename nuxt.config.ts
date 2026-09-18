@@ -23,6 +23,7 @@ export default defineNuxtConfig({
     '@nuxt/test-utils',
     '@nuxt/ui',
     '@pinia/nuxt',
+    '@nuxtjs/cloudinary',
     '@vee-validate/nuxt',
     'pinia-plugin-persistedstate/nuxt',
     'nuxt-toast',
@@ -128,7 +129,11 @@ export default defineNuxtConfig({
   // Define variáveis que só estarão disponíveis no lado do servidor (Server-side)
   runtimeConfig: {
   // Mapeia a variável de ambiente DATABASE_URL que o Docker vai injetar
-    databaseUrl: process.env.DATABASE_URL
+    databaseUrl: process.env.DATABASE_URL,
+    public: {
+      cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME,
+      cloudinaryUploadPreset: 'ml_default'
+    }
   },
 
   // Ativa os recursos e a estrutura de pastas do Nuxt 4
