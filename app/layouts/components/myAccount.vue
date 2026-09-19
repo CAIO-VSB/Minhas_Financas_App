@@ -1,13 +1,18 @@
 <script setup lang="ts">
 
-  import defaultUser from "~/assets/aura.gif"
+  import defaultUser from "~/assets/default-user.webp"
 
   const { $authClient } = useNuxtApp()
 
   const { data: session } = await $authClient.getSession()
+  const authStore = useAuthStore()
 
   import { ref } from 'vue'
   import { useAuthStore } from "~~/store/modules/auth-store"
+
+  if (!authStore.user) {
+    await authStore.initUser()
+  }
 
   const menu = ref(false)
 
@@ -41,9 +46,9 @@
           height="48"
         >
           <template #prepend>
-            <v-avatar size="45">
+            <v-avatar>
               <v-img
-                :src="session?.user.image || defaultUser"
+                :src="authStore.user?.image || defaultUser"
                 alt="Avatar do usuário"
               />
             </v-avatar>
@@ -51,7 +56,7 @@
 
           <div class="d-none d-sm-flex flex-column align-start mr-2">
             <span class="text-body-2 font-weight-bold text-blue-grey-darken-4">
-              {{ session?.user.name }}
+              {{ authStore.user?.name }}
             </span>
 
             <span class="text-caption text-medium-emphasis">
@@ -79,14 +84,14 @@
           <div class="d-flex align-center ga-3">
             <v-avatar size="52">
               <v-img
-                :src="session?.user.image || defaultUser"
+                :src="authStore.user?.image || defaultUser"
                 alt="Avatar do usuário"
               />
             </v-avatar>
 
             <div class="overflow-hidden">
               <div class="text-subtitle-1 font-weight-bold text-blue-grey-darken-4 text-truncate">
-                {{ session?.user.name }}
+                {{ authStore.user?.name }}
               </div>
 
               <div class="text-body-2 text-medium-emphasis">
@@ -105,7 +110,7 @@
           </div>
 
           <div class="text-body-2 font-weight-medium text-blue-grey-darken-3 text-truncate">
-            {{ session?.user.email }}
+            {{ authStore.user?.email }}
           </div>
         </div>
 

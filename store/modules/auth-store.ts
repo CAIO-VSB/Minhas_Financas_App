@@ -24,6 +24,20 @@ export const useAuthStore = defineStore('auth', () => {
         sessionStorage.setItem('isAuthenticated', JSON.stringify(value))
     }
 
+    const initUser = async () => {
+        const { data: session } = await $authClient.getSession()
+        if (session?.user) {
+            user.value = session.user
+        }
+        return session
+    }
+
+    const updateUserImage = (imageUrl: string) => {
+        if (user.value) {
+            user.value.image = imageUrl
+        }
+    }
+
     const login = async (data: TLoginForm) => {
         try {
             const response = await $authClient.signIn.email(data, {
@@ -260,6 +274,6 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
 
-    return { login, loginGoogle, loginDiscord, register, logout, alterUser, alterEmail, alterPassword, isAuthenticated, user, disableButton, showDialogAlertEmail, showDialogAlertPassword }
+    return { login, loginGoogle, loginDiscord, register, logout, alterUser, alterEmail, alterPassword, isAuthenticated, user, disableButton, showDialogAlertEmail, showDialogAlertPassword, initUser, updateUserImage }
 
 })

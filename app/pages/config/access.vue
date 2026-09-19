@@ -10,17 +10,19 @@
     import { useAuthStore } from '~~/store/modules/auth-store'
     import { useValidateFields } from "~/composables/useValidateFields"
     import { useHttpAuth } from '~/composables/useHttp/useHtppAuth'
+    import { useOnFileChange } from '~/composables/useFileChange.js'
     import DialogEditEmail from '~/pages/config/components/DialogEditEmail.vue'
     import DialogEditPassword from './components/DialogEditPassword.vue'
 
-    import defaultUser from "~/assets/aura.gif"
+    import defaultUser from "~/assets/default-user.webp"
     
     const { $authClient } = useNuxtApp()
     const authStore = useAuthStore()
     const {nameRules} = useValidateFields()
     const { notifyError, notifyInfo, notifySuccess } = useNotify()
     const { getAllAuthAccounts, patchImageUser } = useHttpAuth()
-    const config = useRuntimeConfig()
+    const { submitImage, isUploading } = useOnFileChange()
+  
 
     const { data: session } = await $authClient.getSession()
     const fakePassword = ref("***********")
@@ -35,13 +37,16 @@
     const showCardChangeEmail = ref(false)
     const showCardChangePassword = ref(false)
     const showModalAlterImage = ref(false)
-    const isUploading = ref(false)
     const modelImage = ref([])
     const userForm = ref<Partial<TUser>>({
       name: session?.user.name,
       email: session?.user.email,
-      image: modelImage.value[0]
+      image: session?.user.image
     })
+
+    if (!authStore.user) {
+      await authStore.initUser()
+    }
 
     const { data } = useQuery({
         queryKey: QUERY_KEYS.auth.all,
@@ -67,55 +72,37 @@
     ]
 
     const items = computed(() => [
-        {
-            dispositivo: `${resultParser.os.name} ${resultParser.os.version} (${resultParser.browser})`,
-            inicio: format(session?.session.createdAt!, "dd/MM/yyyy HH:mm:ss"),
-            expiracao: format(session?.session.expiresAt!, "dd/MM/yyyy HH:mm:ss")
-        }
+      {
+        dispositivo: `${resultParser.os.name} ${resultParser.os.version} (${resultParser.browser})`,
+        inicio: format(session?.session.createdAt!, "dd/MM/yyyy HH:mm:ss"),
+        expiracao: format(session?.session.expiresAt!, "dd/MM/yyyy HH:mm:ss")
+      }
     ])
 
     async function onFileChange() {
-      const file = modelImage.value[0]
-
-      if (!file) {
-        notifyInfo(
-          "Atenção",
-          "Selecione uma imagem para continuar.",
-          5000
-        )
-        return
-      }
-
-      isUploading.value = true
-
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('upload_preset', 'ml_default')
 
       try {
-        const res = await fetch( `https://api.cloudinary.com/v1_1/${config.public.cloudinaryCloudName}/image/upload`,
-          {method: "POST", body: formData}
-        )
+    
+        console.log("Arquivos endo enviaod " + JSON.stringify(modelImage.value))
+
+        if (!modelImage.value.length) {
+          notifyInfo(
+            "Atenção",
+            "Selecione uma imagem para continuar.",
+            5000
+          )
+          return
+        }
         
-        const data = await res.json()
+        const res = await submitImage(modelImage.value)
+    
+        userForm.value.image = res
 
-        if (!res.ok) {
-        console.error("Cloudinary error:", data)
-        notifyError("Erro", "O serviço está sobrecarregado no momento. Tente novamente em alguns instantes.", 8000)
-        return
-      }
-
-        userForm.value.image = data.secure_url
-
-        await patchImageUser(data.secure_url) 
-
-        notifySuccess("Sucesso", "Foto atualizada com sucesso", 5000)
-
-        reloadNuxtApp({
-          path: "/config/access"
-        })
-
+        await patchImageUser(res)
+        authStore.updateUserImage(res)
+        
         showModalAlterImage.value = false
+
       } catch (e) {
         notifyError("Erro", "Não foi possível enviar a imagem.", 7000)
       } finally {
@@ -191,18 +178,31 @@
           <v-divider />
 
           <v-card-text class="pa-6 text-center">
-            <v-avatar
-              :image="session?.user.image || defaultUser"
-              size="200"
-              class="user-avatar elevation-2 mb-4"
-            />
+          <v-img
+              class="mx-auto mb-4"
+              height="200"
+              :lazy-src="defaultUser"
+              max-width="200"
+              style="border-radius: 50%;"
+              :src="authStore.user?.image || defaultUser"
+              cover
+            >
+              <template v-slot:placeholder>
+                <div class="d-flex align-center justify-center fill-height">
+                  <v-progress-circular
+                    color="grey-lighten-4"
+                    indeterminate
+                  ></v-progress-circular>
+                </div>
+              </template>
+            </v-img>
 
             <div class="text-subtitle-1 font-weight-bold text-blue-grey-darken-4 text-truncate">
-              {{ session?.user.name }}
+              {{ authStore.user?.name}}
             </div>
 
             <div class="text-body-2 text-medium-emphasis text-truncate mt-1">
-              {{ session?.user.email }}
+              {{ authStore.user?.email }}
             </div>
 
             <div>
